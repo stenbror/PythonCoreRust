@@ -46,6 +46,19 @@ pub enum ASTNode {
     AtomTuple(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     AtomList(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     AtomDictionary(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
-    AtomSet(u32, u32, Box<Token>, Box<Option<ASTNode>>, Box<Token>)
+    AtomSet(u32, u32, Box<Token>, Box<Option<ASTNode>>, Box<Token>),
+    TestListComp(u32, u32, Box<ASTNode>, Box<Token>),
+    CallTrailer(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
+    IndexTrailer(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
+    DotNameTrailer(u32, u32, Box<Token>, Box<Token>),
+    SubscriptList(u32, u32, Box<ASTNode>, Box<Token>),
+    Subscript(u32, u32, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>),
+    ExprList(u32, u32, Box<ASTNode>, Box<Token>),
+    TestList(u32, u32, Box<ASTNode>, Box<Token>),
+    DictionaryContainer(u32, u32, Box<ASTNode>, Box<Token>),
+    DictionaryEntry(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    SetContainer(u32, u32, Box<ASTNode>, Box<Token>),
+    MulSet(u32, u32, Box<Token>, Box<ASTNode>),
+    PowerDictionary(u32, u32, Box<Token>, Box<ASTNode>)
 }
 
