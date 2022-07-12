@@ -104,5 +104,9 @@ pub enum ASTNode {
     GlobalStmt(u32, u32, Box<Token>, Box<[Box<Token>]>, Box<[Box<Token>]>),
     NonLocalStmt(u32, u32, Box<Token>, Box<[Box<Token>]>, Box<[Box<Token>]>),
     AssertStmt(u32, u32, Box<Token>, Box<ASTNode>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
+    AsyncStmt(u32, u32, Box<Token>, Box<ASTNode>),
+    IfStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<[Box<ASTNode>]>>, Option<Box<ASTNode>>),
+    ElifStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    Else(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
 }
 
