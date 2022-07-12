@@ -59,6 +59,19 @@ pub enum ASTNode {
     DictionaryEntry(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     SetContainer(u32, u32, Box<ASTNode>, Box<Token>),
     MulSet(u32, u32, Box<Token>, Box<ASTNode>),
-    PowerDictionary(u32, u32, Box<Token>, Box<ASTNode>)
+    PowerDictionary(u32, u32, Box<Token>, Box<ASTNode>),
+    ClassDef(u32, u32, Box<Token>, Box<Token>, Option< (Box<Token>, Option<Box<ASTNode>>, Box<Token>) >, Box<Token>, Box<ASTNode>),
+    ArgList(u32, u32, Box<ASTNode>, Box<Token>),
+    Argument(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    SyncCompForComprehension(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<ASTNode>>),
+    CompForComprehension(u32, u32,  Box<Token>, Box<ASTNode>),
+    CompIfComprehension(u32, u32, Box<Token>, Box<ASTNode>, Option<Box<ASTNode>>),
+    YieldExpr(u32, u32, Box<Token>, Box<ASTNode>),
+    YielfFromExpr(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
+    FuncBodySuite(u32, u32, Box<Token>, Option<(Box<Token>, Box<Token>)>, Box<Token>, Box<[Box<ASTNode>]>, Box<Token>),
+    FuncTypeInput(u32, u32, Box<ASTNode>, Box<[Box<ASTNode>]>, Box<Token>),
+    FuncType(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>, Box<Token>, Box<ASTNode>),
+    TypeList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
+    
 }
 
