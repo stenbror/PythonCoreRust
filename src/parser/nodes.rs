@@ -72,6 +72,21 @@ pub enum ASTNode {
     FuncTypeInput(u32, u32, Box<ASTNode>, Box<[Box<ASTNode>]>, Box<Token>),
     FuncType(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>, Box<Token>, Box<ASTNode>),
     TypeList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
-    
+    SimpleStmtList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Box<Token> ),
+    PlusAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    MinusAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    MulAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    DivAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    FloorDivAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    ModuloAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    MatriceAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    PowerAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    ShiftLeftAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    ShiftRightAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    BitOrAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    BitXorAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    BitAndAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
+    AnnAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<(Box<Token>, Box<ASTNode>)>),
+    AssignmentStmt(u32, u32, Box<ASTNode>, Box<(Box<[Box<Token>]>, Box<[Box<ASTNode>]>)>, Option<Box<Token>>),
 }
 
