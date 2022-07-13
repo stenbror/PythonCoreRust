@@ -129,6 +129,7 @@ pub enum ASTNode {
     VFPDef(u32, u32, Box<Token>),
     SingleInput(u32, u32, Box<ASTNode>, Box<Token>),
     FileInput(u32, u32, Box<[Box<Token>]>, Box<[Box<ASTNode>]>, Box<Token>),
-    EvalInput(u32, u32, Box<ASTNode>, Box<[Box<Token>]>, Box<Token>)
+    EvalInput(u32, u32, Box<ASTNode>, Box<[Box<Token>]>, Box<Token>),
+    Empty
 }
 
