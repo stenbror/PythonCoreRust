@@ -7,6 +7,9 @@ use crate::parser::parser::{ PythonCoreParser };
 trait Expressions {
     fn parse_expression_named_expr(&self) -> Box<ASTNode>;
     fn parse_expression_test(&self) -> Box<ASTNode>;
+    fn parse_expression_test_nocond(&self) -> Box<ASTNode>;
+    fn parse_expression_lambda_def(&self) -> Box<ASTNode>;
+    fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode>;
 }
 
 impl Expressions for PythonCoreParser {
@@ -15,6 +18,18 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_test(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_test_nocond(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_lambda_def(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode> {
         Box::new(ASTNode::Empty)
     }
 }
