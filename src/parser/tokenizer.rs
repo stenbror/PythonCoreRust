@@ -4,7 +4,7 @@ use crate::parser::tokens::{ Token };
 
 // Defining data structure and traits for tokenizing of PythonCore ////////////////////////////////
 
-struct PythonCoreTokenizer {
+pub struct PythonCoreTokenizer {
 
 }
 
