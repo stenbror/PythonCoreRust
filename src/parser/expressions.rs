@@ -10,6 +10,35 @@ trait Expressions {
     fn parse_expression_test_nocond(&self) -> Box<ASTNode>;
     fn parse_expression_lambda_def(&self) -> Box<ASTNode>;
     fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode>;
+    fn parse_expression_or_test(&self) -> Box<ASTNode>;
+    fn parse_expression_and_test(&self) -> Box<ASTNode>;
+    fn parse_expression_not_test(&self) -> Box<ASTNode>;
+    fn parse_expression_comparison(&self) -> Box<ASTNode>;
+    fn parse_expression_star_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_xor_Expr(&self) -> Box<ASTNode>;
+    fn parse_expression_and_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_shift_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_arith_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_term(&self) -> Box<ASTNode>;
+    fn parse_expression_factor(&self) -> Box<ASTNode>;
+    fn parse_expression_power(&self) -> Box<ASTNode>;
+    fn parse_expression_atom_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_atom(&self) -> Box<ASTNode>;
+    fn parse_expression_testlist_comp(&self) -> Box<ASTNode>;
+    fn parse_expression_trailer(&self) -> Box<ASTNode>;
+    fn parse_expression_subscript_list(&self) -> Box<ASTNode>;
+    fn parse_expression_subscript(&self) -> Box<ASTNode>;
+    fn parse_expression_expr_list(&self) -> Box<ASTNode>;
+    fn parse_expression_test_list(&self) -> Box<ASTNode>;
+    fn parse_expression_dictor_set_maker(&self) -> Box<ASTNode>;
+    fn parse_expression_arg_list(&self) -> Box<ASTNode>;
+    fn parse_expression_argument(&self) -> Box<ASTNode>;
+    fn parse_expression_comp_iter(&self) -> Box<ASTNode>;
+    fn parse_expression_sync_comp_for(&self) -> Box<ASTNode>;
+    fn parse_expression_comp_for(&self) -> Box<ASTNode>;
+    fn parse_expression_comp_if(&self) -> Box<ASTNode>;
+    fn parse_expression_yield_expr(&self) -> Box<ASTNode>;
 }
 
 impl Expressions for PythonCoreParser {
@@ -30,6 +59,122 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_or_test(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_and_test(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_not_test(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_comparison(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_star_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_xor_Expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_and_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_shift_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_arith_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_term(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_factor(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_power(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_atom_expr(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_atom(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_testlist_comp(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_trailer(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_subscript_list(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_subscript(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_expr_list(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_test_list(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_dictor_set_maker(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_arg_list(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_argument(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_comp_iter(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_sync_comp_for(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_comp_for(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+
+    fn parse_expression_comp_if(&self) -> Box<ASTNode> {
+        Box::new(ASTNode::Empty)
+    }
+    
+    fn parse_expression_yield_expr(&self) -> Box<ASTNode> {
         Box::new(ASTNode::Empty)
     }
 }
