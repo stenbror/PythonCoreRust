@@ -161,7 +161,19 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_not_test(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyNot( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_not_test();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::NotTest(*startPos, *endPos, symbol, rightNode) )
+            },
+            _ => {
+                self.parse_expression_comparison()
+            }
+         }
     }
 
     fn parse_expression_comparison(&self) -> Box<ASTNode> {
