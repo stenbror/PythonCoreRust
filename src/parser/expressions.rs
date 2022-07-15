@@ -92,7 +92,14 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_test_nocond(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        match &*self.lexer.get_symbol() {
+            Token::PyLambda( _ , _ , _ ) => {
+                self.parse_expression_lambda_def_nocond()
+            }
+            _ => {
+                self.parse_expression_or_test()
+            }
+        }
     }
 
     fn parse_expression_lambda_def(&self) -> Box<ASTNode> {
