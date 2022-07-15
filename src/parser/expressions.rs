@@ -58,7 +58,37 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_test(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyLambda( _ , _ , _ ) => { 
+                self.parse_expression_lambda_def()
+            },
+            _ => {
+                let leftNode = self.parse_expression_test();
+                match &*self.lexer.get_symbol() {
+                    Token::PyIf( _ , _ , _ ) => {
+                        let symbol1 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let rightNode = self.parse_expression_or_test();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyElse( _ , _ , _ ) => {
+                                let symbol2 = self.lexer.get_symbol();
+                                &self.lexer.advance();
+                                let nextNode = self.parse_expression_or_test();
+                                let endPos = &self.lexer.get_position();
+                                Box::new( ASTNode::Test(*startPos, *endPos, leftNode, symbol1, rightNode, symbol2, nextNode) )
+                            }
+                            _ => {
+                                panic!("Syntax Error at {} - Especting 'else' in test expression!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        leftNode
+                    }
+                }
+            }
+        }
     }
 
     fn parse_expression_test_nocond(&self) -> Box<ASTNode> {
