@@ -43,7 +43,18 @@ trait Expressions {
 
 impl Expressions for PythonCoreParser {
     fn parse_expression_named_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let leftNode = self.parse_expression_test();
+        match &*self.lexer.get_symbol() {
+            Token::PyColonAssign( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_test();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::NamedExpr(*startPos, *endPos, leftNode, symbol, rightNode) )
+            },
+            _ => leftNode
+        }
     }
 
     fn parse_expression_test(&self) -> Box<ASTNode> {

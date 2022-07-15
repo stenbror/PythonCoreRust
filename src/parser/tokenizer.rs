@@ -9,29 +9,23 @@ pub struct PythonCoreTokenizer {
 }
 
 
-trait Tokenizer {
-    fn new() -> Self;
-    fn advance(&self);
-    fn get_symbol(&self) -> Box<Token>;
-    fn get_position(&self) -> u32;
-}
 
 // Implementing functions releated to tokenizing of PythonCore ////////////////////////////////////
 
-impl Tokenizer for PythonCoreTokenizer {
+impl PythonCoreTokenizer {
     fn new() -> PythonCoreTokenizer {
         PythonCoreTokenizer { }
     }
 
-    fn advance(&self) {
+    pub fn advance(&self) {
 
     }
 
-    fn get_symbol(&self) -> Box<Token> {
+    pub fn get_symbol(&self) -> Box<Token> {
        Box::new(Token::Empty)
     }
 
-    fn get_position(&self) -> u32 {
+    pub fn get_position(&self) -> u32 {
         0
     }
 }
