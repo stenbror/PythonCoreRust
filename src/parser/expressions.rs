@@ -111,7 +111,28 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_or_test(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_test();
+        match &*self.lexer.get_symbol() {
+            Token::PyOr( _ , _ , _ ) => {
+                while 
+                    match &*self.lexer.get_symbol() {
+                        Token::PyOr( _ , _ , _ ) => {
+                            let symbol = self.lexer.get_symbol();
+                            &self.lexer.advance();
+                            let rightNode = self.parse_expression_test();
+                            let endPos = &self.lexer.get_position();
+                            leftNode = Box::new( ASTNode::OrTest(*startPos, *endPos, leftNode, symbol, rightNode) );
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+            },
+            _ => {}   
+        }
+        leftNode
     }
 
     fn parse_expression_and_test(&self) -> Box<ASTNode> {
