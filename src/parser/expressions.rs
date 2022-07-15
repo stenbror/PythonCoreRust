@@ -77,7 +77,7 @@ impl Expressions for PythonCoreParser {
                                 let nextNode = self.parse_expression_or_test();
                                 let endPos = &self.lexer.get_position();
                                 Box::new( ASTNode::Test(*startPos, *endPos, leftNode, symbol1, rightNode, symbol2, nextNode) )
-                            }
+                            },
                             _ => {
                                 panic!("Syntax Error at {} - Especting 'else' in test expression!", &self.lexer.get_position())
                             }
