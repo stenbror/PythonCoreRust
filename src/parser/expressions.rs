@@ -237,6 +237,27 @@ impl Expressions for PythonCoreParser {
                     leftNode = Box::new( ASTNode::InComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
                     true
                 },
+                Token::PyIs( _ , _ , _ ) => {
+                    let symbol1 = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PyNot(_ , _ , _ ) => {
+                            let symbol2 = self.lexer.get_symbol();
+                            &self.lexer.advance();
+                            let rightNode = self.parse_expression_expr();
+                            let endPos = &self.lexer.get_position();
+                            leftNode = Box::new( ASTNode::IsNotComparison(*startPos, *endPos, leftNode, symbol1, symbol2, rightNode) );
+                            true
+                        },
+                        _ => {
+                            let rightNode = self.parse_expression_expr();
+                            let endPos = &self.lexer.get_position();
+                            leftNode = Box::new( ASTNode::IsComparison(*startPos, *endPos, leftNode, symbol1, rightNode) );
+                            true
+                        }
+                    }
+
+                },
                 _ => {
                     false
                 }
