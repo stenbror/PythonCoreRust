@@ -177,7 +177,71 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_comparison(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_expr();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyLess( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::LessComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyLessEqual( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::LessEqualComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyEqual( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::EqualComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyGreaterEqual( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::GreaterEqualComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyGreater( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::GreaterComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyNotEqual( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::NotEqualComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyIn( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::InComparison(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
     fn parse_expression_star_expr(&self) -> Box<ASTNode> {
