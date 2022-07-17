@@ -387,7 +387,31 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_arith_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_term();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyPlus( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_term();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::PlusArithExpr(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyMinus( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_term();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::MinusArithExpr(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
     fn parse_expression_term(&self) -> Box<ASTNode> {
