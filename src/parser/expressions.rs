@@ -497,7 +497,20 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_power(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let leftNode = self.parse_expression_atom_expr();
+        match &*self.lexer.get_symbol() {
+            Token::PyPlus( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_factor();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::PowerExpr(*startPos, *endPos, leftNode, symbol, rightNode) )
+            },
+            _ => {
+                leftNode
+            }
+        }
     }
 
     fn parse_expression_atom_expr(&self) -> Box<ASTNode> {
