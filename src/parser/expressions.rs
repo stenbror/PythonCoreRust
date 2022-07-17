@@ -16,7 +16,7 @@ trait Expressions {
     fn parse_expression_comparison(&self) -> Box<ASTNode>;
     fn parse_expression_star_expr(&self) -> Box<ASTNode>;
     fn parse_expression_expr(&self) -> Box<ASTNode>;
-    fn parse_expression_xor_Expr(&self) -> Box<ASTNode>;
+    fn parse_expression_xor_expr(&self) -> Box<ASTNode>;
     fn parse_expression_and_expr(&self) -> Box<ASTNode>;
     fn parse_expression_shift_expr(&self) -> Box<ASTNode>;
     fn parse_expression_arith_expr(&self) -> Box<ASTNode>;
@@ -274,7 +274,6 @@ impl Expressions for PythonCoreParser {
                             panic!("Syntax Error at {} - Especting 'in' in 'not in' expression!", &self.lexer.get_position())
                         }
                     }
-
                 },
                 _ => {
                     false
@@ -284,15 +283,59 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_star_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_expr();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::StarExpr(*startPos, *endPos, symbol, rightNode) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Especting '*' in star expression!", &self.lexer.get_position())
+            }
+         }
     }
 
     fn parse_expression_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_xor_expr();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyBitOr( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_xor_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::Expr(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
-    fn parse_expression_xor_Expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+    fn parse_expression_xor_expr(&self) -> Box<ASTNode> {
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_and_expr();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyBitXor( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_and_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::XorExpr(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
     fn parse_expression_and_expr(&self) -> Box<ASTNode> {
