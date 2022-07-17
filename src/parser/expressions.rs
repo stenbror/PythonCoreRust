@@ -467,7 +467,33 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_factor(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyPlus( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_factor();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::UnaryPlus(*startPos, *endPos, symbol, rightNode) )
+            },
+            Token::PyMinus( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_factor();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::UnaryMinus(*startPos, *endPos, symbol, rightNode) )
+            },
+            Token::PyBitInvert( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_factor();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::UnaryInvert(*startPos, *endPos, symbol, rightNode) )
+            },
+            _ => {
+                self.parse_expression_power()
+            }
+         }
     }
 
     fn parse_expression_power(&self) -> Box<ASTNode> {
