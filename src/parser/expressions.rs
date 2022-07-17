@@ -635,8 +635,24 @@ impl Expressions for PythonCoreParser {
             Token::PyLeftBracket( _ , _ , _ ) => {
                 let symbol1 = self.lexer.get_symbol();
                 &self.lexer.advance();
-
-                Box::new( ASTNode::Empty )
+                let mut right : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( _ , _ , _ ) => { },
+                    _ => {
+                        right = Some( self.parse_expression_testlist_comp() );
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::AtomList(*startPos, *endPos, symbol1, right, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Especting ')' in tupple!", &self.lexer.get_position())
+                    }
+                }
             },
             Token::PyLeftCurly( _ , _ , _ ) => {
                 let symbol1 = self.lexer.get_symbol();
