@@ -650,15 +650,48 @@ impl Expressions for PythonCoreParser {
                         Box::new( ASTNode::AtomList(*startPos, *endPos, symbol1, right, symbol2) )
                     },
                     _ => {
-                        panic!("Syntax Error at {} - Especting ')' in tupple!", &self.lexer.get_position())
+                        panic!("Syntax Error at {} - Especting ']' in list!", &self.lexer.get_position())
                     }
                 }
             },
             Token::PyLeftCurly( _ , _ , _ ) => {
                 let symbol1 = self.lexer.get_symbol();
                 &self.lexer.advance();
-
-                Box::new( ASTNode::Empty )
+                let mut right : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightCurly( _ , _ , _ ) => { },
+                    _ => {
+                        right = Some( self.parse_expression_dictor_set_maker() );
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightCurly( _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        match right {
+                            Some( ref a ) => {
+                                match &**a {
+                                    ASTNode::DictionaryContainer( _ , _ , _ , _ ) => {
+                                        Box::new( ASTNode::AtomDictionary(*startPos, *endPos, symbol1, right, symbol2) )
+                                    },
+                                    ASTNode::SetContainer( _ , _ , _ , _ ) => {
+                                        Box::new( ASTNode::AtomSet(*startPos, *endPos, symbol1, right, symbol2) )
+                                    },
+                                    _ => { 
+                                        panic!("Syntax Error at {} - Especting a dictionary or set", &self.lexer.get_position())
+                                    }
+                                }
+                            },
+                            None => {
+                                panic!("Syntax Error at {} - Especting a dictionary or set", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Especting end marker in dictionary!", &self.lexer.get_position())
+                    }
+                }
             },
             _ => {
                 panic!("Syntax Error at {} - Especting a valid atom expression!", &self.lexer.get_position())

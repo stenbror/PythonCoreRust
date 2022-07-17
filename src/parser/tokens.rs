@@ -63,7 +63,7 @@ pub enum Token {
     PyLeftCurly(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyRightParen(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyRightBracket(u32, u32, Option<Box<[Box<Trivia>]>>),
-    ÅyRightCurly(u32, u32, Option<Box<[Box<Trivia>]>>),
+    PyRightCurly(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyComa(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyColon(u32, u32, Option<Box<[Box<Trivia>]>>, Box<[Trivia]>),
     PyDot(u32, u32, Option<Box<[Box<Trivia>]>>),
