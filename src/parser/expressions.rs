@@ -608,12 +608,40 @@ impl Expressions for PythonCoreParser {
                 Box::new( ASTNode::AtomString(*startPos, *endPos, nodes) )
             },
             Token::PyLeftParen( _ , _ , _ ) => {
-                Box::new( ASTNode::Empty )
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let mut right : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( _ , _ , _ ) => {
+                        right = Some( self.parse_expression_yield_expr() );
+                    },
+                    Token::PyRightParen( _ , _ , _ ) => { },
+                    _ => {
+                        right = Some( self.parse_expression_testlist_comp() );
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightParen( _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::AtomTuple(*startPos, *endPos, symbol1, right, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Especting ')' in tupple!", &self.lexer.get_position())
+                    }
+                }
             },
             Token::PyLeftBracket( _ , _ , _ ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+
                 Box::new( ASTNode::Empty )
             },
             Token::PyLeftCurly( _ , _ , _ ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+
                 Box::new( ASTNode::Empty )
             },
             _ => {
