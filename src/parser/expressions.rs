@@ -415,7 +415,55 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_term(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_factor();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyMul( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_factor();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::MulTerm(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyDiv( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_factor();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::DivTerm(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyFloorDiv( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_factor();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::FloorDivTerm(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyModulo( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_factor();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::ModuloTerm(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                Token::PyMatrice( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_factor();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::MatriceTerm(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
     fn parse_expression_factor(&self) -> Box<ASTNode> {
