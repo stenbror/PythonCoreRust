@@ -258,6 +258,24 @@ impl Expressions for PythonCoreParser {
                     }
 
                 },
+                Token::PyNot( _ , _ , _ ) => {
+                    let symbol1 = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PyIn(_ , _ , _ ) => {
+                            let symbol2 = self.lexer.get_symbol();
+                            &self.lexer.advance();
+                            let rightNode = self.parse_expression_expr();
+                            let endPos = &self.lexer.get_position();
+                            leftNode = Box::new( ASTNode::NotInComparison(*startPos, *endPos, leftNode, symbol1, symbol2, rightNode) );
+                            true
+                        },
+                        _ => {
+                            panic!("Syntax Error at {} - Especting 'in' in 'not in' expression!", &self.lexer.get_position())
+                        }
+                    }
+
+                },
                 _ => {
                     false
                 }
