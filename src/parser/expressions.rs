@@ -339,7 +339,23 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_and_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut leftNode = self.parse_expression_shift_expr();
+        while 
+            match &*self.lexer.get_symbol() {
+                Token::PyBitAnd( _ , _ , _ ) => {
+                    let symbol = self.lexer.get_symbol();
+                    &self.lexer.advance();
+                    let rightNode = self.parse_expression_shift_expr();
+                    let endPos = &self.lexer.get_position();
+                    leftNode = Box::new( ASTNode::AndExpr(*startPos, *endPos, leftNode, symbol, rightNode) );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        leftNode
     }
 
     fn parse_expression_shift_expr(&self) -> Box<ASTNode> {
