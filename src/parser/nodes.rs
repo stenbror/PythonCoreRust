@@ -38,7 +38,7 @@ pub enum ASTNode {
     AtomExpr(u32, u32, Option<Box<Token>>, Box<ASTNode>, Box<Vec<Box<ASTNode>>>),
     AtomName(u32, u32, Box<Token>),
     AtomNumber(u32, u32, Box<Token>),
-    AtomString(u32, u32, Box<[Token]>),
+    AtomString(u32, u32, Box<Vec<Box<Token>>>),
     AtomElipsis(u32, u32, Box<Token>),
     AtomNone(u32, u32, Box<Token>),
     AtomTrue(u32, u32, Box<Token>),

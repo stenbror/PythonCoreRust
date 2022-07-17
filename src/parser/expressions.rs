@@ -551,7 +551,75 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_atom(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyElipsis( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomElipsis(*startPos, *endPos, symbol) )
+            },
+            Token::PyNone( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomNone(*startPos, *endPos, symbol) )
+            },
+            Token::PyTrue( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomTrue(*startPos, *endPos, symbol) )
+            },
+            Token::PyFalse( _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomFalse(*startPos, *endPos, symbol) )
+            },
+            Token::AtomName( _ , _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomName(*startPos, *endPos, symbol) )
+            },
+            Token::AtomNumber( _ , _ , _ , _ ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomNumber(*startPos, *endPos, symbol) )
+            },
+            Token::AtomString( _ , _ , _ , _ ) => {
+                let mut nodes : Box<Vec<Box<Token>>> = Box::new( Vec::new() );
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::AtomString( _, _ , _ , _ ) => {
+                            let symbol = self.lexer.get_symbol();
+                            &self.lexer.advance();
+                            nodes.push(symbol);
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+                nodes.reverse();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::AtomString(*startPos, *endPos, nodes) )
+            },
+            Token::PyLeftParen( _ , _ , _ ) => {
+                Box::new( ASTNode::Empty )
+            },
+            Token::PyLeftBracket( _ , _ , _ ) => {
+                Box::new( ASTNode::Empty )
+            },
+            Token::PyLeftCurly( _ , _ , _ ) => {
+                Box::new( ASTNode::Empty )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Especting a valid atom expression!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_expression_testlist_comp(&self) -> Box<ASTNode> {
