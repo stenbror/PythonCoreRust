@@ -2,6 +2,7 @@
 use crate::parser::nodes::{ ASTNode };
 use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
+use std::vec;
 
 
 trait Expressions {
@@ -514,7 +515,39 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_atom_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut awaitNode : Option<Box<Token>> = None;
+        match &*self.lexer.get_symbol() {
+            Token::PyAwait( _ , _ , _ ) => {
+                awaitNode = Some(self.lexer.get_symbol());
+                self.lexer.advance();
+            },
+            _ => {}
+        }
+        let rightNode = self.parse_expression_atom();
+        let mut trailerList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyDot( _ , _ , _ ) |
+                Token::PyLeftParen( _ , _ , _ ) |
+                Token::PyLeftBracket( _ , _ , _ ) => {
+                    trailerList.push( self.parse_expression_trailer()  );
+                    true
+                },
+                _ => {
+                    false
+                }  
+            } {};
+        trailerList.reverse();
+        let endPos = &self.lexer.get_position();
+        match ( &awaitNode, &trailerList.len() ) {
+            ( None, 0 ) => {
+                rightNode
+            },
+            _ => {
+                Box::new( ASTNode::AtomExpr(*startPos, *endPos, awaitNode, rightNode, trailerList ) )
+            }
+        }
     }
 
     fn parse_expression_atom(&self) -> Box<ASTNode> {

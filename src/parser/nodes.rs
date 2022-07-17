@@ -35,7 +35,7 @@ pub enum ASTNode {
     UnaryMinus(u32, u32, Box<Token>, Box<ASTNode>),
     UnaryInvert(u32, u32, Box<Token>, Box<ASTNode>),
     PowerExpr(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
-    AtomExpr(u32, u32, Option<Box<Token>>, Box<ASTNode>, Box<[ASTNode]>),
+    AtomExpr(u32, u32, Option<Box<Token>>, Box<ASTNode>, Box<Vec<Box<ASTNode>>>),
     AtomName(u32, u32, Box<Token>),
     AtomNumber(u32, u32, Box<Token>),
     AtomString(u32, u32, Box<[Token]>),
