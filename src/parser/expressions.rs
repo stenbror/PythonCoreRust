@@ -1230,7 +1230,213 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_var_args_list(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut mulSymbol : Option<Box<Token>> = None;
+        let mut mulNode : Option<Box<ASTNode>> = None;
+        let mut powerSymbol : Option<Box<Token>> = None;
+        let mut powerNode : Option<Box<ASTNode>> = None;
+        let mut divSymbol : Option<Box<Token>> = None;
+        let mut comaFound : bool = false;
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( .. ) => {
+                mulSymbol = Some( self.lexer.get_symbol() );
+                &self.lexer.advance();
+                mulNode = Some( self.parse_expression_var_args_assignment() );
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( .. ) => {
+                            separatorsList.push( self.lexer.get_symbol() );
+                            &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyPower( .. ) => {
+                                    powerSymbol = Some( self.lexer.get_symbol() );
+                                    &self.lexer.advance();
+                                    powerNode = Some( self.parse_expression_var_args_assignment() );
+                                    match &*self.lexer.get_symbol() {
+                                        Token::PyComa( .. ) => {
+                                            separatorsList.push( self.lexer.get_symbol() );
+                                            &self.lexer.advance();
+                                        },
+                                        _ => {}
+                                    }
+                                    false
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_var_args_assignment() );
+                                    true
+                                }
+                            }
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+            },
+            Token::PyPower( .. ) => {
+                powerSymbol = Some( self.lexer.get_symbol() );
+                &self.lexer.advance();
+                powerNode = Some( self.parse_expression_var_args_assignment() );
+                match &*self.lexer.get_symbol() {
+                    Token::PyComa( .. ) => {
+                        separatorsList.push( self.lexer.get_symbol() );
+                        &self.lexer.advance();
+                    },
+                    _ => {}
+                }
+            },
+            _ => {
+                nodesList.push( self.parse_expression_var_args_assignment() );
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( .. ) => {
+                            separatorsList.push( self.lexer.get_symbol() );
+                            &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyDiv( .. ) => {
+                                    divSymbol = Some( self.lexer.get_symbol() );
+                                    &self.lexer.advance();
+                                    while 
+                                        match &*self.lexer.get_symbol() {
+                                            Token::PyComa( .. ) => {
+                                                separatorsList.push( self.lexer.get_symbol() );
+                                                &self.lexer.advance();
+                                                match &*self.lexer.get_symbol() {
+                                                    Token::PyMul( .. ) |
+                                                    Token::PyPower( .. ) => {
+                                                        comaFound = true;
+                                                        false
+                                                    },
+                                                    _ => {
+                                                        nodesList.push( self.parse_expression_var_args_assignment() );
+                                                        true
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                false
+                                            }
+                                        } {};
+                                    match (comaFound, &*self.lexer.get_symbol()) {
+                                        ( true, Token::PyMul( .. ) ) => {
+                                            mulSymbol = Some( self.lexer.get_symbol() );
+                                            &self.lexer.advance();
+                                            mulNode = Some( self.parse_expression_var_args_assignment() );
+                                            while
+                                                match &*self.lexer.get_symbol() {
+                                                    Token::PyComa( .. ) => {
+                                                        separatorsList.push( self.lexer.get_symbol() );
+                                                        &self.lexer.advance();
+                                                        match &*self.lexer.get_symbol() {
+                                                            Token::PyPower( .. ) => {
+                                                                powerSymbol = Some( self.lexer.get_symbol() );
+                                                                &self.lexer.advance();
+                                                                powerNode = Some( self.parse_expression_var_args_assignment() );
+                                                                match &*self.lexer.get_symbol() {
+                                                                    Token::PyComa( .. ) => {
+                                                                        separatorsList.push( self.lexer.get_symbol() );
+                                                                        &self.lexer.advance();
+                                                                    },
+                                                                    _ => {}
+                                                                }
+                                                                false
+                                                            },
+                                                            _ => {
+                                                                nodesList.push( self.parse_expression_var_args_assignment() );
+                                                                true
+                                                            }
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        false
+                                                    }
+                                                } {};
+                                            false
+                                        },
+                                        ( true, Token::PyPower( .. ) ) => {
+                                            powerSymbol = Some( self.lexer.get_symbol() );
+                                            &self.lexer.advance();
+                                            powerNode = Some( self.parse_expression_var_args_assignment() );
+                                            match &*self.lexer.get_symbol() {
+                                                Token::PyComa( .. ) => {
+                                                    separatorsList.push( self.lexer.get_symbol() );
+                                                    &self.lexer.advance();
+                                                },
+                                                _ => {}
+                                            }
+                                            false
+                                        },
+                                        _ => {
+                                            false
+                                        }
+                                    }
+                                },
+                                Token::PyMul( .. ) => {
+                                    mulSymbol = Some( self.lexer.get_symbol() );
+                                    &self.lexer.advance();
+                                    mulNode = Some( self.parse_expression_var_args_assignment() );
+                                    while
+                                        match &*self.lexer.get_symbol() {
+                                            Token::PyComa( .. ) => {
+                                                separatorsList.push( self.lexer.get_symbol() );
+                                                &self.lexer.advance();
+                                                match &*self.lexer.get_symbol() {
+                                                    Token::PyPower( .. ) => {
+                                                        powerSymbol = Some( self.lexer.get_symbol() );
+                                                        &self.lexer.advance();
+                                                        powerNode = Some( self.parse_expression_var_args_assignment() );
+                                                        match &*self.lexer.get_symbol() {
+                                                            Token::PyComa( .. ) => {
+                                                                separatorsList.push( self.lexer.get_symbol() );
+                                                                &self.lexer.advance();
+                                                            },
+                                                            _ => {}
+                                                        }
+                                                        false
+                                                    },
+                                                    _ => {
+                                                        nodesList.push( self.parse_expression_var_args_assignment() );
+                                                        true
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                false
+                                            }
+                                        } {};
+                                    false
+                                },
+                                Token::PyPower( .. ) => {
+                                    powerSymbol = Some( self.lexer.get_symbol() );
+                                    &self.lexer.advance();
+                                    powerNode = Some( self.parse_expression_var_args_assignment() );
+                                    match &*self.lexer.get_symbol() {
+                                        Token::PyComa( .. ) => {
+                                            separatorsList.push( self.lexer.get_symbol() );
+                                            &self.lexer.advance();
+                                        },
+                                        _ => {}
+                                    }
+                                    false
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_var_args_assignment() );
+                                    true
+                                }
+                            }
+                        },
+                        _ => {
+                            false
+                        }
+
+                    } {};
+            }
+        }
+        nodesList.reverse();
+        separatorsList.reverse();
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::VarArgsList(*startPos, *endPos, nodesList, separatorsList, mulSymbol, mulNode, powerSymbol, powerNode, divSymbol) )
     }
 
     fn parse_expression_var_args_assignment(&self) -> Box<ASTNode> {

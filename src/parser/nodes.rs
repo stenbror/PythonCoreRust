@@ -125,7 +125,7 @@ pub enum ASTNode {
     TypedArgsList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
     TFPAssign(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     TFPDef(u32, u32, Box<Token>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
-    VarArgsList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
+    VarArgsList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>),
     VFPAssign(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     VFPDef(u32, u32, Box<Token>),
     SingleInput(u32, u32, Box<ASTNode>, Box<Token>),
