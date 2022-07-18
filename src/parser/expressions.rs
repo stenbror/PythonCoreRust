@@ -41,6 +41,9 @@ trait Expressions {
     fn parse_expression_comp_if(&self) -> Box<ASTNode>;
     fn parse_expression_yield_expr(&self) -> Box<ASTNode>;
     fn parse_expression_testlist_star_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_var_args_list(&self) -> Box<ASTNode>;
+    fn parse_expression_var_args_assignment(&self) -> Box<ASTNode>;
+    fn parse_expression_vfp_def(&self) -> Box<ASTNode>;
 }
 
 impl Expressions for PythonCoreParser {
@@ -1201,5 +1204,28 @@ impl Expressions for PythonCoreParser {
             } {};
         let endPos = &self.lexer.get_position();
         Box::new( ASTNode::TestListStarExpr(*startPos, *endPos, nodesList, separatorsList) )
+    }
+
+    fn parse_expression_var_args_list(&self) -> Box<ASTNode> {
+        Box::new( ASTNode::Empty )
+    }
+
+    fn parse_expression_var_args_assignment(&self) -> Box<ASTNode> {
+        Box::new( ASTNode::Empty )
+    }
+
+    fn parse_expression_vfp_def(&self) -> Box<ASTNode> {
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::AtomName( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::VFPDef(*startPos, *endPos, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Unexpected name literal in variable args list!", &self.lexer.get_position())
+            }
+        }
     }
 }
