@@ -700,7 +700,49 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_testlist_comp(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( _ , _ , _ ) => {
+                nodesList.push( self.parse_expression_star_expr() )
+            },
+            _ => {
+                nodesList.push( self.parse_expression_named_expr() )
+            }
+        }
+        match &*self.lexer.get_symbol() {
+            Token::PyFor( _ , _ , _ ) |
+            Token::PyAsync( _ , _ , _ ) => {
+                nodesList.push( self.parse_expression_comp_for() );
+            },
+            Token::PyComa( _ , _ , _ ) => {
+                while 
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( _ , _ , _ ) => {
+                            separatorsList.push( self.lexer.get_symbol() );
+                            &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyMul( _ , _ , _ ) => {
+                                    nodesList.push( self.parse_expression_star_expr() )
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_named_expr() )
+                                }
+                            }
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+            },
+            _ => {}
+        }
+        let endPos = &self.lexer.get_position();
+        separatorsList.reverse();
+        nodesList.reverse();
+        Box::new( ASTNode::TestListComp(*startPos, *endPos, nodesList, separatorsList) )
     }
 
     fn parse_expression_trailer(&self) -> Box<ASTNode> {

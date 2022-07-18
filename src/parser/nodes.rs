@@ -47,7 +47,7 @@ pub enum ASTNode {
     AtomList(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     AtomDictionary(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     AtomSet(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
-    TestListComp(u32, u32, Box<ASTNode>, Box<Token>),
+    TestListComp(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
     CallTrailer(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     IndexTrailer(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     DotNameTrailer(u32, u32, Box<Token>, Box<Token>),
