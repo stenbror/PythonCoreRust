@@ -954,7 +954,31 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_arg_list(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodesList.push( self.parse_expression_argument() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separatorsList.push( self.lexer.get_symbol() );
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PyRightParen( .. ) => {
+                            false
+                        }
+                        _ => {
+                            nodesList.push( self.parse_expression_argument() );
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::ArgList(*startPos, *endPos, nodesList, separatorsList) )
     }
 
     fn parse_expression_argument(&self) -> Box<ASTNode> {

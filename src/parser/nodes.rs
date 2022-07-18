@@ -61,7 +61,7 @@ pub enum ASTNode {
     MulSet(u32, u32, Box<Token>, Box<ASTNode>),
     PowerDictionary(u32, u32, Box<Token>, Box<ASTNode>),
     ClassDef(u32, u32, Box<Token>, Box<Token>, Option< (Box<Token>, Option<Box<ASTNode>>, Box<Token>) >, Box<Token>, Box<ASTNode>),
-    ArgList(u32, u32, Box<ASTNode>, Box<Token>),
+    ArgList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
     Argument(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     SyncCompForComprehension(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<ASTNode>>),
     CompForComprehension(u32, u32,  Box<Token>, Box<ASTNode>),
