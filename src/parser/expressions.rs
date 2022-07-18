@@ -916,11 +916,37 @@ impl Expressions for PythonCoreParser {
                 }
             } {};
         let endPos = &self.lexer.get_position();
-        Box::new(ASTNode::Empty)
+        Box::new( ASTNode::ExprList(*startPos, *endPos, nodesList, separatorsList) )
     }
 
     fn parse_expression_test_list(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodesList.push( self.parse_expression_test() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separatorsList.push( self.lexer.get_symbol() );
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token:: Newline( .. ) |
+                        Token::PySemiColon( .. ) |
+                        Token::EOF( .. ) => {
+                            false
+                        }
+                        _ => {
+                            nodesList.push( self.parse_expression_test() );
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::TestList(*startPos, *endPos, nodesList, separatorsList) )
     }
 
     fn parse_expression_dictor_set_maker(&self) -> Box<ASTNode> {
