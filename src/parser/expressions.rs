@@ -1019,7 +1019,18 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_comp_iter(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        match &*self.lexer.get_symbol() {
+            Token::PyAsync( .. ) |
+            Token::PyFor( .. ) => {
+                self.parse_expression_comp_for()
+            },
+            Token::PyIf( .. ) => {
+                self.parse_expression_comp_if()
+            }
+            _ => {
+                panic!("Syntax Error at {} - Expected 'async', 'for' or 'if' in comprehension!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_expression_sync_comp_for(&self) -> Box<ASTNode> {
