@@ -977,7 +977,130 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_dictor_set_maker(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut isDictionary = true;
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( .. ) => {
+                isDictionary = false;
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_expr();
+                let endPos = &self.lexer.get_position();
+                nodesList.push( Box::new( ASTNode::MulSet(*startPos, *endPos, symbol, rightNode) ) )
+            },
+            Token::PyPower( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_expr();
+                let endPos = &self.lexer.get_position();
+                nodesList.push( Box::new( ASTNode::PowerDictionary(*startPos, *endPos, symbol, rightNode) ) )
+            },
+            _ => {
+                let leftNode = self.parse_expression_test();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let rightNode = self.parse_expression_test();
+                        let endPos = &self.lexer.get_position();
+                        let node = Box::new( ASTNode::DictionaryEntry(*startPos, *endPos, leftNode, symbol, rightNode) );
+                        nodesList.push( node );
+                    },
+                    _ => {
+                        isDictionary = false;
+                        nodesList.push( leftNode )
+                    }
+                }
+            }
+        }
+
+        match isDictionary {
+            true => {
+                while 
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( .. ) => {
+                            separatorsList.push( self.lexer.get_symbol() );
+                            &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyPower( .. ) => {
+                                    let symbol = self.lexer.get_symbol();
+                                    &self.lexer.advance();
+                                    let rightNode = self.parse_expression_expr();
+                                    let endPos = &self.lexer.get_position();
+                                    nodesList.push( Box::new( ASTNode::PowerDictionary(*startPos, *endPos, symbol, rightNode) ) );
+                                    true
+                                },
+                                Token::PyRightCurly( .. ) => {
+                                    false
+                                }
+                                _ => {
+                                    let leftNode = self.parse_expression_test();
+                                    match &*self.lexer.get_symbol() {
+                                        Token::PyColon( .. ) => {
+                                            let symbol = self.lexer.get_symbol();
+                                            &self.lexer.advance();
+                                            let rightNode = self.parse_expression_test();
+                                            let endPos = &self.lexer.get_position();
+                                            let node = Box::new( ASTNode::DictionaryEntry(*startPos, *endPos, leftNode, symbol, rightNode) );
+                                            nodesList.push( node );
+                                        },
+                                        _ => {
+                                            panic!("Syntax Error at {} - Expected ':' in dictionary entry!", &self.lexer.get_position())
+                                        }
+                                    }
+                                    true
+                                }
+                            }
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+            },
+            _ => {
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( .. ) => {
+                            separatorsList.push( self.lexer.get_symbol() );
+                            &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyRightCurly( .. ) => {
+                                    false
+                                },
+                                Token::PyMul( .. ) => {
+                                    let symbol = self.lexer.get_symbol();
+                                    &self.lexer.advance();
+                                    let rightNode = self.parse_expression_expr();
+                                    let endPos = &self.lexer.get_position();
+                                    nodesList.push( Box::new( ASTNode::MulSet(*startPos, *endPos, symbol, rightNode) ) );
+                                    true
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_test() );
+                                    true
+                                }
+                            }
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+            }
+        }
+
+        separatorsList.reverse();
+        nodesList.reverse();
+        let endPos = &self.lexer.get_position();
+        match isDictionary {
+            true => {
+                Box::new( ASTNode::DictionaryContainer(*startPos, *endPos, nodesList, separatorsList) )
+            },
+            _ => {
+                Box::new( ASTNode::SetContainer(*startPos, *endPos, nodesList, separatorsList) )
+            }
+        }
     }
 
     fn parse_expression_arg_list(&self) -> Box<ASTNode> {
