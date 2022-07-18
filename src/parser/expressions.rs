@@ -40,6 +40,7 @@ trait Expressions {
     fn parse_expression_comp_for(&self) -> Box<ASTNode>;
     fn parse_expression_comp_if(&self) -> Box<ASTNode>;
     fn parse_expression_yield_expr(&self) -> Box<ASTNode>;
+    fn parse_expression_testlist_star_expr(&self) -> Box<ASTNode>;
 }
 
 impl Expressions for PythonCoreParser {
@@ -1114,6 +1115,91 @@ impl Expressions for PythonCoreParser {
     }
     
     fn parse_expression_yield_expr(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyYield( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyFrom( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let rightNode = self.parse_expression_test();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::YieldFromExpr(*startPos, *endPos, symbol1, symbol2, rightNode) )
+                    },
+                    _ => {
+                        let rightNode = self.parse_expression_testlist_star_expr();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::YieldExpr(*startPos, *endPos, symbol1, rightNode) )
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'yield' in yield expression!", &self.lexer.get_position())
+            }
+        }
+    }
+
+    fn parse_expression_testlist_star_expr(&self) -> Box<ASTNode> {
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( .. ) => {
+                nodesList.push( self.parse_expression_star_expr() )
+            },
+            _ => {
+                nodesList.push( self.parse_expression_test() )
+            }
+        }
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separatorsList.push( self.lexer.get_symbol() );
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PyPlusAssign( .. ) |
+                        Token::PyMinusAssign( .. ) |
+                        Token::PyMulAssign( .. ) |
+                        Token::PyPowerAssign( .. ) |
+                        Token::PyModuloAssign( .. ) |
+                        Token::PyMatriceAssign( .. ) |
+                        Token::PyFloorDivAssign( .. ) |
+                        Token::PyDivAssign( .. ) |
+                        Token::PyShiftLeftAssign( .. ) |
+                        Token::PyShiftRightAssign( .. ) |
+                        Token::PyBitAndAssign( .. ) |
+                        Token::PyBitOrAssign( .. ) |
+                        Token::PyBitXorAssign( .. ) |
+                        Token::PyAssign( .. ) |
+                        Token::PySemiColon( .. ) |
+                        Token::Newline( .. ) |
+                        Token::EOF( .. ) |
+                        Token::PyColon( .. ) => {
+                            false
+                        },
+                        Token::PyComa( .. ) => {
+                            panic!("Syntax Error at {} - Unexpected ',' after allowed ',' in expression list!", &self.lexer.get_position())
+                        },
+                        _ => {
+                            match &*self.lexer.get_symbol() {
+                                Token::PyMul( .. ) => {
+                                    nodesList.push( self.parse_expression_star_expr() )
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_test() )
+                                }
+                            }
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::TestListStarExpr(*startPos, *endPos, nodesList, separatorsList) )
     }
 }
