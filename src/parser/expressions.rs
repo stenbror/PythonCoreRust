@@ -1071,7 +1071,19 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_comp_for(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyAsync( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_sync_comp_for();
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::CompForComprehension(*startPos, *endPos, symbol, rightNode) )
+            },
+            _ => {
+                self.parse_expression_sync_comp_for()
+            }
+        }
     }
 
     fn parse_expression_comp_if(&self) -> Box<ASTNode> {
