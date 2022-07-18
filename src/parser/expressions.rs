@@ -1034,7 +1034,40 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_sync_comp_for(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyFor( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let leftNode = self.parse_expression_expr_list();
+                match &*self.lexer.get_symbol() {
+                    Token::PyIn( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let rightNode = self.parse_expression_or_test();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyAsync( .. ) |
+                            Token::PyFor( .. ) |
+                            Token::PyIf( .. ) => {
+                                let nextNode = Some( self.parse_expression_comp_iter() );
+                                let endPos = &self.lexer.get_position();
+                                Box::new( ASTNode::SyncCompForComprehension(*startPos, *endPos, symbol1, leftNode, symbol2, rightNode, nextNode) )
+                            },
+                            _ => {
+                                let endPos = &self.lexer.get_position();
+                                Box::new( ASTNode::SyncCompForComprehension(*startPos, *endPos, symbol1, leftNode, symbol2, rightNode, None) )
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'in' in for comprehension!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'for' in for comprehension!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_expression_comp_for(&self) -> Box<ASTNode> {
