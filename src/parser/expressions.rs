@@ -1087,7 +1087,30 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_comp_if(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyIf( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let rightNode = self.parse_expression_test_nocond();
+                match &*self.lexer.get_symbol() {
+                    Token::PyAsync( .. ) |
+                    Token::PyFor( .. ) |
+                    Token::PyIf( .. ) => {
+                        let nextNode = Some( self.parse_expression_comp_iter() );
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::CompIfComprehension(*startPos, *endPos, symbol, rightNode, nextNode) )
+                    },
+                    _ => {
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::CompIfComprehension(*startPos, *endPos, symbol, rightNode, None) )
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'if' in if comprehension!", &self.lexer.get_position())
+            }
+        }
     }
     
     fn parse_expression_yield_expr(&self) -> Box<ASTNode> {
