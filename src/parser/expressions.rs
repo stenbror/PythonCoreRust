@@ -9,8 +9,7 @@ trait Expressions {
     fn parse_expression_named_expr(&self) -> Box<ASTNode>;
     fn parse_expression_test(&self) -> Box<ASTNode>;
     fn parse_expression_test_nocond(&self) -> Box<ASTNode>;
-    fn parse_expression_lambda_def(&self) -> Box<ASTNode>;
-    fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode>;
+    fn parse_expression_lambda_def(&self, cond: bool) -> Box<ASTNode>;
     fn parse_expression_or_test(&self) -> Box<ASTNode>;
     fn parse_expression_and_test(&self) -> Box<ASTNode>;
     fn parse_expression_not_test(&self) -> Box<ASTNode>;
@@ -66,7 +65,7 @@ impl Expressions for PythonCoreParser {
         let startPos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyLambda( .. ) => { 
-                self.parse_expression_lambda_def()
+                self.parse_expression_lambda_def(true)
             },
             _ => {
                 let leftNode = self.parse_expression_test();
@@ -99,7 +98,7 @@ impl Expressions for PythonCoreParser {
     fn parse_expression_test_nocond(&self) -> Box<ASTNode> {
         match &*self.lexer.get_symbol() {
             Token::PyLambda( .. ) => {
-                self.parse_expression_lambda_def_nocond()
+                self.parse_expression_lambda_def(false)
             }
             _ => {
                 self.parse_expression_or_test()
@@ -107,12 +106,36 @@ impl Expressions for PythonCoreParser {
         }
     }
 
-    fn parse_expression_lambda_def(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
-    }
-
-    fn parse_expression_lambda_def_nocond(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+    fn parse_expression_lambda_def(&self, cond: bool) -> Box<ASTNode> {
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyLambda( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let mut leftNode : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {},
+                    _ => {
+                        leftNode = Some( self.parse_expression_var_args_list() )
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let rightNode = if cond { self.parse_expression_test() } else { self.parse_expression_test_nocond() };
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::Lambda(*startPos, *endPos, symbol1, leftNode, symbol2, rightNode) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ':' keyword in lambda expression!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'lambda' keyword in lambda expression!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_expression_or_test(&self) -> Box<ASTNode> {
