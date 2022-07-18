@@ -17,7 +17,7 @@ impl PythonCoreTokenizer {
         PythonCoreTokenizer { }
     }
 
-    pub fn advance(&self) {
+    pub fn advance(&self) -> () {
 
     }
 

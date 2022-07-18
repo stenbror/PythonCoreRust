@@ -6,16 +6,15 @@ use crate::parser::parser::{ PythonCoreParser };
 
 trait Statements {
     fn parse_statements_stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_simple_Stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_small_Stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_simple_stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_small_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_expr_stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_ann_Assign(&self) -> Box<ASTNode>;
-    fn parse_statements_testlist_star_expr(&self) -> Box<ASTNode>;
-    fn parse_statements_del_Stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_pass_Stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_ann_assign(&self) -> Box<ASTNode>;
+    fn parse_statements_del_stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_pass_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_flow_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_break_stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_continue_Stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_continue_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_return_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_yield_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_raise_stmt(&self) -> Box<ASTNode>;
@@ -36,7 +35,7 @@ trait Statements {
     fn parse_statements_elif_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_else_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_while_stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_for_Stmt(&self) -> Box<ASTNode>;
+    fn parse_statements_for_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_try_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_finally_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_with_stmt(&self) -> Box<ASTNode>;
@@ -51,11 +50,11 @@ impl Statements for PythonCoreParser {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_simple_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_simple_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_small_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_small_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
@@ -63,19 +62,15 @@ impl Statements for PythonCoreParser {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_ann_Assign(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
-    }
-
-    fn parse_statements_testlist_star_expr(&self) -> Box<ASTNode> {
+    fn parse_statements_ann_assign(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
     
-    fn parse_statements_del_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_del_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_pass_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_pass_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
@@ -87,7 +82,7 @@ impl Statements for PythonCoreParser {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_continue_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_continue_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
@@ -171,7 +166,7 @@ impl Statements for PythonCoreParser {
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_statements_for_Stmt(&self) -> Box<ASTNode> {
+    fn parse_statements_for_stmt(&self) -> Box<ASTNode> {
         Box::new( ASTNode::Empty )
     }
 
