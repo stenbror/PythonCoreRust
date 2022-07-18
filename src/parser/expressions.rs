@@ -982,7 +982,40 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_argument(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( .. ) |
+            Token::PyPower( .. ) => {
+                let symbol = Some( self.lexer.get_symbol() );
+                &self.lexer.advance();
+                let rightNode = Some( self.parse_expression_test() );
+                let endPos = &self.lexer.get_position();
+                Box::new( ASTNode::Argument(*startPos, *endPos, None, symbol, rightNode) )
+            },
+            _ => {
+                let leftNode = Some( self.parse_expression_test() );
+                match &*self.lexer.get_symbol() {
+                    Token::PyFor( .. ) |
+                    Token::PyAsync( .. ) => {
+                        let rightNode = Some( self.parse_expression_comp_for() );
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::Argument(*startPos, *endPos, leftNode, None, rightNode) )
+                    },
+                    Token::PyColonAssign( .. ) |
+                    Token::PyAssign( .. ) => {
+                        let symbol = Some( self.lexer.get_symbol() );
+                        &self.lexer.advance();
+                        let rightNode = Some( self.parse_expression_test() );
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::Argument(*startPos, *endPos, leftNode, symbol, rightNode) )
+                    },
+                    _ => {
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::Argument(*startPos, *endPos, leftNode, None, None) )
+                    }
+                }
+            }
+        }
     }
 
     fn parse_expression_comp_iter(&self) -> Box<ASTNode> {
