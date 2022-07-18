@@ -746,7 +746,65 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_trailer(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyDot( _ , _ , _ ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::AtomName( _ , _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::DotNameTrailer(*startPos, *endPos, symbol1, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expecting a valid name after '.' in trailer expression!", &self.lexer.get_position())
+                    }
+                }
+            },
+            Token::PyLeftParen( _ , _ , _ ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let mut right : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( _ , _ , _ ) => {}
+                    _ => {
+                        right = Some(self.parse_expression_subscript_list())
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::CallTrailer(*startPos, *endPos, symbol1, right, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expecting a ')' in trailer expression!", &self.lexer.get_position())
+                    }
+                }
+            },
+            Token::PyLeftBracket( _ , _ , _ ) => {
+                let symbol1 = self.lexer.get_symbol();
+                &self.lexer.advance();
+                let right = self.parse_expression_subscript_list();
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( _ , _ , _ ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        &self.lexer.advance();
+                        let endPos = &self.lexer.get_position();
+                        Box::new( ASTNode::IndexTrailer(*startPos, *endPos, symbol1, right, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expecting a ']' in trailer expression!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expecting a valid trailer expression!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_expression_subscript_list(&self) -> Box<ASTNode> {
