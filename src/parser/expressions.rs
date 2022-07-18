@@ -875,6 +875,47 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_expr_list(&self) -> Box<ASTNode> {
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match &*self.lexer.get_symbol() {
+            Token::PyMul( .. ) => {
+                nodesList.push( self.parse_expression_star_expr() )
+            },
+            _ => {
+                nodesList.push( self.parse_expression_named_expr() )
+            }
+        }
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separatorsList.push( self.lexer.get_symbol() );
+                    &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PyIn( .. ) => {
+                            false
+                        },
+                        Token::PyComa( .. ) => {
+                            panic!("Syntax Error at {} - Unexpected ',' after allowed ',' in expression list!", &self.lexer.get_position())
+                        },
+                        _ => {
+                            match &*self.lexer.get_symbol() {
+                                Token::PyMul( .. ) => {
+                                    nodesList.push( self.parse_expression_star_expr() )
+                                },
+                                _ => {
+                                    nodesList.push( self.parse_expression_named_expr() )
+                                }
+                            }
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        let endPos = &self.lexer.get_position();
         Box::new(ASTNode::Empty)
     }
 
