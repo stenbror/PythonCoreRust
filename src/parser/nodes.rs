@@ -51,7 +51,7 @@ pub enum ASTNode {
     CallTrailer(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
     IndexTrailer(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>),
     DotNameTrailer(u32, u32, Box<Token>, Box<Token>),
-    SubscriptList(u32, u32, Box<ASTNode>, Box<Token>),
+    SubscriptList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
     Subscript(u32, u32, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>),
     ExprList(u32, u32, Box<ASTNode>, Box<Token>),
     TestList(u32, u32, Box<ASTNode>, Box<Token>),

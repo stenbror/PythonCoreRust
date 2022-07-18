@@ -808,7 +808,26 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_subscript_list(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let startPos = &self.lexer.get_position();
+        let mut nodesList : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separatorsList : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodesList.push( self.parse_expression_subscript() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( _ , _ , _ ) => {
+                    separatorsList.push( self.lexer.get_symbol() );
+                    &self.lexer.advance();
+                    nodesList.push( self.parse_expression_subscript() );
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        nodesList.reverse();
+        separatorsList.reverse();
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::SubscriptList(*startPos, *endPos, nodesList, separatorsList) )
     }
 
     fn parse_expression_subscript(&self) -> Box<ASTNode> {
