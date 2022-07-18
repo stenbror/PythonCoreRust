@@ -831,7 +831,47 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expression_subscript(&self) -> Box<ASTNode> {
-        Box::new(ASTNode::Empty)
+        let mut firstNode : Option<Box<ASTNode>> = None;
+        let mut secondNode : Option<Box<ASTNode>> = None;
+        let mut thirdNode : Option<Box<ASTNode>> = None;
+        let mut symbol1 : Option<Box<Token>> = None;
+        let mut symbol2 : Option<Box<Token>> = None;
+        let startPos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyColon( .. ) => {},
+            _ => {
+                firstNode = Some( self.parse_expression_test() )
+            }
+        }
+        match &*self.lexer.get_symbol() {
+            Token::PyColon( .. ) => {
+                symbol1 = Some( self.lexer.get_symbol() );
+                &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightBracket( .. ) |
+                    Token::PyColon( .. ) => {},
+                    _ => {
+                        secondNode = Some( self.parse_expression_test() )
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyComa( .. ) => {
+                        symbol2 = Some( self.lexer.get_symbol() );
+                        &self.lexer.advance();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyRightBracket( .. ) => {},
+                            _ => {
+                                thirdNode = Some( self.parse_expression_test() )
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+        let endPos = &self.lexer.get_position();
+        Box::new( ASTNode::Subscript(*startPos, *endPos, firstNode, symbol1, secondNode, symbol2, thirdNode) )
     }
 
     fn parse_expression_expr_list(&self) -> Box<ASTNode> {
