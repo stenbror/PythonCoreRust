@@ -15,4 +15,4 @@ Minimalize with:\
   
 Project just started. be patient before it can be used for anything usefull.
 
-For now expressions rules and statements rules is beeing implemented for Python 3.10 grammar.
+For now expression rules and statement rules is beeing implemented for Python 3.10 grammar.
