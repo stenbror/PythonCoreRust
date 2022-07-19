@@ -12,7 +12,7 @@ pub trait Statements {
     fn parse_statements_simple_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_small_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_expr_stmt(&self) -> Box<ASTNode>;
-    fn parse_statements_ann_assign(&self) -> Box<ASTNode>;
+    fn parse_statements_ann_assign(&self, start_pos: &u32, left_node: Box<ASTNode>) -> Box<ASTNode>;
     fn parse_statements_del_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_pass_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_flow_stmt(&self) -> Box<ASTNode>;
@@ -158,7 +158,7 @@ impl Statements for PythonCoreParser {
         let left_node = self.parse_expression_testlist_star_expr();
         match &*self.lexer.get_symbol() {
             Token::PyColon( .. ) => {
-                Box::new( ASTNode::Empty )
+                self.parse_statements_ann_assign(start_pos, left_node)
             },
             Token::PyAssign( .. ) => {
                 Box::new( ASTNode::Empty )
@@ -377,8 +377,40 @@ impl Statements for PythonCoreParser {
         }
     }
 
-    fn parse_statements_ann_assign(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+    fn parse_statements_ann_assign(&self, start_pos: &u32, left_node: Box<ASTNode>) -> Box<ASTNode> {
+        match &*self.lexer.get_symbol() {
+            Token::PyColon( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let right_node = self.parse_expression_test();
+                match &*self.lexer.get_symbol() {
+                    Token::PyAssign( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+
+                        match &*self.lexer.get_symbol() {
+                            Token::PyYield( .. ) => {
+                                let next_node = self.parse_expression_yield_expr();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::AnnAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node, Some( (symbol2, next_node) )) )
+                            },
+                            _ => {
+                                let next_node = self.parse_expression_testlist_star_expr();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::AnnAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node, Some( (symbol2, next_node) )) )
+                            }
+                        }
+                    },
+                    _ => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AnnAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node, None) )
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected ':' in annotated assignment statement!", &self.lexer.get_position())
+            }
+        }
     }
     
     fn parse_statements_del_stmt(&self) -> Box<ASTNode> {
