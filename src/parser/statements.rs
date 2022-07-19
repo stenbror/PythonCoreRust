@@ -827,7 +827,40 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_dotted_name(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match &*self.lexer.get_symbol() {
+            Token::AtomName( .. ) => {
+                nodes_list.push( self.lexer.get_symbol() );
+                let _ = &self.lexer.advance();  
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyDot( .. ) => {
+                            separators_list.push( self.lexer.get_symbol() );
+                            let _ = &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::AtomName( .. ) => {
+                                    nodes_list.push( self.lexer.get_symbol() );
+                                    let _ = &self.lexer.advance();  
+                                },
+                                _ => {
+                                    panic!("Syntax Error at {} - Expected Name literal after '.' in import statement!", &self.lexer.get_position())
+                                }
+                            }
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::DottedNameStmt(*start_pos, *end_pos, nodes_list, separators_list) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected Name literal in import statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_global_stmt(&self) -> Box<ASTNode> {

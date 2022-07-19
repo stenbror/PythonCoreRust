@@ -101,7 +101,7 @@ pub enum ASTNode {
     DottedAsNameStmt(u32, u32, Box<ASTNode>, Option<(Box<Token>, Box<Token>)>),
     ImportAsNamesStmt(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
     DottedAsNamesStmt(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
-    DottedNameStmt(u32, u32, Box<[Box<Token>]>, Box<[Box<Token>]>),
+    DottedNameStmt(u32, u32, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>),
     GlobalStmt(u32, u32, Box<Token>, Box<[Box<Token>]>, Box<[Box<Token>]>),
     NonLocalStmt(u32, u32, Box<Token>, Box<[Box<Token>]>, Box<[Box<Token>]>),
     AssertStmt(u32, u32, Box<Token>, Box<ASTNode>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
