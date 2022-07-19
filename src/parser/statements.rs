@@ -2,9 +2,11 @@
 use crate::parser::nodes::{ ASTNode };
 use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
+use crate::parser::patterns::{ Patterns };
+use crate::parser::expressions::{ Expressions };
 
 
-trait Statements {
+pub trait Statements {
     fn parse_statements_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_simple_stmt(&self) -> Box<ASTNode>;
     fn parse_statements_small_stmt(&self) -> Box<ASTNode>;
@@ -47,7 +49,32 @@ trait Statements {
 
 impl Statements for PythonCoreParser {
     fn parse_statements_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyIf( .. ) |
+            Token::PyFor( .. ) |
+            Token::PyWhile( .. ) |
+            Token::PyWith( .. ) |
+            Token::PyTry( .. ) |
+            Token::PyAsync( .. ) |
+            Token::PyMatrice( .. ) |
+            Token::PyDef( .. ) |
+            Token::PyClass( .. ) => { 
+                self.parse_statements_compound_stmt()
+            },
+            Token::AtomName( _ , _ , _ , txt ) => {
+                match &*txt.as_str() {
+                    "match" => {
+                        self.parse_patterns_match()
+                    },
+                    _ => {
+                        self.parse_statements_simple_stmt()
+                    }
+                }
+            },
+            _ => {
+                self.parse_statements_simple_stmt()
+            }
+        }
     }
 
     fn parse_statements_simple_stmt(&self) -> Box<ASTNode> {

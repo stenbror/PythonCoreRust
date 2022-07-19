@@ -5,7 +5,7 @@ use crate::parser::parser::{ PythonCoreParser };
 use std::vec;
 
 
-trait Expressions {
+pub trait Expressions {
     fn parse_expression_named_expr(&self) -> Box<ASTNode>;
     fn parse_expression_test(&self) -> Box<ASTNode>;
     fn parse_expression_test_nocond(&self) -> Box<ASTNode>;
