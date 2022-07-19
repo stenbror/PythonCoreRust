@@ -193,7 +193,26 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_flow_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyBreak( .. ) => {
+                self.parse_statements_break_stmt()
+            },
+            Token::PyContinue( .. ) => {
+                self.parse_statements_continue_stmt()
+            },
+            Token::PyReturn( .. ) => {
+                self.parse_statements_return_stmt()
+            },
+            Token::PyRaise( .. ) => {
+                self.parse_statements_raise_stmt()
+            },
+            Token::PyYield( .. ) => {
+                self.parse_statements_yield_stmt()
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'break', 'continue', 'return', 'raise' or 'yield' in flow statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_break_stmt(&self) -> Box<ASTNode> {
