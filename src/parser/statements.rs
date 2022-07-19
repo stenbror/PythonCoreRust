@@ -161,7 +161,41 @@ impl Statements for PythonCoreParser {
                 self.parse_statements_ann_assign(start_pos, left_node)
             },
             Token::PyAssign( .. ) => {
-                Box::new( ASTNode::Empty )
+                let mut nodes_list : Box<Vec<Box< ( Box<Token>, Box<ASTNode> ) >>> = Box::new(Vec::new());
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyAssign( .. ) => {
+                            let ass_symbol = self.lexer.get_symbol();
+                            let _ = &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::PyYield( .. ) => {
+                                    let right_node = self.parse_expression_yield_expr();
+                                    nodes_list.push( Box::new( ( ass_symbol, right_node ) ) )
+                                },
+                                _ => {
+                                    let right_node = self.parse_expression_testlist_star_expr();
+                                    nodes_list.push( Box::new( ( ass_symbol, right_node ) ) )
+                                }
+                            }
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+                nodes_list.reverse();
+                match &*self.lexer.get_symbol() {
+                    Token::TypeComment( .. ) => {
+                        let tc_symbol = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AssignmentStmt(*start_pos, *end_pos, left_node, nodes_list, tc_symbol) )
+                    },
+                    _ => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AssignmentStmt(*start_pos, *end_pos, left_node, nodes_list, None) )
+                    }
+                }
             },
             Token::PyPlusAssign( .. ) => {
                 let symbol = self.lexer.get_symbol();

@@ -90,6 +90,7 @@ pub enum Token {
     Newline(u32, u32, Option<Box<[Box<Trivia>]>>),
     Indent(Option<Box<[Box<Trivia>]>>),
     Dedent(Option<Box<[Box<Trivia>]>>),
+    TypeComment(u32, u32, Box<String>),
     EOF(u32, Option<Box<[Box<Trivia>]>>),
     Empty
 } 

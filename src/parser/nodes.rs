@@ -88,7 +88,7 @@ pub enum ASTNode {
     BitXorAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     BitAndAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     AnnAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<(Box<Token>, Box<ASTNode>)>),
-    AssignmentStmt(u32, u32, Box<ASTNode>, Box<(Box<[Box<Token>]>, Box<[Box<ASTNode>]>)>, Option<Box<Token>>),
+    AssignmentStmt(u32, u32, Box<ASTNode>, Box<Vec<Box<( Box<Token>, Box<ASTNode> )>>>, Option<Box<Token>>),
     DelStmt(u32, u32, Box<Token>, Box<ASTNode>),
     PassStmt(u32, u32, Box<Token>),
     BreakStmt(u32, u32, Box<Token>),
