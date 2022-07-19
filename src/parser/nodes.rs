@@ -104,7 +104,7 @@ pub enum ASTNode {
     DottedNameStmt(u32, u32, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>),
     GlobalStmt(u32, u32, Box<Token>, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>),
     NonLocalStmt(u32, u32, Box<Token>, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>),
-    AssertStmt(u32, u32, Box<Token>, Box<ASTNode>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
+    AssertStmt(u32, u32, Box<Token>, Box<ASTNode>, Option<(Box<Token>, Box<ASTNode>)>),
     AsyncStmt(u32, u32, Box<Token>, Box<ASTNode>),
     IfStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<[Box<ASTNode>]>>, Option<Box<ASTNode>>),
     ElifStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>),
