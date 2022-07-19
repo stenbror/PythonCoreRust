@@ -162,7 +162,19 @@ impl Statements for PythonCoreParser {
     }
     
     fn parse_statements_del_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyDel( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let right_node = self.parse_expression_expr_list();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::DelStmt(*start_pos, *end_pos, symbol, right_node) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'del' in del statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_pass_stmt(&self) -> Box<ASTNode> {
