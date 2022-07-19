@@ -988,7 +988,38 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_compound_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyIf( .. ) => {
+                self.parse_statements_if_stmt()
+            },
+            Token::PyWhile( .. ) => {
+                self.parse_statements_while_stmt()
+            },
+            Token::PyFor( .. ) => {
+                self.parse_statements_for_stmt()
+            },
+            Token::PyTry( .. ) => {
+                self.parse_statements_try_stmt()
+            },
+            Token::PyWith( .. ) => {
+                self.parse_statements_with_stmt()
+            },
+            Token::PyDef( .. ) => {
+                self.parse_blocks_func_def()
+            },
+            Token::PyClass( .. ) => {
+                self.parse_blocks_class_def()
+            },
+            Token::PyMatrice( .. ) => {
+                self.parse_blocks_decorated()
+            }
+            Token::PyAsync( .. ) => {
+                self.parse_statements_async_stmt()
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'if', 'while', 'for', 'try', 'with', 'def', 'class', 'async' or '@' statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_async_stmt(&self) -> Box<ASTNode> {
