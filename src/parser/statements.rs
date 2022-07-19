@@ -246,11 +246,33 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_return_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyReturn( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PySemiColon( .. ) |
+                    Token::Newline( .. ) |
+                    Token::EOF( .. ) => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ReturnStmt(*start_pos, *end_pos, symbol, None) )
+                    },
+                    _ => {
+                        let right_node = Some( self.parse_expression_testlist_star_expr() );
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ReturnStmt(*start_pos, *end_pos, symbol, right_node) )
+                    }
+                }    
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'return' in return statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_yield_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        self.parse_expression_yield_expr()
     }
 
     fn parse_statements_raise_stmt(&self) -> Box<ASTNode> {
