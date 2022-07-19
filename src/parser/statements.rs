@@ -276,7 +276,40 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_raise_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyRaise( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PySemiColon( .. ) |
+                    Token::Newline( .. ) |
+                    Token::EOF( .. ) => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::RaiseStmt(*start_pos, *end_pos, symbol, None) )
+                    },
+                    _ => {
+                        let left_node = self.parse_expression_test();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyFrom( .. ) => {
+                                let symbol2 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let right_node = self.parse_expression_test();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::RaiseStmt(*start_pos, *end_pos, symbol, Some( (left_node, Some( (symbol2, right_node) )) )) )
+                            },
+                            _ => {
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::RaiseStmt(*start_pos, *end_pos, symbol, Some( (left_node, None) )) )
+                            }
+                        }
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'raise' in raise statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_import_stmt(&self) -> Box<ASTNode> {
