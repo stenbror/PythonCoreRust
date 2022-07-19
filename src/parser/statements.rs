@@ -1023,7 +1023,36 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_async_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyAsync( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyDef( .. ) => {
+                        let right_node = self.parse_blocks_class_def();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AsyncStmt(*start_pos, *end_pos, symbol, right_node) )
+                    },
+                    Token::PyWith( .. ) => {
+                        let right_node = self.parse_statements_with_stmt();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AsyncStmt(*start_pos, *end_pos, symbol, right_node) )
+                    },
+                    Token::PyFor( .. ) => {
+                        let right_node = self.parse_statements_for_stmt();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AsyncStmt(*start_pos, *end_pos, symbol, right_node) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'def', 'with' or 'for' after 'async' statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'async' in async statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_if_stmt(&self) -> Box<ASTNode> {
