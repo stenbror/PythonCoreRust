@@ -803,7 +803,27 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_dotted_as_names(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_statements_dotted_as_name() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();    
+                    nodes_list.push( self.parse_statements_dotted_as_name() );
+                    true
+                        
+                },
+                _ => {
+                    false
+                }
+            } {};
+        nodes_list.reverse();
+        separators_list.reverse();
+        let end_pos = &self.lexer.get_position();
+        Box::new( ASTNode::DottedAsNamesStmt(*start_pos, *end_pos, nodes_list, separators_list) )
     }
 
     fn parse_statements_dotted_name(&self) -> Box<ASTNode> {
