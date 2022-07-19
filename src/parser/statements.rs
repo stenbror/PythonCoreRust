@@ -738,11 +738,68 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_dotted_as_name(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::AtomName( .. ) => {
+                let first_node = self.parse_statements_dotted_name();
+                match &*self.lexer.get_symbol() {
+                    Token::PyAs( .. ) => {
+                        let symbol = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        match &*self.lexer.get_symbol() {
+                            Token::AtomName( .. ) => {
+                                let last_node = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::DottedAsNameStmt(*start_pos, *end_pos, first_node, Some((symbol, last_node))) )
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected Name literal after 'as' in import statement!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::DottedAsNameStmt(*start_pos, *end_pos, first_node, None) )
+                    }
+                }
+            }
+            _ => {
+                panic!("Syntax Error at {} - Expected Name literal in import statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_import_as_names(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_statements_import_as_name() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PyComa( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::PySemiColon( .. ) |
+                        Token::Newline( .. ) |
+                        Token::EOF( .. ) => {
+                            false
+                        },
+                        _ => {
+                            nodes_list.push( self.parse_statements_import_as_name() );
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        nodes_list.reverse();
+        separators_list.reverse();
+        let end_pos = &self.lexer.get_position();
+        Box::new( ASTNode::ImportAsNamesStmt(*start_pos, *end_pos, nodes_list, separators_list) )
     }
 
     fn parse_statements_dotted_as_names(&self) -> Box<ASTNode> {
