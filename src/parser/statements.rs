@@ -178,7 +178,18 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_pass_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyPass( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::PassStmt(*start_pos, *end_pos, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'pass' in pass statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_flow_stmt(&self) -> Box<ASTNode> {
@@ -186,11 +197,33 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_break_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyBreak( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::BreakStmt(*start_pos, *end_pos, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'break' in break statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_continue_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyContinue( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::ContinueStmt(*start_pos, *end_pos, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'continue' in continue statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_return_stmt(&self) -> Box<ASTNode> {
