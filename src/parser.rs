@@ -7,3 +7,4 @@ pub mod tokenizer;
 pub mod parser;
 pub mod functions;
 pub mod patterns;
+pub mod blocks;

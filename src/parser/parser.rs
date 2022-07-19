@@ -4,6 +4,7 @@ use crate::parser::tokenizer::{ PythonCoreTokenizer };
 use crate::parser::expressions;
 use crate::parser::statements;
 use crate::parser::patterns;
+use crate::parser::blocks;
 
 pub struct PythonCoreParser {
     pub lexer: Box<PythonCoreTokenizer>
