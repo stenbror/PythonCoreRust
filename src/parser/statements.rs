@@ -599,7 +599,17 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyImport( .. ) => {
+                self.parse_statements_import_name()
+            },
+            Token::PyFrom( .. ) => {
+                self.parse_statements_import_from()
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'import' or 'from' in import statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_import_name(&self) -> Box<ASTNode> {
