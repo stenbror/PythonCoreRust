@@ -120,7 +120,37 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_small_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyDel( .. ) => {
+                self.parse_statements_del_stmt()
+            },
+            Token::PyPass( .. ) => {
+                self.parse_statements_pass_stmt()
+            },
+            Token::PyBreak( .. ) |
+            Token::PyContinue( .. ) |
+            Token::PyReturn( .. ) |
+            Token::PyRaise( .. ) |
+            Token::PyYield( .. ) => {
+                self.parse_statements_flow_stmt()
+            },
+            Token::PyImport( .. ) |
+            Token::PyFrom( .. ) => {
+                self.parse_statements_import_stmt()
+            },
+            Token::PyGlobal( .. ) => {
+                self.parse_statements_global_stmt()
+            },
+            Token::PyNonLocal( .. ) => {
+                self.parse_statements_nonlocal_stmt()
+            },
+            Token::PyAssert( .. ) => {
+                self.parse_statements_assert_stmt()
+            },
+            _ => {
+                self.parse_statements_expr_stmt()
+            }
+        }
     }
 
     fn parse_statements_expr_stmt(&self) -> Box<ASTNode> {

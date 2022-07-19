@@ -21,7 +21,7 @@ pub enum Token {
     PyFinally(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyFor(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyFrom(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PÅyGlobal(u32, u32, Option<Box<[Box<Trivia>]>>),
+    PyGlobal(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyIf(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyImport(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyIn(u32, u32, Option<Box<[Box<Trivia>]>>),
