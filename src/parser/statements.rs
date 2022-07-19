@@ -629,7 +629,78 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_from(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyFrom( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyDot( .. ) |
+                        Token::PyElipsis( .. ) => {
+                            nodes_list.push( self.lexer.get_symbol() );
+                            let _ = &self.lexer.advance();
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+                nodes_list.reverse();
+                let mut left_node : Option<Box<ASTNode>> = None;
+                match ( nodes_list.len(), &*self.lexer.get_symbol() ) {
+                    ( 0, Token::PyImport( .. ) ) => {
+                        panic!("Syntax Error at {} - Expected dot(s) or 'from part' in import statement!", &self.lexer.get_position())
+                    },
+                    ( _ , Token::PyImport( .. ) ) => {}
+                    _ => {
+                        left_node = Some( self.parse_statements_dotted_name() );
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyImport( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyMul( .. ) => {
+                                let symbol3 = Some( self.lexer.get_symbol() );
+                                let _ = &self.lexer.advance();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::ImportFromStmt(*start_pos, *end_pos, symbol1, nodes_list, left_node, symbol2, symbol3, None, None) )
+                            },
+                            Token::PyLeftParen( .. ) => {
+                                let symbol3 = Some( self.lexer.get_symbol() );
+                                let _ = &self.lexer.advance();
+                                let right_node = Some( self.parse_statements_import_as_names() );
+                                match &*self.lexer.get_symbol() {
+                                    Token::PyRightParen( .. ) => {
+                                        let symbol4 = Some( self.lexer.get_symbol() );
+                                        let _ = &self.lexer.advance();
+                                        let end_pos = &self.lexer.get_position();
+                                        Box::new( ASTNode::ImportFromStmt(*start_pos, *end_pos, symbol1, nodes_list, left_node, symbol2, symbol3, right_node, symbol4) )
+                                },
+                                    _ => {
+                                        panic!("Syntax Error at {} - Expected ')' in import statement!", &self.lexer.get_position())
+                                    }
+                                }
+                            },
+                            _ => {
+                                let right_node = Some( self.parse_statements_import_as_names() );
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::ImportFromStmt(*start_pos, *end_pos, symbol1, nodes_list, left_node, symbol2, None, right_node, None) )
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'import' in import statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'from' in import statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_import_as_name(&self) -> Box<ASTNode> {

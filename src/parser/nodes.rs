@@ -96,7 +96,7 @@ pub enum ASTNode {
     ReturnStmt(u32, u32, Box<Token>, Option<Box<ASTNode>>),
     RaiseStmt(u32, u32, Box<Token>, Option<(Box<ASTNode>, Option<(Box<Token>, Box<ASTNode>)>)>),
     ImportNameStmt(u32, u32, Box<Token>, Box<ASTNode>),
-    ImportFromStmt(u32, u32, Box<Token>, Option<Box<[Box<Token>]>>, Box<ASTNode>, Box<Token>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>),
+    ImportFromStmt(u32, u32, Box<Token>, Box<Vec<Box<Token>>>, Option<Box<ASTNode>>, Box<Token>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>),
     ImportAsName(u32, u32, Box<Token>, Option<(Box<Token>, Box<Token>)>),
     DottedAsNameStmt(u32, u32, Box<ASTNode>, Option<Box<(Box<Token>, Box<Token>)>>),
     ImportAsNamesStmt(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>),
