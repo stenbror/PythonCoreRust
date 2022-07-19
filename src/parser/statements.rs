@@ -871,11 +871,29 @@ impl Statements for PythonCoreParser {
                 let _ = &self.lexer.advance();
                 let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
                 let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                match &*self.lexer.get_symbol() {
+                    Token::AtomName( .. ) => {
+                        nodes_list.push( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance(); 
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected Name literal in global statement!", &self.lexer.get_position())
+                    }
+                }
                 while
                     match &*self.lexer.get_symbol() {
                         Token::PyComa( .. ) => {
                             separators_list.push( self.lexer.get_symbol() );
                             let _ = &self.lexer.advance(); 
+                            match &*self.lexer.get_symbol() {
+                                Token::AtomName( .. ) => {
+                                    nodes_list.push( self.lexer.get_symbol() );
+                                    let _ = &self.lexer.advance(); 
+                                },
+                                _ => {
+                                    panic!("Syntax Error at {} - Expected Name literal in global statement!", &self.lexer.get_position())
+                                }
+                            }
                             true
                         },
                         _ => {
@@ -901,11 +919,29 @@ impl Statements for PythonCoreParser {
                 let _ = &self.lexer.advance();
                 let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
                 let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                match &*self.lexer.get_symbol() {
+                    Token::AtomName( .. ) => {
+                        nodes_list.push( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance(); 
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected Name literal in nonlocal statement!", &self.lexer.get_position())
+                    }
+                }
                 while
                     match &*self.lexer.get_symbol() {
                         Token::PyComa( .. ) => {
                             separators_list.push( self.lexer.get_symbol() );
-                            let _ = &self.lexer.advance(); 
+                            let _ = &self.lexer.advance();
+                            match &*self.lexer.get_symbol() {
+                                Token::AtomName( .. ) => {
+                                    nodes_list.push( self.lexer.get_symbol() );
+                                    let _ = &self.lexer.advance(); 
+                                },
+                                _ => {
+                                    panic!("Syntax Error at {} - Expected Name literal in nonlocal statement!", &self.lexer.get_position())
+                                }
+                            }
                             true
                         },
                         _ => {
