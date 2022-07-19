@@ -154,7 +154,227 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_expr_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let left_node = self.parse_expression_testlist_star_expr();
+        match &*self.lexer.get_symbol() {
+            Token::PyColon( .. ) => {
+                Box::new( ASTNode::Empty )
+            },
+            Token::PyAssign( .. ) => {
+                Box::new( ASTNode::Empty )
+            },
+            Token::PyPlusAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::PlusAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::PlusAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyMinusAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MinusAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MinusAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyMulAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MulAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MulAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyPowerAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::PowerAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::PowerAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyDivAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::DivAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::DivAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyFloorDivAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::FloorDivAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::FloorDivAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyModuloAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ModuloAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ModuloAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyMatriceAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MatriceAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::MatriceAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyBitAndAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitAndAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitAndAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyBitOrAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitOrAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitOrAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyBitXorAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitXorAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::BitXorAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyShiftLeftAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ShiftLeftAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ShiftLeftAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            Token::PyShiftRightAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyYield( .. ) => {
+                        let right_node = self.parse_expression_yield_expr();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ShiftRightAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    },
+                    _ => {
+                        let right_node = self.parse_expression_test_list();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ShiftRightAssignStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+                    }
+                }
+            },
+            _ => {
+                left_node
+            }
+        }
     }
 
     fn parse_statements_ann_assign(&self) -> Box<ASTNode> {
