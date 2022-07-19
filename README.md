@@ -13,4 +13,6 @@ Minimalize with:\
   strip python_core_rust\
   ls -la
   
-Project just started. be patient before it can be used for asnything usefull.
+Project just started. be patient before it can be used for anything usefull.
+
+For now expressions rules and statements rules is beeing implemented for Python 3.10 grammar.
