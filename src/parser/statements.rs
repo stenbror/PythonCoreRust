@@ -894,7 +894,33 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_nonlocal_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyNonLocal( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                while
+                    match &*self.lexer.get_symbol() {
+                        Token::PyComa( .. ) => {
+                            separators_list.push( self.lexer.get_symbol() );
+                            let _ = &self.lexer.advance(); 
+                            true
+                        },
+                        _ => {
+                            false
+                        }
+                    } {};
+                nodes_list.reverse();
+                separators_list.reverse();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::NonLocalStmt(*start_pos, *end_pos, symbol, nodes_list, separators_list) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'global' in global statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_assert_stmt(&self) -> Box<ASTNode> {
