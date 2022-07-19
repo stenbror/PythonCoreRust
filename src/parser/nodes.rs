@@ -73,7 +73,7 @@ pub enum ASTNode {
     FuncType(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>, Box<Token>, Box<ASTNode>),
     TypeList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
     TestListStarExpr(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),
-    SimpleStmtList(u32, u32, Box<[Box<ASTNode>]>, Box<[Box<Token>]>, Box<Token> ),
+    SimpleStmtList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Box<Token> ),
     PlusAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     MinusAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     MulAssignStmt(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),

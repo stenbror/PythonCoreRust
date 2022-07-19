@@ -4,6 +4,7 @@ use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
 use crate::parser::patterns::{ Patterns };
 use crate::parser::expressions::{ Expressions };
+use std::vec;
 
 
 pub trait Statements {
@@ -78,7 +79,44 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_simple_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_statements_small_stmt() );
+        while
+            match &*self.lexer.get_symbol() {
+                Token::PySemiColon( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();
+                    match &*self.lexer.get_symbol() {
+                        Token::Newline( .. ) |
+                        Token::EOF( .. ) => {
+                            false
+                        },
+                        _ => {
+                            nodes_list.push( self.parse_statements_small_stmt() );
+                            true
+                        }
+                    }
+                },
+                _ => {
+                    false
+                }
+            } {};
+        let mut end_marker : Box<Token> = Box::new( Token::Empty );
+        match &*self.lexer.get_symbol() {
+            Token::Newline( .. ) => {
+                end_marker = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected NEWLINE after statements!", &self.lexer.get_position())
+            }
+        }
+        let end_pos = &self.lexer.get_position();
+        nodes_list.reverse();
+        separators_list.reverse();
+        Box::new( ASTNode::SimpleStmtList(*start_pos, *end_pos, nodes_list, separators_list, end_marker) )
     }
 
     fn parse_statements_small_stmt(&self) -> Box<ASTNode> {
