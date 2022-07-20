@@ -1254,7 +1254,21 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_with_item(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let left_node = self.parse_expression_test();
+        match &*self.lexer.get_symbol() {
+            Token::PyAs( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let right_node = self.parse_expression_expr();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::WithItem(*start_pos, *end_pos, left_node, Some( ( symbol1, right_node ) )) )
+            },
+            _ => {
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::WithItem(*start_pos, *end_pos, left_node, None) )
+            }
+        }
     }
 
     fn parse_statements_except_clause(&self) -> Box<ASTNode> {
