@@ -1056,7 +1056,50 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_if_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyIf( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let left_node = self.parse_expression_test();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let right_node = self.parse_statements_suite();
+                        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                        while  
+                            match &*self.lexer.get_symbol() {
+                                Token::PyElif( .. ) => {
+                                    nodes_list.push( self.parse_statements_elif_stmt() );
+                                    true
+                                },
+                                _ => {
+                                    false
+                                }
+                            } {};
+                        nodes_list.reverse();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyElse( .. ) => {
+                                let next_node = Some( self.parse_statements_else_stmt() );
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::IfStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, nodes_list, next_node) )
+                            },
+                            _ => {
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::IfStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, nodes_list, None) )
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ':' in if statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'if' in if statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_elif_stmt(&self) -> Box<ASTNode> {

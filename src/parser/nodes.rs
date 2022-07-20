@@ -106,7 +106,7 @@ pub enum ASTNode {
     NonLocalStmt(u32, u32, Box<Token>, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>),
     AssertStmt(u32, u32, Box<Token>, Box<ASTNode>, Option<(Box<Token>, Box<ASTNode>)>),
     AsyncStmt(u32, u32, Box<Token>, Box<ASTNode>),
-    IfStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<[Box<ASTNode>]>>, Option<Box<ASTNode>>),
+    IfStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Box<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
     ElifStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     Else(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
     WhileStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<ASTNode>>),
