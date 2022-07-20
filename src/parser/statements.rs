@@ -1129,7 +1129,28 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_else_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyElse( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let right_node = self.parse_statements_suite();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ElseStmt(*start_pos, *end_pos, symbol1, symbol2, right_node) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ':' in else statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'else' in else statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_while_stmt(&self) -> Box<ASTNode> {

@@ -108,7 +108,7 @@ pub enum ASTNode {
     AsyncStmt(u32, u32, Box<Token>, Box<ASTNode>),
     IfStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Box<Vec<Box<ASTNode>>>, Option<Box<ASTNode>>),
     ElifStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>),
-    Else(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
+    ElseStmt(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
     WhileStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Option<Box<ASTNode>>),
     ForStmt(u32, u32, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>, Box<Token>, Option<Box<Token>>, Box<ASTNode>, Option<Box<ASTNode>>),
     TryStmt(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>, Box<[Box<ASTNode>]>, Option<Box<ASTNode>>, Option<Box<ASTNode>>),
