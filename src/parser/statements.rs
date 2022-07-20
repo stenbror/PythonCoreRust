@@ -1189,7 +1189,56 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_for_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyFor( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let left_node = self.parse_expression_expr_list();
+                match &*self.lexer.get_symbol() {
+                    Token::PyIn( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let right_node = self.parse_expression_test_list();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyColon( .. ) => {
+                                let symbol3 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let mut tc_symbol : Option<Box<Token>> = None;
+                                match &*self.lexer.get_symbol() {
+                                    Token::TypeComment( .. ) => {
+                                        tc_symbol = Some( self.lexer.get_symbol() );
+                                        let _ = &self.lexer.advance();
+                                    },
+                                    _ => {}
+                                }
+                                let next_node = self.parse_statements_suite();
+                                match &*self.lexer.get_symbol() {
+                                    Token::PyElse( .. ) => {
+                                        let else_node = Some( self.parse_statements_else_stmt() );
+                                        let end_pos = &self.lexer.get_position();
+                                        Box::new( ASTNode::ForStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, symbol3, tc_symbol, next_node, else_node) )
+                                    },
+                                    _ => {
+                                        let end_pos = &self.lexer.get_position();
+                                        Box::new( ASTNode::ForStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, symbol3, tc_symbol, next_node, None) )
+                                    }
+                                }
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected ':' in for statement!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'in' in for statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'for' in for statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_try_stmt(&self) -> Box<ASTNode> {
