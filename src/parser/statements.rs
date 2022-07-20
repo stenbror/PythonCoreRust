@@ -1154,7 +1154,38 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_while_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyWhile( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let left_node = self.parse_expression_test();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let right_node = self.parse_statements_suite();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyElse( .. ) => {
+                                let next_node = Some( self.parse_statements_else_stmt() );
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::WhileStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, next_node) )
+                            },
+                            _ => {
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::WhileStmt(*start_pos, *end_pos, symbol1, left_node, symbol2, right_node, None) )
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ':' in while statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'while' in while statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_for_stmt(&self) -> Box<ASTNode> {
