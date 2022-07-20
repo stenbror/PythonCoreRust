@@ -116,7 +116,7 @@ pub enum ASTNode {
     WithStmt(u32, u32, Box<Token>, Option<Box<Token>>, Box<[Box<ASTNode>]>, Option<Box<Token>>, Box<Token>, Option<Box<Token>>, Box<ASTNode> ),
     WithItem(u32, u32, Box<Token>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
     ExceptClauseStmt(u32, u32, Box<Token>, Option<Box<(Box<ASTNode>, Option<Box<(Box<Token>, Box<ASTNode>)>>)>>),
-    SuiteStmt(u32, u32, Box<Token>, Box<Token>, Box<[Box<ASTNode>]>, Box<Token>),
+    SuiteStmt(u32, u32, Box<Token>, Box<Token>, Box<Vec<Box<ASTNode>>>, Box<Token>),
     Decorator(u32, u32, Box<Token>, Box<ASTNode>, Option<Box<(Box<Token>, Option<Box<ASTNode>>, Box<Token>)>>, Box<Token>),
     Decorators(u32, u32, Box<[Box<ASTNode>]>),
     Decorated(u32, u32, Box<ASTNode>, Box<ASTNode>),

@@ -1262,6 +1262,49 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_suite(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::Newline( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::Indent( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                        nodes_list.push( self.parse_statements_simple_stmt() );
+                        while 
+                            match &*self.lexer.get_symbol() {
+                                Token::Dedent( .. ) => {
+                                    false
+                                },
+                                _ => {
+                                    nodes_list.push( self.parse_statements_simple_stmt() );
+                                    true
+                                }
+                            } {};
+                            nodes_list.reverse();
+                            let mut symbol3 : Box<Token> = Box::new( Token::Empty );
+                            match &*self.lexer.get_symbol() {
+                                Token::Dedent( .. ) => {
+                                    symbol3 = self.lexer.get_symbol();
+                                    let _ = &self.lexer.advance();
+                                },
+                                _ => {
+                                    panic!("Syntax Error at {} - Expected <DEDENT> in block statement!", &self.lexer.get_position())
+                                }
+                            }
+                            let end_pos = &self.lexer.get_position();
+                            Box::new( ASTNode::SuiteStmt(*start_pos, *end_pos, symbol1, symbol2, nodes_list, symbol3) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected <INDENT> in block statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                self.parse_statements_simple_stmt()
+            }
+        }
     }
 }
