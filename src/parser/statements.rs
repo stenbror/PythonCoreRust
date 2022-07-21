@@ -7,6 +7,8 @@ use crate::parser::expressions::{ Expressions };
 use crate::parser::blocks::{ Blocks };
 use std::vec;
 
+use super::nodes;
+
 
 pub trait Statements {
     fn parse_statements_stmt(&self) -> Box<ASTNode>;
@@ -1329,7 +1331,85 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_with_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyWith( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                let mut left_symbol : Option<Box<Token>> = None;
+                let mut right_symbol : Option<Box<Token>> = None;
+                let mut symbol2 : Box<Token> = Box::new( Token::Empty );
+                match &*self.lexer.get_symbol() {
+                    Token::PyLeftParen( .. ) => {
+                        left_symbol = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                        nodes_list.push( self.parse_statements_with_item() );
+                        while  
+                            match &*self.lexer.get_symbol() {
+                                Token::PyComa( .. ) => {
+                                    separators_list.push( self.lexer.get_symbol() );
+                                    let _ = &self.lexer.advance();
+                                    match &*self.lexer.get_symbol() {
+                                        Token::PyRightParen( .. ) => {
+                                            false
+                                        },
+                                        _ => {
+                                            nodes_list.push( self.parse_statements_with_item() );
+                                            true
+                                        }
+                                    }
+                                },
+                                _ => {
+                                    false
+                                }
+                            } {};
+                        match &*self.lexer.get_symbol() {
+                            Token::PyRightParen( .. ) => {
+                                right_symbol = Some( self.lexer.get_symbol() );
+                                let _ = &self.lexer.advance();
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected ')' in with statement!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        nodes_list.push( self.parse_statements_with_item() );
+                        while  
+                            match &*self.lexer.get_symbol() {
+                                Token::PyComa( .. ) => {
+                                    separators_list.push( self.lexer.get_symbol() );
+                                    let _ = &self.lexer.advance();
+                                    nodes_list.push( self.parse_statements_with_item() );
+                                    true
+                                },
+                                _ => {
+                                    false
+                                }
+                            } {};
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                    }
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ':' in with statement!", &self.lexer.get_position())
+                    }
+                }
+                let right_node = self.parse_statements_suite();
+                nodes_list.reverse();
+                separators_list.reverse();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::WithStmt(*start_pos, *end_pos, symbol1, left_symbol, nodes_list, separators_list, right_symbol, symbol2, right_node) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'with' in with statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_with_item(&self) -> Box<ASTNode> {
