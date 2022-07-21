@@ -1272,7 +1272,46 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_except_clause(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyExcept( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::ExceptClauseStmt(*start_pos, *end_pos, symbol1, None) )
+                    },
+                    _ => {
+                        let left_node = self.parse_expression_test();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyAs( .. ) => {
+                                let symbol2 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                match &*self.lexer.get_symbol() {
+                                    Token::AtomName( .. ) => {
+                                        let symbol3 = self.lexer.get_symbol();
+                                        let _ = &self.lexer.advance();
+                                        let end_pos = &self.lexer.get_position();
+                                        Box::new( ASTNode::ExceptClauseStmt(*start_pos, *end_pos, symbol1, Some( ( left_node, Some( ( symbol2, symbol3 ) ) ) )) )
+                                    },
+                                    _ => {
+                                        panic!("Syntax Error at {} - Expected Name after 'as' in except statement!", &self.lexer.get_position())
+                                    }
+                                }
+                            },
+                            _ => {
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::ExceptClauseStmt(*start_pos, *end_pos, symbol1, Some( ( left_node, None ) )) )
+                            }
+                        }
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'except' in except statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_suite(&self) -> Box<ASTNode> {
