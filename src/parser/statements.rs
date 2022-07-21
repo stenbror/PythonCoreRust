@@ -1351,7 +1351,20 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_except_stmt(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        let left_node = self.parse_statements_except_clause();
+        match &*self.lexer.get_symbol() {
+            Token::PyColon( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let right_node = self.parse_statements_suite();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::ExceptStmt(*start_pos, *end_pos, left_node, symbol, right_node) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected ':' in except statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_statements_except_clause(&self) -> Box<ASTNode> {
