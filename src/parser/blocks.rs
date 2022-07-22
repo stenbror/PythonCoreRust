@@ -7,6 +7,8 @@ use crate::parser::expressions::{ Expressions };
 use crate::parser::statements::{ Statements };
 use std::vec;
 
+use super::nodes;
+
 
 pub trait Blocks {
     fn parse_blocks_eval_input(&self) -> Box<ASTNode>;
@@ -57,7 +59,38 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_file_input(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let _ = &self.lexer.advance();
+        let start_pos = &self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        while  
+            match &*self.lexer.get_symbol() {
+                Token::EOF( .. ) => {
+                    false
+                },
+                Token::Newline( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();
+                    true
+                },
+                _ => {
+                    nodes_list.push( self.parse_statements_stmt() );
+                    true
+                }
+            } {};
+        nodes_list.reverse();
+        separators_list.reverse();
+        match &*self.lexer.get_symbol() {
+            Token::EOF( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::FileInput(*start_pos, *end_pos, nodes_list, separators_list, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected EOF at end of file input!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_single_input(&self) -> Box<ASTNode> {

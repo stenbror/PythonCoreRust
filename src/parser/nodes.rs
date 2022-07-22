@@ -130,7 +130,7 @@ pub enum ASTNode {
     VFPAssign(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     VFPDef(u32, u32, Box<Token>),
     SingleInput(u32, u32, Box<ASTNode>, Box<Token>),
-    FileInput(u32, u32, Box<[Box<Token>]>, Box<[Box<ASTNode>]>, Box<Token>),
+    FileInput(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Box<Token>),
     EvalInput(u32, u32, Box<ASTNode>, Box<Vec<Box<Token>>>, Box<Token>),
     Empty
 }
