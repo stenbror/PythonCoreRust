@@ -2,12 +2,9 @@
 use crate::parser::nodes::{ ASTNode };
 use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
-use crate::parser::patterns::{ Patterns };
 use crate::parser::expressions::{ Expressions };
 use crate::parser::statements::{ Statements };
-use std::vec;
-
-use super::nodes;
+use crate::parser::patterns::{ Patterns };
 
 
 pub trait Blocks {
@@ -94,7 +91,66 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_single_input(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let _ = &self.lexer.advance();
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol()  {
+            Token::Newline( .. ) => {
+                let symbol = Some( self.lexer.get_symbol() );
+                let _ = &self.lexer.advance();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::SingleInput(*start_pos, *end_pos, None, symbol) )
+            },
+            Token::PyIf( .. ) |
+            Token::PyWhile( .. ) |
+            Token::PyFor( .. ) |
+            Token::PyTry( .. ) |
+            Token::PyWith( .. ) |
+            Token::PyDef( .. ) |
+            Token::PyClass( .. ) |
+            Token::PyAsync( .. ) |
+            Token::PyMatrice( .. ) => {
+                let right_node = Some( self.parse_statements_compound_stmt() );
+                match &*self.lexer.get_symbol() {
+                    Token::Newline( .. ) => {
+                        let symbol = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, symbol) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected NEWLINE at end of compound statement input!", &self.lexer.get_position())
+                    }
+                }
+            },
+            Token::AtomName( _ , _ , _ , txt ) => {
+                match &*txt.as_str() {
+                    "match" => {
+                        let right_node = Some( self.parse_patterns_match() );
+                        match &*self.lexer.get_symbol() {
+                            Token::Newline( .. ) => {
+                                let symbol = Some( self.lexer.get_symbol() );
+                                let _ = &self.lexer.advance();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, symbol) )
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected NEWLINE at end of 'match' statement input!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        let right_node = Some( self.parse_statements_simple_stmt() );
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, None) )
+                    }
+                }
+            }
+            _ => {
+                let right_node = Some( self.parse_statements_simple_stmt() );
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, None) )
+            }
+        }
     }
 
     fn parse_blocks_decorator(&self) -> Box<ASTNode> {
