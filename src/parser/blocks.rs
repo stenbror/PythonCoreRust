@@ -27,7 +27,33 @@ pub trait Blocks {
 
 impl Blocks for PythonCoreParser {
     fn parse_blocks_eval_input(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let _ = &self.lexer.advance();
+        let start_pos = &self.lexer.get_position();
+        let right_node = self.parse_expression_test_list();
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        while  
+            match &*self.lexer.get_symbol() {
+                Token::Newline( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+            separators_list.reverse();
+            match &*self.lexer.get_symbol() {
+                Token::EOF( .. ) => {
+                    let symbol = self.lexer.get_symbol();
+                    let _ = &self.lexer.advance();
+                    let end_pos = &self.lexer.get_position();
+                    Box::new( ASTNode::EvalInput(*start_pos, *end_pos, right_node, separators_list, symbol) )
+                },
+                _ => {
+                    panic!("Syntax Error at {} - Expected EOF at end of expression!", &self.lexer.get_position())
+                }
+            }
     }
 
     fn parse_blocks_file_input(&self) -> Box<ASTNode> {
