@@ -144,7 +144,6 @@ impl Functions for PythonCoreParser {
                             false
                         }
                     } {};
-
             }
         }
         nodes_list.reverse();
