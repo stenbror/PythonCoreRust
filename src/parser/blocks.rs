@@ -1,4 +1,4 @@
-
+use std::borrow::Borrow;
 use crate::parser::nodes::{ ASTNode };
 use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
@@ -343,7 +343,66 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_func_body_suite(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        match &*self.lexer.get_symbol() {
+            Token::Newline( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let mut tc_symbol : Option<Box<Token>> = None;
+                let mut tc_newline : Option<Box<Token>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::TypeComment( .. ) => {
+                        tc_symbol = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                        match &*self.lexer.get_symbol() {
+                            Token::Newline( .. ) => {
+                                tc_newline = Some( self.lexer.get_symbol() );
+                                let _ = &self.lexer.advance();
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected Newline after type comment in statement suite!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::Indent(..) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        nodes_list.push(self.parse_statements_stmt());
+                        while
+                            match &*self.lexer.get_symbol() {
+                                Token::Dedent(..) => {
+                                    false
+                                },
+                                _ => {
+                                    nodes_list.push(self.parse_statements_stmt());
+                                    true
+                                }
+                            } {};
+                        match &*self.lexer.get_symbol() {
+                            Token::Dedent(..) => {
+                                let symbol3 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let end_pos = &self.lexer.get_position();
+                                nodes_list.reverse();
+                                Box::new(ASTNode::FuncBodySuite(*start_pos, *end_pos, symbol1, tc_symbol, tc_newline, symbol2, nodes_list, symbol3))
+                            },
+                            _ => {
+                                panic ! ("Syntax Error at {} - Expected  Dedent  in statement suite!", & self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected  Indent  in statement suite!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                self.parse_statements_simple_stmt()
+            }
+        }
     }
 
     fn parse_blocks_class_def(&self) -> Box<ASTNode> {
