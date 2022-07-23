@@ -226,7 +226,7 @@ impl Blocks for PythonCoreParser {
                         Box::new( ASTNode::Decorator(*start_pos, *end_pos, symbol1, left_node,  symbol2, right_node, symbol3, symbol4) )
                     },
                     _ => {
-                        panic!("Syntax Error at {} - Expected NWELINE after decorator statement!", &self.lexer.get_position())
+                        panic!("Syntax Error at {} - Expected NEWLINE after decorator statement!", &self.lexer.get_position())
                     }
                 }
             },
