@@ -230,7 +230,34 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_decorated(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyMatrice( .. ) => {
+                let left_node = self.parse_blocks_decorators();
+                match &*self.lexer.get_symbol() {
+                    Token::PyClass( .. ) => {
+                        let right_node = self.parse_blocks_class_def();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::Decorated(*start_pos, *end_pos, left_node, right_node) )
+                    },
+                    Token::PyDef( .. ) => {
+                        let right_node = self.parse_blocks_func_def();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::Decorated(*start_pos, *end_pos, left_node, right_node) )
+                    },
+                    Token::PyAsync( .. ) => {
+                        let right_node = self.parse_blocks_async_func_def();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::Decorated(*start_pos, *end_pos, left_node, right_node) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'class', 'def' or 'async' after decorator statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected '@' in decorator statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_async_func_def(&self) -> Box<ASTNode> {
