@@ -154,38 +154,92 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_decorator(&self) -> Box<ASTNode> {
-        Box::new( ASTNode::Empty )
+        let start_pos = &self.lexer.get_position();
+        match &*self.lexer.get_symbol() {
+            Token::PyMatrice( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let left_node = self.parse_statements_dotted_name();
+                let mut symbol2 : Option<Box<Token>> = None;
+                let mut right_node : Option<Box<ASTNode>> = None;
+                let mut symbol3 : Option<Box<Token>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyLeftParen( .. ) => {
+                        symbol2 = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                        match &*self.lexer.get_symbol() {
+                            Token::PyRightParen( .. ) => {},
+                            _ => {
+                                right_node = Some( self.parse_expression_arg_list() );
+                            }
+                        }
+                        match &*self.lexer.get_symbol() {
+                            Token::PyRightParen( .. ) => {
+                                symbol3 = Some( self.lexer.get_symbol() );
+                        let _ = &self.lexer.advance();
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected ')' in decorator statement!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::Newline( .. ) => {
+                        let symbol4 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::Decorator(*start_pos, *end_pos, symbol1, left_node,  symbol2, right_node, symbol3, symbol4) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected NWELINE after decorator statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected '@' in decorator statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_decorators(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_decorated(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_async_func_def(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_func_def(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_parameters(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_typed_args_list(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_tfp_def_assign(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
     fn parse_blocks_tfp_def(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
