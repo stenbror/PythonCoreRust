@@ -4,7 +4,7 @@ use crate::parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
 use crate::parser::expressions::{ Expressions };
 
-trait Functions {
+pub trait Functions {
     fn parse_functions_func_type(&self) -> Box<ASTNode>;
     fn parse_functions_type_list(&self) -> Box<ASTNode>;
 }

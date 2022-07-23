@@ -69,7 +69,7 @@ pub enum ASTNode {
     YieldExpr(u32, u32, Box<Token>, Box<ASTNode>),
     YieldFromExpr(u32, u32, Box<Token>, Box<Token>, Box<ASTNode>),
     FuncBodySuite(u32, u32, Box<Token>, Option<(Box<Token>, Box<Token>)>, Box<Token>, Box<[Box<ASTNode>]>, Box<Token>),
-    FuncTypeInput(u32, u32, Box<ASTNode>, Box<[Box<ASTNode>]>, Box<Token>),
+    FuncTypeInput(u32, u32, Box<ASTNode>, Box<Vec<Box<Token>>>, Box<Token>),
     FuncType(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>, Box<Token>, Box<ASTNode>),
     TypeList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>),
     TestListStarExpr(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>),

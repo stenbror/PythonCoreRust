@@ -5,6 +5,7 @@ use crate::parser::parser::{ PythonCoreParser };
 use crate::parser::expressions::{ Expressions };
 use crate::parser::statements::{ Statements };
 use crate::parser::patterns::{ Patterns };
+use crate::parser::functions::{ Functions };
 
 
 pub trait Blocks {
@@ -156,8 +157,33 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_func_type_input(&self) -> Box<ASTNode> {
+        let _ = &self.lexer.advance();
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let right_node = self.parse_functions_func_type();
+        while
+            match &*self.lexer.get_symbol() {
+                Token::Newline( .. ) => {
+                    separators_list.push( self.lexer.get_symbol() );
+                    let _ = &self.lexer.advance();
+                    true
+                },
+                _ => {
+                    false
+                }
+            } {};
+        match &*self.lexer.get_symbol() {
+            Token::EOF( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                separators_list.reverse();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::FuncTypeInput(*start_pos, *end_pos, right_node, separators_list, symbol) )
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected End of File in function expression!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_decorator(&self) -> Box<ASTNode> {
