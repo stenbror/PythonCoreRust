@@ -11,6 +11,7 @@ pub trait Blocks {
     fn parse_blocks_eval_input(&self) -> Box<ASTNode>;
     fn parse_blocks_file_input(&self) -> Box<ASTNode>;
     fn parse_blocks_single_input(&self) -> Box<ASTNode>;
+    fn parse_blocks_func_type_input(&self) -> Box<ASTNode>;
     fn parse_blocks_decorator(&self) -> Box<ASTNode>;
     fn parse_blocks_decorators(&self) -> Box<ASTNode>;
     fn parse_blocks_decorated(&self) -> Box<ASTNode>;
@@ -20,6 +21,7 @@ pub trait Blocks {
     fn parse_blocks_typed_args_list(&self) -> Box<ASTNode>;
     fn parse_blocks_tfp_def_assign(&self) -> Box<ASTNode>;
     fn parse_blocks_tfp_def(&self) -> Box<ASTNode>;
+    fn parse_blocks_func_body_suite(&self) -> Box<ASTNode>;
     fn parse_blocks_class_def(&self) -> Box<ASTNode>;
 }
 
@@ -153,6 +155,11 @@ impl Blocks for PythonCoreParser {
         }
     }
 
+    fn parse_blocks_func_type_input(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
+        Box::new( ASTNode::Empty )
+    }
+
     fn parse_blocks_decorator(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
@@ -262,7 +269,25 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_async_func_def(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyAsync( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyDef( .. ) => {
+                        let right_node = self.parse_blocks_func_def();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::AsyncStmt(*start_pos, *end_pos, symbol1, right_node) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected 'def' in async func def statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'async' in func def statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_func_def(&self) -> Box<ASTNode> {
@@ -286,6 +311,11 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_tfp_def(&self) -> Box<ASTNode> {
+        let start_pos = &self.lexer.get_position();
+        Box::new( ASTNode::Empty )
+    }
+
+    fn parse_blocks_func_body_suite(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
