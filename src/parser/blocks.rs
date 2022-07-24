@@ -359,7 +359,19 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_tfp_def_assign(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        let left_node = self.parse_blocks_tfp_def();
+        match &*self.lexer.get_symbol() {
+            Token::PyAssign( .. ) => {
+                let symbol = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let right_node = self.parse_expression_test();
+                let end_pos = &self.lexer.get_position();
+                Box::new( ASTNode::TFPAssign(*start_pos, *end_pos, left_node, symbol, right_node) )
+            },
+            _ => {
+                left_node
+            }
+        }
     }
 
     fn parse_blocks_tfp_def(&self) -> Box<ASTNode> {
