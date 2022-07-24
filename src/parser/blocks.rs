@@ -323,7 +323,33 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_parameters(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyLeftParen( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                let mut right_node : Option<Box<ASTNode>> = None;
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightParen( .. ) => {},
+                    _ => {
+                        right_node = Some(self.parse_blocks_typed_args_list());
+                    }
+                }
+                match &*self.lexer.get_symbol() {
+                    Token::PyRightParen( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new(ASTNode::Parameter(*start_pos, *end_pos, symbol1, right_node, symbol2) )
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected ')' in function parameters!!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected '(' in function parameters!!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_typed_args_list(&self) -> Box<ASTNode> {
