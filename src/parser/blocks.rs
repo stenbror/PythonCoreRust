@@ -364,7 +364,28 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_tfp_def(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::AtomName( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::PyColon( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let right_node = self.parse_expression_test();
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::TFPDef(*start_pos, *end_pos, symbol1, Some( Box::new( ( symbol2, right_node ) ) )) )
+                    },
+                    _ => {
+                        let end_pos = &self.lexer.get_position();
+                        Box::new( ASTNode::TFPDef(*start_pos, *end_pos, symbol1, None) )
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected Name in function parameter!!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_func_body_suite(&self) -> Box<ASTNode> {
