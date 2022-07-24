@@ -318,7 +318,56 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_func_def(&self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
-        Box::new( ASTNode::Empty )
+        match &*self.lexer.get_symbol() {
+            Token::PyDef( .. ) => {
+                let symbol1 = self.lexer.get_symbol();
+                let _ = &self.lexer.advance();
+                match &*self.lexer.get_symbol() {
+                    Token::AtomName( .. ) => {
+                        let symbol2 = self.lexer.get_symbol();
+                        let _ = &self.lexer.advance();
+                        let left_node : Option<Box<ASTNode>> = match &*self.lexer.get_symbol()  { Token::PyLeftParen( .. ) =>{ Some( self.parse_blocks_parameters() ) }, _ => None };
+                        let ret_node : Option<Box<( Box<Token>, Box<ASTNode> )>> = match &*self.lexer.get_symbol() {
+                            Token::PyArrow( .. ) => {
+                                let symbol3 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let res_node = self.parse_expression_test();
+                                Some( Box::new( ( symbol3 , res_node )))
+                            },
+                            _ => {
+                                None
+                            }
+                        };
+                        match &*self.lexer.get_symbol() {
+                            Token::PyColon( .. ) => {
+                                let symbol4 = self.lexer.get_symbol();
+                                let _ = &self.lexer.advance();
+                                let tc_symbol : Option<Box<Token>> = match &*self.lexer.get_symbol() {
+                                    Token::TypeComment( .. ) => {
+                                        let symbol5 = self.lexer.get_symbol();
+                                        let _ = &self.lexer.advance();
+                                        Some( symbol5 )
+                                    },
+                                    _ => None
+                                };
+                                let body_node = self.parse_blocks_func_body_suite();
+                                let end_pos = &self.lexer.get_position();
+                                Box::new( ASTNode::FuncDef(*start_pos, *end_pos, symbol1, symbol2, left_node, ret_node, symbol4, tc_symbol, body_node ) )
+                            },
+                            _ => {
+                                panic!("Syntax Error at {} - Expected ':' in func def statement!", &self.lexer.get_position())
+                            }
+                        }
+                    },
+                    _ => {
+                        panic!("Syntax Error at {} - Expected Name of func def statement!", &self.lexer.get_position())
+                    }
+                }
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expected 'def' in func def statement!", &self.lexer.get_position())
+            }
+        }
     }
 
     fn parse_blocks_parameters(&self) -> Box<ASTNode> {
