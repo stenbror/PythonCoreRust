@@ -2,11 +2,11 @@
 use crate::parser::trivias::{ Trivia };
 
 pub enum Token {
-    PyFalse(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PyNone(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PyTrue(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PyAnd(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PyAs(u32, u32, Option<Box<[Box<Trivia>]>>),
+    PyFalse(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
+    PyNone(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
+    PyTrue(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
+    PyAnd(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
+    PyAs(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
     PyAssert(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyAsync(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyAwait(u32, u32, Option<Box<[Box<Trivia>]>>),
