@@ -7,7 +7,8 @@ use crate::parser::tokens::{ Token };
 
 
 pub struct PythonCoreTokenizer {
-
+    source_buffer: Box<Vec<char>>,
+    trivia_collector: Box<Vec<Box<Trivia>>>
 }
 
 
@@ -16,7 +17,8 @@ pub struct PythonCoreTokenizer {
 impl PythonCoreTokenizer {
     fn new() -> PythonCoreTokenizer {
         PythonCoreTokenizer {
-
+            source_buffer: Box::new( Vec::new() ),
+            trivia_collector: Box::new( Vec::new() )
         }
     }
 
@@ -30,8 +32,20 @@ impl PythonCoreTokenizer {
         0
     }
 
+    /// This method checks for valid operator or delimiter including pairing parenthezis if present before returning token or Option<Token> = None.
+    fn is_operator_or_delimiter(&mut self, start_pos: &u32, end_pos: &u32, trivia: Option<Box<Vec<Box<Trivia>>>>, a: &char, b: &char, c: &char) -> Option<Token> {
+        match ( &a, &b, &c ) {
+            ( '*', '*', '=' ) => {
+                Some( Token::PyPowerAssign(*start_pos, *end_pos, trivia) )
+            }
+            ( _ , _ , _ ) => {
+                None
+            }
+        }
+    }
+
     /// This method checks for reserved keywords or atom name literal and provides token with position and trivia collected in fron ot token
-    fn is_reserved_keyword(start_pos: &u32, end_pos: &u32, trivia: Option<Box<Vec<Box<Trivia>>>>, buffer: &str) -> Token {
+    fn is_reserved_keyword(&self, start_pos: &u32, end_pos: &u32, trivia: Option<Box<Vec<Box<Trivia>>>>, buffer: &str) -> Token {
         match &*buffer {
             "False" => Token::PyFalse(*start_pos, *end_pos, trivia),
             "None" => Token::PyNone(*start_pos, *end_pos, trivia),

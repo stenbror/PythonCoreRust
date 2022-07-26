@@ -82,7 +82,7 @@ pub enum Token {
     PyBitXorAssign(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyShiftLeftAssign(u32, u32, Option<Box<[Box<Trivia>]>>),
     PyShiftRightAssign(u32, u32, Option<Box<[Box<Trivia>]>>),
-    PyPowerAssign(u32, u32, Option<Box<[Box<Trivia>]>>),
+    PyPowerAssign(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
     PyElipsis(u32, u32, Option<Box<[Box<Trivia>]>>),
     AtomName(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>),
     AtomNumber(u32, u32, Option<Box<[Box<Trivia>]>>, Box<String>),

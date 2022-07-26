@@ -8,3 +8,4 @@ pub mod parser;
 pub mod functions;
 pub mod patterns;
 pub mod blocks;
+pub mod source_buffer;
