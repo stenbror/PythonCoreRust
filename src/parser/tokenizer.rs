@@ -98,6 +98,18 @@ impl PythonCoreTokenizer {
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
+            ( '+', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyPlusAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '+', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyPlus(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
@@ -150,7 +162,7 @@ impl PythonCoreTokenizer {
 
 #[cfg(test)]
 mod tests {
-
+    use crate::ASTNode::PlusAssignStmt;
     use crate::parser::tokenizer::PythonCoreTokenizer;
     use crate::Token;
 
@@ -326,6 +338,42 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyDot( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_plus_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyPlusAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_plus() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyPlus( 0u32, 1u32, Some(_) ) => assert!(true),
                     _ => assert!(false)
                 }
             },
