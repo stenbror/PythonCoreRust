@@ -39,19 +39,19 @@ impl PythonCoreTokenizer {
     fn is_operator_or_delimiter(&mut self, start_pos: &u32, a: &char, b: &char, c: &char) -> Option<Token> {
         match ( &a, &b, &c ) {
             ( '*', '*', '=' ) => {
-                for i in 1 .. 3 { self.source_buffer.advance() };
+                for i in 1 ..= 3 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyPowerAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '*', '*', _ ) => {
-                for i in 1 .. 2 { self.source_buffer.advance() };
+                for i in 1 ..= 2 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '*', '=', _ ) => {
-                for i in 1 .. 2 { self.source_buffer.advance() };
+                for i in 1 ..= 2 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyMulAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
@@ -63,19 +63,19 @@ impl PythonCoreTokenizer {
                 Some( Token::PyMul(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '/', '/', '=' ) => {
-                for i in 1 .. 3 { self.source_buffer.advance() };
+                for i in 1 ..= 3 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyFloorDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '/', '/', _ ) => {
-                for i in 1 .. 2 { self.source_buffer.advance() };
+                for i in 1 ..= 2 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyFloorDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '/', '=', _ ) => {
-                for i in 1 .. 2 { self.source_buffer.advance() };
+                for i in 1 ..= 2 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
@@ -87,7 +87,7 @@ impl PythonCoreTokenizer {
                 Some( Token::PyDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
             ( '.', '.', '.' ) => {
-                for i in 1 .. 3 { self.source_buffer.advance() };
+                for i in 1 ..= 3 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyElipsis(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
@@ -144,6 +144,194 @@ impl PythonCoreTokenizer {
             "with" => Token::PyWith(*start_pos, *end_pos, trivia),
             "yield" => Token::PyYield(*start_pos, *end_pos, trivia),
             _ => Token::AtomName(*start_pos, *end_pos, trivia, Box::new((*buffer.to_string()).parse().unwrap()))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::parser::tokenizer::PythonCoreTokenizer;
+    use crate::Token;
+
+
+    #[test]
+    fn operator_or_delimiter_power_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyPowerAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_power() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyPower( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_mul_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyMulAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_mul() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyMul( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_floor_div_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyFloorDivAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_floor_div() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyFloorDiv( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_div_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyDivAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_div() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyDiv( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_elipsis() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "...".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyElipsis( 0u32, 3u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_dot() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyDot( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
         }
     }
 }
