@@ -1,24 +1,27 @@
 
 use crate::parser::trivias::{ Trivia };
 use crate::parser::tokens::{ Token };
+use crate::parser::source_buffer::{ SourceBuffer };
 
 
 // Defining data structure and traits for tokenizing of PythonCore ////////////////////////////////
 
 
 pub struct PythonCoreTokenizer {
-    source_buffer: Box<Vec<char>>,
-    trivia_collector: Box<Vec<Box<Trivia>>>
+    source_buffer: Box<SourceBuffer>,
+    trivia_collector: Box<Vec<Box<Trivia>>>,
+    current_trivia: Box<Vec<Box<&'static Trivia>>>
 }
 
 
 // Implementing functions releated to tokenizing of PythonCore ////////////////////////////////////
 
 impl PythonCoreTokenizer {
-    fn new() -> PythonCoreTokenizer {
+    fn new(buffer: String) -> PythonCoreTokenizer {
         PythonCoreTokenizer {
-            source_buffer: Box::new( Vec::new() ),
-            trivia_collector: Box::new( Vec::new() )
+            source_buffer: Box::new( SourceBuffer::new(buffer) ),
+            trivia_collector: Box::new(Vec::new() ),
+            current_trivia: Box::new(Vec::new() )
         }
     }
 
@@ -29,15 +32,25 @@ impl PythonCoreTokenizer {
     }
 
     pub fn get_position(&self) -> u32 {
-        0
+        *self.source_buffer.get_position()
     }
 
     /// This method checks for valid operator or delimiter including pairing parenthezis if present before returning token or Option<Token> = None.
-    fn is_operator_or_delimiter(&mut self, start_pos: &u32, end_pos: &u32, trivia: Option<Box<Vec<Box<Trivia>>>>, a: &char, b: &char, c: &char) -> Option<Token> {
+    fn is_operator_or_delimiter(&mut self, start_pos: &u32, a: &char, b: &char, c: &char) -> Option<Token> {
         match ( &a, &b, &c ) {
             ( '*', '*', '=' ) => {
-                Some( Token::PyPowerAssign(*start_pos, *end_pos, trivia) )
-            }
+                for i in 1 .. 3 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyPowerAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '*', '*', _ ) => {
+                for i in 1 .. 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+
             ( _ , _ , _ ) => {
                 None
             }

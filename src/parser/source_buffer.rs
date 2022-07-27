@@ -1,5 +1,5 @@
 
-struct SourceBuffer {
+pub struct SourceBuffer {
     source_buffer: Box<Vec<char>>,
     index: u32
 }
@@ -7,7 +7,7 @@ struct SourceBuffer {
 impl SourceBuffer {
 
     /// Construct new source buffer from given string containing sourcefile from file, evalinput or console input
-    fn new(buffer: String) -> SourceBuffer {
+    pub fn new(buffer: String) -> SourceBuffer {
         SourceBuffer {
             source_buffer: Box::new(buffer.chars().collect()),
             index: 0
