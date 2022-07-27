@@ -50,6 +50,54 @@ impl PythonCoreTokenizer {
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
+            ( '*', '=', _ ) => {
+                for i in 1 .. 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyMulAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '*', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyMul(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '/', '/', '=' ) => {
+                for i in 1 .. 3 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyFloorDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '/', '/', _ ) => {
+                for i in 1 .. 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyFloorDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '/', '=', _ ) => {
+                for i in 1 .. 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '/', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '.', '.', '.' ) => {
+                for i in 1 .. 3 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyElipsis(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '.', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
