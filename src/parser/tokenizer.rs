@@ -10,7 +10,8 @@ use crate::parser::source_buffer::{ SourceBuffer };
 pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
     trivia_collector: Box<Vec<Box<Trivia>>>,
-    symbol: Option<Box<Token>>
+    symbol: Option<Box<Token>>,
+    parenthesis: Vec<char>
 }
 
 
@@ -21,7 +22,8 @@ impl PythonCoreTokenizer {
         PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
             trivia_collector: Box::new(Vec::new() ),
-            symbol: Some( Box::new( Token::Empty ) )
+            symbol: Some( Box::new( Token::Empty ) ),
+            parenthesis: Vec::new()
         }
     }
 
@@ -271,36 +273,57 @@ impl PythonCoreTokenizer {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                &self.parenthesis.push(')');
                 Some( Token::PyLeftParen(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '[', _ , _ ) => {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                &self.parenthesis.push(']');
                 Some( Token::PyLeftBracket(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '{', _ , _ ) => {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                &self.parenthesis.push('}');
                 Some( Token::PyLeftCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ')', _ , _ ) => {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                match &self.parenthesis.last() {
+                    Some( ')' ) => { self.parenthesis.pop(); },
+                    _ => {
+                        panic!("Syntax Error at {} - Mismatch in parenthesis, expected ')'!", &self.get_position())
+                    }
+                }
                 Some( Token::PyRightParen(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ']', _ , _ ) => {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                match &self.parenthesis.last() {
+                    Some( ']' ) => { self.parenthesis.pop(); },
+                    _ => {
+                        panic!("Syntax Error at {} - Mismatch in parenthesis, expected ']'!", &self.get_position())
+                    }
+                }
                 Some( Token::PyRightBracket(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '}', _ , _ ) => {
                 self.source_buffer.advance();
                 let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
                 self.trivia_collector = Box::new(Vec::new() );
+                match &self.parenthesis.last() {
+                    Some( '}' ) => { self.parenthesis.pop(); },
+                    _ => {
+                        panic!("Syntax Error at {} - Mismatch in parenthesis, expected '{}'!", &self.get_position(), '}')
+                    }
+                }
                 Some( Token::PyRightCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
 
@@ -1085,6 +1108,7 @@ mod tests {
     #[test]
     fn operator_or_delimiter_right_paren() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
+        tokenizer.parenthesis.push(')');
         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
         match &res {
@@ -1103,6 +1127,7 @@ mod tests {
     #[test]
     fn operator_or_delimiter_right_bracket() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
+        tokenizer.parenthesis.push(']');
         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
         match &res {
@@ -1121,6 +1146,7 @@ mod tests {
     #[test]
     fn operator_or_delimiter_right_curly() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
+        tokenizer.parenthesis.push('}');
         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
         match &res {
