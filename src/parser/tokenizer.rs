@@ -224,6 +224,42 @@ impl PythonCoreTokenizer {
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
+            ( '&', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitAndAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '&', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitAnd(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '|', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitOrAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '|', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitOr(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '^', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitXorAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '^', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyBitXor(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
@@ -830,6 +866,114 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyAssign( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_and_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitAndAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_and() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitAnd( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_or_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitOrAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_or() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitOr( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_xor_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitXorAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_bit_xor() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitXor( 0u32, 1u32, Some(_) ) => assert!(true),
                     _ => assert!(false)
                 }
             },
