@@ -27,7 +27,48 @@ impl PythonCoreTokenizer {
         }
     }
 
-    pub fn advance(&self) -> () {}
+    fn is_ident_start_letter(&self, ch: char) -> bool {
+        match &ch {
+            '_' => true,
+            _ => ch.is_alphabetic()
+        }
+    }
+
+    fn is_ident_letter_or_digit(&self, ch: char) -> bool {
+        match &ch {
+            '_' => true,
+            _ => ch.is_alphanumeric()
+        }
+    }
+
+    fn is_hex_digit(&self, ch: char) -> bool {
+        match &ch {
+            'a' ..= 'f' => true,
+            'A' ..= 'F' => true,
+            _ => ch.is_ascii_digit()
+        }
+    }
+
+    fn is_octet_digit(&self, ch: char) -> bool {
+        match &ch {
+            '0'..='7' => true,
+            _ => false
+        }
+    }
+
+    fn is_binary_digit(&self, ch: char) -> bool {
+        match &ch {
+            '0' ..= '1' => true,
+            _ => false
+        }
+    }
+
+    pub fn advance(&self) -> () {
+        let token_start_position = &self.get_position();
+        let mut buffer : String = String::new();
+
+
+    }
 
     pub fn get_symbol(&self) -> Box<Token> {
         match &self.symbol {
