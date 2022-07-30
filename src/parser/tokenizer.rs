@@ -267,6 +267,42 @@ impl PythonCoreTokenizer {
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitXor(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
+            ( '(', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyLeftParen(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( '[', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyLeftBracket(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( '{', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyLeftCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( ')', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyRightParen(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( ']', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyRightBracket(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( '}', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyRightCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
@@ -983,6 +1019,114 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyBitXor( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_left_paren() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "(".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyLeftParen( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_left_bracket() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "[".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyLeftBracket( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_left_curly() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "{".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyLeftCurly( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_right_paren() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyRightParen( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_right_bracket() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyRightBracket( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_right_curly() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyRightCurly( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
