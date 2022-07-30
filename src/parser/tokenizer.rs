@@ -350,7 +350,12 @@ impl PythonCoreTokenizer {
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyComa(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
-
+            ( '~', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitInvert(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
             ( _ , _ , _ ) => {
                 None
             }
@@ -1259,6 +1264,24 @@ mod tests {
     }
 
     #[test]
+    fn operator_or_delimiter_bit_invert() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "~".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyBitInvert( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
     fn reserved_keywords_false() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"False");
@@ -1604,6 +1627,17 @@ mod tests {
         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"yield");
         match &res {
             Token::PyYield(0u32, 5u32, _) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_atom_name1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"match");
+        let tst = Box::new( String::from("match") );
+        match &res {
+            Token::AtomName(0u32, 5u32, None , tst) => assert!(true),
             _ => assert!(false)
         }
     }
