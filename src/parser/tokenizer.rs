@@ -98,6 +98,60 @@ impl PythonCoreTokenizer {
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
+            ( '<', '<', '=' ) => {
+                for i in 1 ..= 3 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyShiftLeftAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '<', '<', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyShiftLeft(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '<', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyLessEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '<', '>', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '<', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyLess(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '>', '>', '=' ) => {
+                for i in 1 ..= 3 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyShiftRightAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '>', '>', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyShiftRight(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '>', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyGreaterEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '>', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyGreater(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
             ( '+', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
                 let local_trivia = self.current_trivia.clone();
@@ -542,6 +596,168 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyMatrice( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_shift_left_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyShiftLeftAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_shift_left() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyShiftLeft( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_not_equal_legacy() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<>".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyNotEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_less_equal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyLessEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_less() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyLess( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_shift_right_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyShiftRightAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_shift_right() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyShiftRight( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_greater_equal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyGreaterEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_greater() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyGreater( 0u32, 1u32, Some(_) ) => assert!(true),
                     _ => assert!(false)
                 }
             },
