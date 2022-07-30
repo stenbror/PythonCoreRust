@@ -140,6 +140,18 @@ impl PythonCoreTokenizer {
                 self.current_trivia = Box::new( Vec::new() );
                 Some( Token::PyModulo(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
             },
+            ( '@', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyMatriceAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
+            ( '@', _ , _ ) => {
+                self.source_buffer.advance();
+                let local_trivia = self.current_trivia.clone();
+                self.current_trivia = Box::new( Vec::new() );
+                Some( Token::PyMatrice(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
@@ -494,6 +506,42 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyModulo( 0u32, 1u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_matrice_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyMatriceAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_matrice() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyMatrice( 0u32, 1u32, Some(_) ) => assert!(true),
                     _ => assert!(false)
                 }
             },
