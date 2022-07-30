@@ -275,7 +275,9 @@ impl PythonCoreTokenizer {
     }
 
     /// This method checks for reserved keywords or atom name literal and provides token with position and trivia collected in fron ot token
-    fn is_reserved_keyword(&self, start_pos: &u32, end_pos: &u32, trivia: Option<Box<Vec<Box<Trivia>>>>, buffer: &str) -> Token {
+    fn is_reserved_keyword(&mut self, start_pos: &u32, end_pos: &u32, buffer: &str) -> Token {
+        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        self.trivia_collector = Box::new(Vec::new() );
         match &*buffer {
             "False" => Token::PyFalse(*start_pos, *end_pos, trivia),
             "None" => Token::PyNone(*start_pos, *end_pos, trivia),
@@ -993,7 +995,7 @@ mod tests {
     #[test]
     fn reserved_keywords_false() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"False");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"False");
         match &res {
             Token::PyFalse(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1003,7 +1005,7 @@ mod tests {
     #[test]
     fn reserved_keywords_none() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"None");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"None");
         match &res {
             Token::PyNone(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1013,7 +1015,7 @@ mod tests {
     #[test]
     fn reserved_keywords_true() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"True");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32,&"True");
         match &res {
             Token::PyTrue(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1023,7 +1025,7 @@ mod tests {
     #[test]
     fn reserved_keywords_and() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"and");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"and");
         match &res {
             Token::PyAnd(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1033,7 +1035,7 @@ mod tests {
     #[test]
     fn reserved_keywords_as() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, None, &"as");
+        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"as");
         match &res {
             Token::PyAs(0u32, 2u32, _) => assert!(true),
             _ => assert!(false)
@@ -1043,7 +1045,7 @@ mod tests {
     #[test]
     fn reserved_keywords_assert() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"assert");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"assert");
         match &res {
             Token::PyAssert(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1053,7 +1055,7 @@ mod tests {
     #[test]
     fn reserved_keywords_async() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"async");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"async");
         match &res {
             Token::PyAsync(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1063,7 +1065,7 @@ mod tests {
     #[test]
     fn reserved_keywords_await() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"await");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"await");
         match &res {
             Token::PyAwait(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1073,7 +1075,7 @@ mod tests {
     #[test]
     fn reserved_keywords_break() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"break");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"break");
         match &res {
             Token::PyBreak(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1083,7 +1085,7 @@ mod tests {
     #[test]
     fn reserved_keywords_class() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"class");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"class");
         match &res {
             Token::PyClass(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1093,7 +1095,7 @@ mod tests {
     #[test]
     fn reserved_keywords_continue() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, None, &"continue");
+        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"continue");
         match &res {
             Token::PyContinue(0u32, 8u32, _) => assert!(true),
             _ => assert!(false)
@@ -1103,7 +1105,7 @@ mod tests {
     #[test]
     fn reserved_keywords_def() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"def");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"def");
         match &res {
             Token::PyDef(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1113,7 +1115,7 @@ mod tests {
     #[test]
     fn reserved_keywords_del() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"del");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"del");
         match &res {
             Token::PyDel(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1123,7 +1125,7 @@ mod tests {
     #[test]
     fn reserved_keywords_elif() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"elif");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"elif");
         match &res {
             Token::PyElif(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1133,7 +1135,7 @@ mod tests {
     #[test]
     fn reserved_keywords_else() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"else");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"else");
         match &res {
             Token::PyElse(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1143,7 +1145,7 @@ mod tests {
     #[test]
     fn reserved_keywords_except() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"except");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"except");
         match &res {
             Token::PyExcept(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1153,7 +1155,7 @@ mod tests {
     #[test]
     fn reserved_keywords_finally() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &7u32, None, &"finally");
+        let res = tokenizer.is_reserved_keyword(&0u32, &7u32, &"finally");
         match &res {
             Token::PyFinally(0u32, 7u32, _) => assert!(true),
             _ => assert!(false)
@@ -1163,7 +1165,7 @@ mod tests {
     #[test]
     fn reserved_keywords_for() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"for");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"for");
         match &res {
             Token::PyFor(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1173,7 +1175,7 @@ mod tests {
     #[test]
     fn reserved_keywords_from() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"from");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"from");
         match &res {
             Token::PyFrom(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1183,7 +1185,7 @@ mod tests {
     #[test]
     fn reserved_keywords_global() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"global");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"global");
         match &res {
             Token::PyGlobal(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1193,7 +1195,7 @@ mod tests {
     #[test]
     fn reserved_keywords_if() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, None, &"if");
+        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"if");
         match &res {
             Token::PyIf(0u32, 2u32, _) => assert!(true),
             _ => assert!(false)
@@ -1203,7 +1205,7 @@ mod tests {
     #[test]
     fn reserved_keywords_import() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"import");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"import");
         match &res {
             Token::PyImport(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1213,7 +1215,7 @@ mod tests {
     #[test]
     fn reserved_keywords_in() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, None, &"in");
+        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"in");
         match &res {
             Token::PyIn(0u32, 2u32, _) => assert!(true),
             _ => assert!(false)
@@ -1223,7 +1225,7 @@ mod tests {
     #[test]
     fn reserved_keywords_is() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, None, &"is");
+        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"is");
         match &res {
             Token::PyIs(0u32, 2u32, _) => assert!(true),
             _ => assert!(false)
@@ -1233,7 +1235,7 @@ mod tests {
     #[test]
     fn reserved_keywords_lambda() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"lambda");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"lambda");
         match &res {
             Token::PyLambda(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1243,7 +1245,7 @@ mod tests {
     #[test]
     fn reserved_keywords_nonlocal() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, None, &"nonlocal");
+        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"nonlocal");
         match &res {
             Token::PyNonLocal(0u32, 8u32, _) => assert!(true),
             _ => assert!(false)
@@ -1253,7 +1255,7 @@ mod tests {
     #[test]
     fn reserved_keywords_not() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"not");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"not");
         match &res {
             Token::PyNot(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1263,7 +1265,7 @@ mod tests {
     #[test]
     fn reserved_keywords_or() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, None, &"or");
+        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"or");
         match &res {
             Token::PyOr(0u32, 2u32, _) => assert!(true),
             _ => assert!(false)
@@ -1273,7 +1275,7 @@ mod tests {
     #[test]
     fn reserved_keywords_pass() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"pass");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"pass");
         match &res {
             Token::PyPass(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1283,7 +1285,7 @@ mod tests {
     #[test]
     fn reserved_keywords_raise() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"raise");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"raise");
         match &res {
             Token::PyRaise(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1293,7 +1295,7 @@ mod tests {
     #[test]
     fn reserved_keywords_return() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, None, &"return");
+        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"return");
         match &res {
             Token::PyReturn(0u32, 6u32, _) => assert!(true),
             _ => assert!(false)
@@ -1303,7 +1305,7 @@ mod tests {
     #[test]
     fn reserved_keywords_try() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, None, &"try");
+        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"try");
         match &res {
             Token::PyTry(0u32, 3u32, _) => assert!(true),
             _ => assert!(false)
@@ -1313,7 +1315,7 @@ mod tests {
     #[test]
     fn reserved_keywords_while() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"while");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"while");
         match &res {
             Token::PyWhile(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
@@ -1323,7 +1325,7 @@ mod tests {
     #[test]
     fn reserved_keywords_with() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"with");
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"with");
         match &res {
             Token::PyWith(0u32, 4u32, _) => assert!(true),
             _ => assert!(false)
@@ -1333,7 +1335,7 @@ mod tests {
     #[test]
     fn reserved_keywords_yield() {
         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"yield");
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"yield");
         match &res {
             Token::PyYield(0u32, 5u32, _) => assert!(true),
             _ => assert!(false)
