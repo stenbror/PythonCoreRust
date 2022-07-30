@@ -9,8 +9,8 @@ use crate::parser::source_buffer::{ SourceBuffer };
 
 pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
-    trivia_collector: Box<Vec<Box<Trivia>>>,
-    current_trivia: Box<Vec<Box<&'static Trivia>>>
+    trivia_collector: Box<Vec<Box<Trivia>>>
+
 }
 
 
@@ -20,8 +20,7 @@ impl PythonCoreTokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer {
         PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
-            trivia_collector: Box::new(Vec::new() ),
-            current_trivia: Box::new(Vec::new() )
+            trivia_collector: Box::new(Vec::new() )
         }
     }
 
@@ -40,225 +39,225 @@ impl PythonCoreTokenizer {
         match ( &a, &b, &c ) {
             ( '*', '*', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyPowerAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyPowerAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', '*', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMulAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMulAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMul(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMul(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '/', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyFloorDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyFloorDivAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '/', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyFloorDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyFloorDiv(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyDivAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyDivAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyDiv(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyDiv(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '.', '.', '.' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyElipsis(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyElipsis(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '.', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '<', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyShiftLeftAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyShiftLeftAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '<', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyShiftLeft(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyShiftLeft(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyLessEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyLessEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyLess(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyLess(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '>', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyShiftRightAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyShiftRightAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyShiftRight(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyShiftRight(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyGreaterEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyGreaterEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyGreater(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyGreater(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '+', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyPlusAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyPlusAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '+', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyPlus(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyPlus(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMinusAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMinusAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyArrow(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyArrow(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMinus(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMinus(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '%', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyModuloAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyModuloAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '%', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyModulo(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyModulo(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '@', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMatriceAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMatriceAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '@', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyMatrice(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyMatrice(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '=', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '=', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '!', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '&', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitAndAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitAndAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '&', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitAnd(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitAnd(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '|', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitOrAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitOrAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '|', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitOr(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitOr(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '^', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitXorAssign(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitXorAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '^', _ , _ ) => {
                 self.source_buffer.advance();
-                let local_trivia = self.current_trivia.clone();
-                self.current_trivia = Box::new( Vec::new() );
-                Some( Token::PyBitXor(*start_pos, *self.source_buffer.get_position(), Some( local_trivia ) ) )
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyBitXor(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
 
             ( _ , _ , _ ) => {
@@ -325,7 +324,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyPowerAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    Token::PyPowerAssign( 0u32, 3u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -343,7 +342,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyPower( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyPower( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -361,7 +360,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMulAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyMulAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -379,7 +378,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMul( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyMul( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -397,7 +396,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyFloorDivAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    Token::PyFloorDivAssign( 0u32, 3u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -415,7 +414,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyFloorDiv( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyFloorDiv( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -433,7 +432,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyDivAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyDivAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -451,7 +450,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyDiv( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyDiv( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -469,7 +468,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyElipsis( 0u32, 3u32, Some(_) ) => assert!(true),
+                    Token::PyElipsis( 0u32, 3u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -487,7 +486,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyDot( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyDot( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -505,7 +504,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyPlusAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyPlusAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -523,7 +522,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyPlus( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyPlus( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -541,7 +540,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMinusAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyMinusAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -559,7 +558,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyArrow( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyArrow( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -577,7 +576,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMinus( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyMinus( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -595,7 +594,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyModuloAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyModuloAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -613,7 +612,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyModulo( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyModulo( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -631,7 +630,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMatriceAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyMatriceAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -649,7 +648,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyMatrice( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyMatrice( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -667,7 +666,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyShiftLeftAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    Token::PyShiftLeftAssign( 0u32, 3u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -685,7 +684,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyShiftLeft( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyShiftLeft( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -703,7 +702,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyNotEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -721,7 +720,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyLessEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyLessEqual( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -739,7 +738,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyLess( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyLess( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -757,7 +756,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyShiftRightAssign( 0u32, 3u32, Some(_) ) => assert!(true),
+                    Token::PyShiftRightAssign( 0u32, 3u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -775,7 +774,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyShiftRight( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyShiftRight( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -793,7 +792,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyGreaterEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyGreaterEqual( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -811,7 +810,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyGreater( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyGreater( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -829,7 +828,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyEqual( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -847,7 +846,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyNotEqual( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -865,7 +864,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyAssign( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyAssign( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -883,7 +882,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitAndAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyBitAndAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -901,7 +900,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitAnd( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyBitAnd( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -919,7 +918,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitOrAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyBitOrAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -937,7 +936,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitOr( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyBitOr( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -955,7 +954,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitXorAssign( 0u32, 2u32, Some(_) ) => assert!(true),
+                    Token::PyBitXorAssign( 0u32, 2u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
@@ -973,7 +972,7 @@ mod tests {
         match &res {
             Some(s) => {
                 match &s {
-                    Token::PyBitXor( 0u32, 1u32, Some(_) ) => assert!(true),
+                    Token::PyBitXor( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
