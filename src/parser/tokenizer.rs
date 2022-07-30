@@ -9,25 +9,33 @@ use crate::parser::source_buffer::{ SourceBuffer };
 
 pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
-    trivia_collector: Box<Vec<Box<Trivia>>>
-
+    trivia_collector: Box<Vec<Box<Trivia>>>,
+    symbol: Option<Box<Token>>
 }
 
 
-// Implementing functions releated to tokenizing of PythonCore ////////////////////////////////////
+// Implementing functions related to tokenizing of PythonCore ////////////////////////////////////
 
 impl PythonCoreTokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer {
         PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
-            trivia_collector: Box::new(Vec::new() )
+            trivia_collector: Box::new(Vec::new() ),
+            symbol: Some( Box::new( Token::Empty ) )
         }
     }
 
     pub fn advance(&self) -> () {}
 
     pub fn get_symbol(&self) -> Box<Token> {
-        Box::new(Token::Empty)
+        match &self.symbol {
+            Some(s) => {
+                Box::new(*s.clone())
+            },
+            None => {
+                Box::new ( Token::Empty )
+            }
+        }
     }
 
     pub fn get_position(&self) -> u32 {
