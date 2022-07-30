@@ -1,6 +1,7 @@
 
 use crate::parser::trivias::{ Trivia };
 
+#[derive(Clone)]
 pub enum Token {
     PyFalse(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
     PyNone(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
