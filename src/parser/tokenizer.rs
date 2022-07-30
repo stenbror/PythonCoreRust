@@ -982,4 +982,34 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn reserved_keywords_false() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, None, &"False");
+        match &res {
+            Token::PyFalse(0u32, 5u32, _) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_none() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"None");
+        match &res {
+            Token::PyNone(0u32, 4u32, _) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_true() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, None, &"True");
+        match &res {
+            Token::PyTrue(0u32, 4u32, _) => assert!(true),
+            _ => assert!(false)
+        }
+    }
 }
