@@ -326,6 +326,30 @@ impl PythonCoreTokenizer {
                 }
                 Some( Token::PyRightCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
+            ( ':', '=', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance() };
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyColonAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( ':', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyColon(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( ';', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PySemiColon(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
+            ( ',', _ , _ ) => {
+                self.source_buffer.advance();
+                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::PyComa(*start_pos, *self.source_buffer.get_position(), trivia ) )
+            },
 
             ( _ , _ , _ ) => {
                 None
@@ -1153,6 +1177,78 @@ mod tests {
             Some(s) => {
                 match &s {
                     Token::PyRightCurly( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_colon_Assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":=".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyColonAssign( 0u32, 2u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_colon() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyColon( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_semi_colon() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ";".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PySemiColon( 0u32, 1u32, None ) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            None => {
+                assert!(false)
+            }
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_coma() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ",".to_string() ) );
+        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+        match &res {
+            Some(s) => {
+                match &s {
+                    Token::PyComa( 0u32, 1u32, None ) => assert!(true),
                     _ => assert!(false)
                 }
             },
