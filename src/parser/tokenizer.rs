@@ -56,6 +56,13 @@ impl PythonCoreTokenizer {
         }
     }
 
+    fn is_binary_digit(&self, ch: char) -> bool {
+        match &ch {
+            '0' ..= '1' => true,
+            _ => false
+        }
+    }
+
     fn keywords_or_name_literal(&mut self) -> Option<Token> {
         let token_start_position = &self.get_position();
         let mut buffer : String = String::new();
@@ -108,13 +115,6 @@ impl PythonCoreTokenizer {
                 }
             },
             _ => None
-        }
-    }
-
-    fn is_binary_digit(&self, ch: char) -> bool {
-        match &ch {
-            '0' ..= '1' => true,
-            _ => false
         }
     }
 
@@ -1721,14 +1721,46 @@ mod tests {
         }
     }
 
-    // #[test]
-    // fn reserved_keywords_atom_name1() {
-    //     let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-    //     let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"match");
-    //     let tst = Box::new( String::from("match") );
-    //     match &res {
-    //         Token::AtomName(0u32, 5u32, None , tst) => assert!(true),
-    //         _ => assert!(false)
-    //     }
-    // }
+    #[test]
+    fn reserved_keywords_atom_name1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("match".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("match") );
+        match &res.unwrap() {
+            Token::AtomName(0u32, 5u32, None , tst) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_atom_name2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("__init__(".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("__init__") );
+        match &res.unwrap() {
+            Token::AtomName(0u32, 8u32, None , tst) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_atom_name3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("A34".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("A34") );
+        match &res.unwrap() {
+            Token::AtomName(0u32, 3u32, None , tst) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn reserved_keywords_assert_outer_function() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("assert(".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        match &res.unwrap() {
+            Token::PyAssert(0u32, 6u32, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
 }
