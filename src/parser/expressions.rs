@@ -616,11 +616,11 @@ impl Expressions for PythonCoreParser {
                 let end_pos = &self.lexer.get_position();
                 Box::new( ASTNode::AtomNumber(*start_pos, *end_pos, symbol) )
             },
-            Token::AtomString( _ , _ , _ , _ ) => {
+            Token::AtomString( .. ) => {
                 let mut nodes : Box<Vec<Box<Token>>> = Box::new( Vec::new() );
                 while
                     match &*self.lexer.get_symbol() {
-                        Token::AtomString( _, _ , _ , _ ) => {
+                        Token::AtomString( .. ) => {
                             let symbol = self.lexer.get_symbol();
                             let _ = &self.lexer.advance();
                             nodes.push(symbol);
