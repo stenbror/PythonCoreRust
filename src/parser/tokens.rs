@@ -87,7 +87,7 @@ pub enum Token {
     PyElipsis(u32, u32, Option<Box<Vec<Box<Trivia>>>>),
     AtomName(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>),
     AtomNumber(u32, u32, Option<Box<[Box<Trivia>]>>, Box<String>),
-    AtomString(u32, u32, Option<Box<[Box<Trivia>]>>, Box<[Box<String>]>, Option<String>),
+    AtomString(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>, Option<String>),
     Newline(u32, u32, Option<Box<[Box<Trivia>]>>),
     Indent(Option<Box<[Box<Trivia>]>>),
     Dedent(Option<Box<[Box<Trivia>]>>),

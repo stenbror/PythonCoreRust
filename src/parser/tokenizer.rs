@@ -64,7 +64,17 @@ impl PythonCoreTokenizer {
     }
 
     fn handling_strings(&mut self, prefix: Option<String>, start_pos: &u32) -> Option<Token> {
-        None
+        let mut buffer : String = String::new();
+        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        match *self.source_buffer.get_char() {
+            '\'' |
+            '"' => {
+
+                self.trivia_collector = Box::new(Vec::new() );
+                Some( Token::AtomString(*start_pos, self.get_position(), trivia, Box::new( buffer ), prefix) )
+            },
+            _ => None
+        }
     }
 
     fn keywords_or_name_literal(&mut self) -> Option<Token> {
