@@ -63,6 +63,30 @@ impl PythonCoreTokenizer {
         }
     }
 
+    fn handling_numbers(&mut self) -> Option<Token> {
+        let mut buffer : String = String::new();
+        let token_start_position = &self.get_position();
+        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        let (a, b, c) = self.source_buffer.peek_three_chars();
+        match (a, b) {
+            ( '.' , '0' ..= '9') => {
+
+                self.trivia_collector = Box::new(Vec::new() );
+                Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
+            },
+            ( '0', _  ) => {
+
+                self.trivia_collector = Box::new(Vec::new() );
+                Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
+            },
+            ( '1' ..= '9', _ ) => {
+
+                self.trivia_collector = Box::new(Vec::new() );
+                Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
+            }, _ => None
+        }
+    }
+
     fn handling_strings(&mut self, prefix: Option<String>, start_pos: &u32) -> Option<Token> {
         let mut buffer : String = String::new();
         let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
