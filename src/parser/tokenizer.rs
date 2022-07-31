@@ -63,6 +63,10 @@ impl PythonCoreTokenizer {
         }
     }
 
+    fn handling_strings(&mut self, prefix: Option<String>, start_pos: &u32) -> Option<Token> {
+        None
+    }
+
     fn keywords_or_name_literal(&mut self) -> Option<Token> {
         let token_start_position = &self.get_position();
         let mut buffer : String = String::new();
@@ -95,8 +99,7 @@ impl PythonCoreTokenizer {
                                     "rF" |
                                     "Rf" |
                                     "RF" => {
-                                        // TODO: Handle string with prefix here
-                                        None
+                                        self.handling_strings(Some( buffer ), token_start_position)
                                     },
                                     _ => {
                                         let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
