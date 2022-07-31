@@ -18,7 +18,7 @@ pub struct PythonCoreTokenizer {
 // Implementing functions related to tokenizing of PythonCore ////////////////////////////////////
 
 impl PythonCoreTokenizer {
-    fn new(buffer: String) -> PythonCoreTokenizer {
+    pub fn new(buffer: String) -> PythonCoreTokenizer {
         PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
             trivia_collector: Box::new(Vec::new() ),

@@ -6,6 +6,7 @@ use crate::parser::statements;
 use crate::parser::patterns;
 use crate::parser::blocks;
 
+
 pub struct PythonCoreParser {
     pub lexer: Box<PythonCoreTokenizer>
 }
@@ -17,6 +18,6 @@ pub trait Parser {
 
 impl Parser for PythonCoreParser {
     fn new(lexer: Box<PythonCoreTokenizer>) -> PythonCoreParser {
-        PythonCoreParser { lexer: lexer }
+        PythonCoreParser { lexer }
     }
 }
