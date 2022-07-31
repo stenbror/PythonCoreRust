@@ -1938,4 +1938,52 @@ mod tests {
             _ => assert!(false)
         }
     }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_r() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("r'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("r") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_u() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("u'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("u") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_r() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("R'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("R") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_u() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("U'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("U") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
 }
