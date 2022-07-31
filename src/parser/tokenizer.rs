@@ -199,6 +199,7 @@ impl PythonCoreTokenizer {
                                     "f" |
                                     "F" |
                                     "fr" |
+                                    "Fr" |
                                     "fR" |
                                     "FR" |
                                     "rf" |
@@ -1983,6 +1984,138 @@ mod tests {
         let prefix = Box::new( String::from("U") );
         match &res.unwrap() {
             Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_f() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("f'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("f") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_f() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("F'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("F") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_fr() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("fr'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("fr") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_fr() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("Fr'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("Fr") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_f_capitol_r() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("fR'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("fR") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_f_capitol_r() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("FR'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("FR") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_rf() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("rf'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("rf") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_rf() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("rF'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("rF") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_r_f() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("Rf'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("Rf") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_with_prefix_capitol_r_capitol_f() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF'Hello, World!'".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("'Hello, World!'") );
+        let prefix = Box::new( String::from("RF") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_double_quote_with_prefix_capitol_r_capitol_f() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF\"Hello, World!\"".to_string()));
+        let res = tokenizer.keywords_or_name_literal();
+        let tst = Box::new( String::from("\"Hello, World!\"") );
+        let prefix = Box::new( String::from("RF") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
             _ => assert!(false)
         }
     }
