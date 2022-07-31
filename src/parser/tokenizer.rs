@@ -1872,4 +1872,70 @@ mod tests {
             _ => assert!(false)
         }
     }
+
+    #[test]
+    fn string_handling_triple_single_quote_empty() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("''''''".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("''''''") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 6u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_triple_double_quote_empty() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"\"\"\"\"".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("\"\"\"\"\"\"") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 6u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_empty() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("''".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("''") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 2u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_double_quote_empty() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("\"\"") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 2u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_single_quote_hello_world() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("'Hello, World!'".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("'Hello, World!'") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 15u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn string_handling_double_quote_hello_world() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"Hello, World!\"".to_string()));
+        let res = tokenizer.handling_strings(None, &0u32);
+        let tst = Box::new( String::from("\"Hello, World!\"") );
+        match &res.unwrap() {
+            Token::AtomString(0u32, 15u32, None, tst, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
 }
