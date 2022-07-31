@@ -69,7 +69,103 @@ impl PythonCoreTokenizer {
         match *self.source_buffer.get_char() {
             '\'' |
             '"' => {
-
+                match &self.source_buffer.peek_three_chars() {
+                    ( '"', '"', '"' ) => {
+                        for i in 1 ..= 3 {
+                            buffer.push('"');
+                            self.source_buffer.advance();
+                        }
+                        while match &self.source_buffer.peek_three_chars() {
+                            ( '"', '"', '"' ) => {
+                                for i in 1 ..= 3 {
+                                    buffer.push('"');
+                                    self.source_buffer.advance();
+                                }
+                                false
+                            }, // TODO: Handle end of file inside tripple string in interactive mode!
+                            _ => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            }
+                        } {};
+                    },
+                    ( '"', '"' , _ ) => { // Empty ""
+                        for i in 1 ..= 2 {
+                            buffer.push('"');
+                            self.source_buffer.advance();
+                        }
+                    },
+                    ( '"', _ , _ ) => { // Single quote string with "
+                        buffer.push('"');
+                        self.source_buffer.advance();
+                        while match &self.source_buffer.get_char() {
+                            '"' => {
+                                buffer.push('"');
+                                self.source_buffer.advance();
+                                false
+                            },
+                            '\0' |
+                            '\r' |
+                            '\n' => {
+                                panic!("Syntax Error at {} - Unterminated single quote string literal!", &self.get_position())
+                            },
+                            _ => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            }
+                        } {};
+                    },
+                    ( '\'', '\'', '\'' ) => {
+                        for i in 1 ..= 3 {
+                            buffer.push('\'');
+                            self.source_buffer.advance();
+                        }
+                        while match &self.source_buffer.peek_three_chars() {
+                            ( '\'', '\'', '\'' ) => {
+                                for i in 1 ..= 3 {
+                                    buffer.push('\'');
+                                    self.source_buffer.advance();
+                                }
+                                false
+                            }, // TODO: Handle end of file inside tripple string in interactive mode!
+                            _ => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            }
+                        } {};
+                    },
+                    ( '\'', '\'', _ ) => { // Empty ''
+                        for i in 1 ..= 2 {
+                            buffer.push('"');
+                            self.source_buffer.advance();
+                        }
+                    },
+                    ( '\'', _ , _ ) => { // Single quote string with '
+                        buffer.push('\'');
+                        self.source_buffer.advance();
+                        while match &self.source_buffer.get_char() {
+                            '\'' => {
+                                buffer.push('\'');
+                                self.source_buffer.advance();
+                                false
+                            },
+                            '\0' |
+                            '\r' |
+                            '\n' => {
+                                panic!("Syntax Error at {} - Unterminated single quote string literal!", &self.get_position())
+                            },
+                            _ => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            }
+                        } {};
+                    },
+                    _ => { }
+                }
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::AtomString(*start_pos, self.get_position(), trivia, Box::new( buffer ), prefix) )
             },
