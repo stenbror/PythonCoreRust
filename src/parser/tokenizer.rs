@@ -41,28 +41,6 @@ impl PythonCoreTokenizer {
         }
     }
 
-    fn is_hex_digit(&self, ch: char) -> bool {
-        match &ch {
-            'a' ..= 'f' => true,
-            'A' ..= 'F' => true,
-            _ => ch.is_ascii_digit()
-        }
-    }
-
-    fn is_octet_digit(&self, ch: char) -> bool {
-        match &ch {
-            '0'..='7' => true,
-            _ => false
-        }
-    }
-
-    fn is_binary_digit(&self, ch: char) -> bool {
-        match &ch {
-            '0' ..= '1' => true,
-            _ => false
-        }
-    }
-
     fn handling_numbers(&mut self) -> Option<Token> {
         let mut buffer : String = String::new();
         let token_start_position = &self.get_position();
@@ -111,8 +89,31 @@ impl PythonCoreTokenizer {
                     'o' | 'O' => {
                         buffer.push( self.source_buffer.get_char().clone() );
                         self.source_buffer.advance();
-
-
+                        match &self.source_buffer.get_char() {
+                            '0' ..= '7' | '_' => {},
+                            _ => {
+                                panic!("Syntax Error at {} - Expected digit or '_' after '0o' or '0O'!", &self.get_position())
+                            }
+                        }
+                        while match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0' ..= '7' => {},
+                                    _ => {
+                                        panic!("Syntax Error at {} - Expected digit or '_' after '0o' or '0O'!", &self.get_position())
+                                    }
+                                }
+                                true
+                            },
+                            '0' ..= '7' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
                     },
                     'b' | 'B' => {
                         buffer.push( self.source_buffer.get_char().clone() );
@@ -2224,6 +2225,39 @@ mod tests {
         let tst = Box::new( String::from("0x_af_10") );
         match &res.unwrap() {
             Token::AtomNumber(0u32, 8u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_octet_number_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o755".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0o755") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_octet_number_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0O755".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0O755") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_octet_number_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o_7_5_5".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0o_7_5_5") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
             _ => assert!(false)
         }
     }
