@@ -238,7 +238,7 @@ impl PythonCoreTokenizer {
                     },
                     ( '\'', '\'', _ ) => { // Empty ''
                         for i in 1 ..= 2 {
-                            buffer.push('"');
+                            buffer.push('\'');
                             self.source_buffer.advance();
                         }
                     },
@@ -1979,7 +1979,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("''''''") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 6u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 6u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -1990,7 +1992,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("\"\"\"\"\"\"") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 6u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 6u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -2001,7 +2005,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("''") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 2u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 2u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -2012,7 +2018,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("\"\"") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 2u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 2u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -2023,7 +2031,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("'Hello, World!'") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 15u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 15u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -2034,7 +2044,9 @@ mod tests {
         let res = tokenizer.handling_strings(None, &0u32);
         let tst = Box::new( String::from("\"Hello, World!\"") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 15u32, None, tst, None ) => assert!(true),
+            Token::AtomString(0u32, 15u32, None, s, None ) => {
+                assert_eq!(tst.as_str(), s.as_str());
+            },
             _ => assert!(false)
         }
     }
@@ -2046,7 +2058,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("r") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2058,7 +2074,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("u") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2070,7 +2090,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("R") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2082,7 +2106,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("U") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2094,7 +2122,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("f") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2106,7 +2138,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("F") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 16u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2118,7 +2154,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("fr") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2130,7 +2170,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("Fr") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2142,7 +2186,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("fR") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2154,7 +2202,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("FR") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2166,7 +2218,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("rf") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2178,7 +2234,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("rF") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2190,7 +2250,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("Rf") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2202,7 +2266,11 @@ mod tests {
         let tst = Box::new( String::from("'Hello, World!'") );
         let prefix = Box::new( String::from("RF") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
@@ -2214,7 +2282,11 @@ mod tests {
         let tst = Box::new( String::from("\"Hello, World!\"") );
         let prefix = Box::new( String::from("RF") );
         match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            Token::AtomString(0u32, 17u32, None, s, p ) => {
+                let pre = p.as_ref().unwrap().as_str();
+                assert_eq!(tst.as_str(), s.as_str());
+                assert_eq!(&prefix.as_str(), &pre)
+            },
             _ => assert!(false)
         }
     }
