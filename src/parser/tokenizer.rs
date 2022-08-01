@@ -71,10 +71,61 @@ impl PythonCoreTokenizer {
         match (a, b) {
             ( '.' , '0' ..= '9') => {
 
+
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
             },
             ( '0', _  ) => {
+                buffer.push( self.source_buffer.get_char().clone() );
+                self.source_buffer.advance();
+                match &self.source_buffer.get_char()  {
+                    'x' | 'X' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        match &self.source_buffer.get_char() {
+                            '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' | '_' => {},
+                            _ => {
+                                panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                            }
+                        }
+                        while match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' => {},
+                                    _ => {
+                                        panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                    }
+                                }
+                                true
+                            },
+                            '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    'o' | 'O' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+
+
+                    },
+                    'b' | 'B' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+
+
+                    },
+                    _ => {
+
+
+
+                    }
+                }
 
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
@@ -2140,6 +2191,39 @@ mod tests {
         let prefix = Box::new( String::from("RF") );
         match &res.unwrap() {
             Token::AtomString(0u32, 17u32, None, tst, prefix ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_hex_number_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xaf10".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0xaf10") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_hex_number_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xAF10".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0xAF10") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 6u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_hex_number_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0x_af_10".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0x_af_10") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 8u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
             _ => assert!(false)
         }
     }
