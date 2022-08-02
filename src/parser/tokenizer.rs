@@ -95,13 +95,13 @@ impl PythonCoreTokenizer {
                             },
                             _ => false
                         } {};
-                        match &self.source_buffer.get_char() {
-                            'j' | 'J' => {
-                                buffer.push(self.source_buffer.get_char().clone());
-                                self.source_buffer.advance();
-                            },
-                            _ => {}
-                        }
+                    },
+                    _ => {}
+                }
+                match &self.source_buffer.get_char() {
+                    'j' | 'J' => {
+                        buffer.push(self.source_buffer.get_char().clone());
+                        self.source_buffer.advance();
                     },
                     _ => {}
                 }
@@ -200,16 +200,103 @@ impl PythonCoreTokenizer {
                         } {};
                     },
                     _ => {
-
-
-
+                        let mut non_zero = false;
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        while   match &self.source_buffer.get_char() {
+                                    '0' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        true
+                                    },
+                                    '1' ..= '9' => {
+                                        non_zero = true;
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        true
+                                    },
+                                    _ => false
+                                } {};
+                        match &self.source_buffer.get_char() {
+                            '.'  => {
+                                non_zero = false;
+                                buffer.push(self.source_buffer.get_char().clone());
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '_' => panic!("Syntax Error at {} - Expected digit after '.'!", &self.get_position()),
+                                    _ => {}
+                                }
+                                while   match &self.source_buffer.get_char() {
+                                    '_' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        match &self.source_buffer.get_char() {
+                                            '0'..='9' => true,
+                                            _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                        }
+                                    },
+                                    '0' ..= '9' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        true
+                                    },
+                                    _ => false
+                                } {};
+                            },
+                            _ => {}
+                        }
+                        match &self.source_buffer.get_char() {
+                            'e' | 'E' => {
+                                non_zero = false;
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '+' | '-' => {
+                                        buffer.push(self.source_buffer.get_char().clone());
+                                        self.source_buffer.advance();
+                                    },
+                                    _ => {}
+                                }
+                                while   match &self.source_buffer.get_char() {
+                                    '_' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        match &self.source_buffer.get_char() {
+                                            '0'..='9' => true,
+                                            _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                        }
+                                    },
+                                    '0' ..= '9' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        true
+                                    },
+                                    _ => false
+                                } {};
+                            },
+                            _ => {}
+                        }
+                        match &self.source_buffer.get_char() {
+                            'j' | 'J' => {
+                                non_zero = false;
+                                buffer.push(self.source_buffer.get_char().clone());
+                                self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        match &non_zero {
+                            true => panic!("Syntax Error at {} - Leading zero in a integer number is not allowed'!", &self.get_position()),
+                            _ => {}
+                        }
                     }
                 }
-
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
             },
             ( '1' ..= '9', _ ) => {
+
+
+
 
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
@@ -2562,6 +2649,28 @@ mod tests {
         let tst = Box::new( String::from(".001E+34J") );
         match &res.unwrap() {
             Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_12() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_13() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0j".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0j") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
             _ => assert!(false)
         }
     }
