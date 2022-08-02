@@ -48,8 +48,63 @@ impl PythonCoreTokenizer {
         let (a, b, c) = self.source_buffer.peek_three_chars();
         match (a, b) {
             ( '.' , '0' ..= '9') => {
-
-
+                for i in 1..= 2 {
+                    buffer.push( self.source_buffer.get_char().clone() );
+                    self.source_buffer.advance();
+                }
+                while   match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                match &self.source_buffer.get_char() {
+                    'e' | 'E' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        match &self.source_buffer.get_char() {
+                            '+' | '-' => {
+                                buffer.push(self.source_buffer.get_char().clone());
+                                self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        while   match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                        match &self.source_buffer.get_char() {
+                            'j' | 'J' => {
+                                buffer.push(self.source_buffer.get_char().clone());
+                                self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
             },
@@ -2386,6 +2441,127 @@ mod tests {
         let tst = Box::new( String::from("0b_1_0_1") );
         match &res.unwrap() {
             Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 2u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1e3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_4() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e-3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1e-3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_5() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1e+3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_6() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4j".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1e+3_4j") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_7() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1E3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_8() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E-3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1E-3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_9() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1E+3_4") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_10() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".0_0_1E+3_4J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_dot_digits_11() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".001E+34J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from(".001E+34J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
             _ => assert!(false)
         }
     }
