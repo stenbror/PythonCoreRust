@@ -294,10 +294,86 @@ impl PythonCoreTokenizer {
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
             },
             ( '1' ..= '9', _ ) => {
-
-
-
-
+                while   match &self.source_buffer.get_char() {
+                    '_' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        match &self.source_buffer.get_char() {
+                            '0'..='9' => true,
+                            _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                        }
+                    },
+                    '0' ..= '9' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        true
+                    },
+                    _ => false
+                } {};
+                match &self.source_buffer.get_char() {
+                    '.'  => {
+                        buffer.push(self.source_buffer.get_char().clone());
+                        self.source_buffer.advance();
+                        match &self.source_buffer.get_char() {
+                            '_' => panic!("Syntax Error at {} - Expected digit after '.'!", &self.get_position()),
+                            _ => {}
+                        }
+                        while   match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {}
+                }
+                match &self.source_buffer.get_char() {
+                    'e' | 'E' => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        match &self.source_buffer.get_char() {
+                            '+' | '-' => {
+                                buffer.push(self.source_buffer.get_char().clone());
+                                self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        while   match &self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => panic!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position())
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {}
+                }
+                match &self.source_buffer.get_char() {
+                    'j' | 'J' => {
+                        buffer.push(self.source_buffer.get_char().clone());
+                        self.source_buffer.advance();
+                    },
+                    _ => {}
+                }
                 self.trivia_collector = Box::new(Vec::new() );
                 Some ( Token::AtomNumber(token_start_position.clone(), self.get_position(), trivia, Box::new( buffer )) )
             }, _ => None
