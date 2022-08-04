@@ -2750,4 +2750,28 @@ mod tests {
             _ => assert!(false)
         }
     }
+
+    #[test]
+    fn handling_number_nonzero_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("1".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("1") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 1u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("911") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+
 }
