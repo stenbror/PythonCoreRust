@@ -2773,5 +2773,158 @@ mod tests {
         }
     }
 
+    #[test]
+    fn handling_number_nonzero_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("911.") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 4u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_4() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("911.1") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_5() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1_2".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("911.1_2") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 7u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_6() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_7() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2e-34") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 13u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_8() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2e-34J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 14u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_9() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-3_4J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2e-3_4J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_10() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4J".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2E-3_4J") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_11() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4j".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2E-3_4j") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_12() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2j".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2j") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_13() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1.1_2") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_nonzero_14() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("9_1_1") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_zero_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0.0") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_number_zero_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0000".to_string()));
+        let res = tokenizer.handling_numbers();
+        let tst = Box::new( String::from("0.0000") );
+        match &res.unwrap() {
+            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
 
 }
