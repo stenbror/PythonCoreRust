@@ -926,7 +926,7 @@ impl PythonCoreTokenizer {
 
 #[cfg(test)]
 mod tests {
-    use crate::ASTNode::PlusAssignStmt;
+
     use crate::parser::tokenizer::PythonCoreTokenizer;
     use crate::Token;
 
