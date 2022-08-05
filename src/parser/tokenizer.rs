@@ -44,7 +44,12 @@ impl PythonCoreTokenizer {
     fn handling_numbers(&mut self) -> Option<Token> {
         let mut buffer : String = String::new();
         let token_start_position = &self.get_position();
-        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        let trivia = if self.trivia_collector.is_empty() { None } else
+        {
+            let mut trivia_tmp = self.trivia_collector.clone();
+            trivia_tmp.reverse();
+            Some( trivia_tmp )
+        };
         let (a, b, c) = self.source_buffer.peek_three_chars();
         match (a, b) {
             ( '.' , '0' ..= '9') => {
@@ -382,7 +387,12 @@ impl PythonCoreTokenizer {
 
     fn handling_strings(&mut self, prefix: Option<String>, start_pos: &u32) -> Option<Token> {
         let mut buffer : String = String::new();
-        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        let trivia = if self.trivia_collector.is_empty() { None } else
+        {
+            let mut trivia_tmp = self.trivia_collector.clone();
+            trivia_tmp.reverse();
+            Some( trivia_tmp )
+        };
         match *self.source_buffer.get_char() {
             '\'' |
             '"' => {
@@ -526,14 +536,22 @@ impl PythonCoreTokenizer {
                                         self.handling_strings(Some( buffer ), token_start_position)
                                     },
                                     _ => {
-                                        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                                        let trivia = if self.trivia_collector.is_empty() { None } else {
+                                            let mut trivia_tmp = self.trivia_collector.clone();
+                                            trivia_tmp.reverse();
+                                            Some( trivia_tmp )
+                                        };
                                         self.trivia_collector = Box::new(Vec::new() );
                                         Some( Token::AtomName(*token_start_position, self.get_position(), trivia, Box::new( buffer ) ))
                                     }
                                 }
                             },
                             _ => {
-                                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                                let trivia = if self.trivia_collector.is_empty() { None } else {
+                                    let mut trivia_tmp = self.trivia_collector.clone();
+                                    trivia_tmp.reverse();
+                                    Some( trivia_tmp )
+                                };
                                 self.trivia_collector = Box::new(Vec::new() );
                                 Some( Token::AtomName(*token_start_position, self.get_position(), trivia, Box::new( buffer ) ))
                             }
@@ -567,250 +585,414 @@ impl PythonCoreTokenizer {
         match ( &a, &b, &c ) {
             ( '*', '*', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyPowerAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', '*', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyPower(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMulAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '*', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMul(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '/', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyFloorDivAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '/', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyFloorDiv(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyDivAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '/', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyDiv(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '.', '.', '.' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyElipsis(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '.', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyDot(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '<', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyShiftLeftAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '<', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyShiftLeft(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyLessEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '<', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyLess(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '>', '=' ) => {
                 for i in 1 ..= 3 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyShiftRightAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyShiftRight(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyGreaterEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '>', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyGreater(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '+', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyPlusAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '+', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyPlus(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMinusAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', '>', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyArrow(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '-', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMinus(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '%', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyModuloAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '%', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyModulo(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '@', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMatriceAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '@', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyMatrice(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '=', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '=', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '!', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyNotEqual(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '&', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitAndAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '&', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitAnd(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '|', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitOrAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '|', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitOr(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '^', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitXorAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '^', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitXor(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '(', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 &self.parenthesis.push(')');
                 Some( Token::PyLeftParen(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '[', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 &self.parenthesis.push(']');
                 Some( Token::PyLeftBracket(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '{', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 &self.parenthesis.push('}');
                 Some( Token::PyLeftCurly(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ')', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 match &self.parenthesis.last() {
                     Some( ')' ) => { self.parenthesis.pop(); },
@@ -822,7 +1004,11 @@ impl PythonCoreTokenizer {
             },
             ( ']', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 match &self.parenthesis.last() {
                     Some( ']' ) => { self.parenthesis.pop(); },
@@ -834,7 +1020,11 @@ impl PythonCoreTokenizer {
             },
             ( '}', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 match &self.parenthesis.last() {
                     Some( '}' ) => { self.parenthesis.pop(); },
@@ -846,31 +1036,51 @@ impl PythonCoreTokenizer {
             },
             ( ':', '=', _ ) => {
                 for i in 1 ..= 2 { self.source_buffer.advance() };
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyColonAssign(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ':', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyColon(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ';', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PySemiColon(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( ',', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyComa(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
             ( '~', _ , _ ) => {
                 self.source_buffer.advance();
-                let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+                let trivia = if self.trivia_collector.is_empty() { None } else {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    Some( trivia_tmp )
+                };
                 self.trivia_collector = Box::new(Vec::new() );
                 Some( Token::PyBitInvert(*start_pos, *self.source_buffer.get_position(), trivia ) )
             },
@@ -884,7 +1094,8 @@ impl PythonCoreTokenizer {
     fn is_reserved_keyword(&mut self, start_pos: &u32, end_pos: &u32, buffer: &str) -> Option<Token> {
         let trivia = if self.trivia_collector.is_empty() { None } else
         {
-            let trivia_tmp = self.trivia_collector.clone();
+            let mut trivia_tmp = self.trivia_collector.clone();
+            trivia_tmp.reverse();
             self.trivia_collector = Box::new( Vec::new() );
             Some( trivia_tmp )
         };
