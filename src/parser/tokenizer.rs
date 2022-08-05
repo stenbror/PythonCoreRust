@@ -882,7 +882,12 @@ impl PythonCoreTokenizer {
 
     /// This method checks for reserved keywords or atom name literal and provides token with position and trivia collected in fron ot token
     fn is_reserved_keyword(&mut self, start_pos: &u32, end_pos: &u32, buffer: &str) -> Option<Token> {
-        let trivia = if self.trivia_collector.is_empty() { None } else { Some( self.trivia_collector.clone() ) };
+        let trivia = if self.trivia_collector.is_empty() { None } else
+        {
+            let trivia_tmp = self.trivia_collector.clone();
+            self.trivia_collector = Box::new( Vec::new() );
+            Some( trivia_tmp )
+        };
         match &*buffer {
             "False" => Some( Token::PyFalse(*start_pos, *end_pos, trivia) ),
             "None" => Some( Token::PyNone(*start_pos, *end_pos, trivia) ),
@@ -922,7 +927,41 @@ impl PythonCoreTokenizer {
             _ => None
         }
     }
+
+    fn type_comment(&mut self) -> Option<Token> {
+        let token_start_position = &self.get_position();
+        match *self.source_buffer.get_char() {
+            '#' => {
+                let mut buffer : String = String::new();
+                let token_start_position = &self.get_position();
+                buffer.push( self.source_buffer.get_char().clone() );
+                self.source_buffer.advance();
+                while match *self.source_buffer.get_char() {
+                    '\r' | '\n' | '\0' => false,
+                    _ => {
+                        buffer.push( self.source_buffer.get_char().clone() );
+                        self.source_buffer.advance();
+                        true
+                    }
+                } {};
+                match buffer.as_str().starts_with("#type:") {
+                    true => {
+                        let trivia = self.trivia_collector.clone().reverse();
+                        self.trivia_collector = Box::new( Vec::new() );
+                        Some( Token::TypeComment(*token_start_position, self.get_position(), Box::new( buffer ) ) )
+                    },
+                    _ => {
+                        self.trivia_collector.push(Box::new( Trivia::Comment(*token_start_position, self.get_position(), buffer) ) );
+                        None
+                    }
+                }
+            },
+            _ => None
+        }
+    }
+
 }
+
 
 #[cfg(test)]
 mod tests {
