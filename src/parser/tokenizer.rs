@@ -3313,4 +3313,15 @@ mod tests {
         }
     }
 
+    #[test]
+    fn handling_end_of_file() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\0".to_string()));
+        tokenizer.is_blank_line = false;
+        let res = tokenizer.handle_end_of_file();
+        match &res.unwrap() {
+            Token::EOF(0u32, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
 }
