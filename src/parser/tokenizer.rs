@@ -3259,4 +3259,46 @@ mod tests {
         }
     }
 
+    #[test]
+    fn handling_newline_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r\n".to_string()));
+        tokenizer.is_blank_line = false;
+        let res = tokenizer.handle_newlines();
+        match &res.unwrap() {
+            Token::Newline(0u32, 2u32, None, s, r ) => {
+                assert_eq!('\r', *s);
+                assert_eq!('\n', *r);
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_newline_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r".to_string()));
+        tokenizer.is_blank_line = false;
+        let res = tokenizer.handle_newlines();
+        match &res.unwrap() {
+            Token::Newline(0u32, 1u32, None, s, r ) => {
+                assert_eq!('\r', *s);
+                assert_eq!(' ', *r);
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_newline_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\n".to_string()));
+        tokenizer.is_blank_line = false;
+        let res = tokenizer.handle_newlines();
+        match &res.unwrap() {
+            Token::Newline(0u32, 1u32, None, s, r ) => {
+                assert_eq!('\n', *s);
+                assert_eq!(' ', *r);
+            },
+            _ => assert!(false)
+        }
+    }
+
 }
