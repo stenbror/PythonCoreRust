@@ -1139,7 +1139,7 @@ impl PythonCoreTokenizer {
         }
     }
 
-    fn type_comment(&mut self) -> Option<Token> {
+    fn handle_type_comment(&mut self) -> Option<Token> {
         let token_start_position = &self.get_position();
         match *self.source_buffer.get_char() {
             '#' => {
@@ -1155,11 +1155,16 @@ impl PythonCoreTokenizer {
                         true
                     }
                 } {};
-                match buffer.as_str().starts_with("#type:") {
+                match buffer.as_str().starts_with("# type:") {
                     true => {
-                        let trivia = self.trivia_collector.clone().reverse();
-                        self.trivia_collector = Box::new( Vec::new() );
-                        Some( Token::TypeComment(*token_start_position, self.get_position(), Box::new( buffer ) ) )
+                        let trivia = if self.trivia_collector.is_empty() { None } else
+                        {
+                            let mut trivia_tmp = self.trivia_collector.clone();
+                            trivia_tmp.reverse();
+                            self.trivia_collector = Box::new( Vec::new() );
+                            Some( trivia_tmp )
+                        };
+                        Some( Token::TypeComment(*token_start_position, self.get_position(), trivia, Box::new( buffer ) ) )
                     },
                     _ => {
                         self.trivia_collector.push(Box::new( Trivia::Comment(*token_start_position, self.get_position(), buffer) ) );
@@ -3173,6 +3178,17 @@ mod tests {
         let tst = Box::new( String::from("0.0000") );
         match &res.unwrap() {
             Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_type_comment() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("# type: Int".to_string()));
+        let res = tokenizer.handle_type_comment();
+        let tst = Box::new( String::from("# type: Int") );
+        match &res.unwrap() {
+            Token::TypeComment(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
             _ => assert!(false)
         }
     }
