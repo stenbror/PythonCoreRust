@@ -89,9 +89,9 @@ pub enum Token {
     AtomNumber(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>),
     AtomString(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>, Option<String>),
     Newline(u32, u32, Option<Box<Vec<Box<Trivia>>>>, char, char),
-    Indent(Option<Box<[Box<Trivia>]>>),
-    Dedent(Option<Box<[Box<Trivia>]>>),
+    Indent(Option<Box<Vec<Box<Trivia>>>>),
+    Dedent(Option<Box<Vec<Box<Trivia>>>>),
     TypeComment(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>),
-    EOF(u32, Option<Box<[Box<Trivia>]>>),
+    EOF(u32, Option<Box<Vec<Box<Trivia>>>>),
     Empty
 } 

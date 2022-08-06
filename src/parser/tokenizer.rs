@@ -1228,8 +1228,20 @@ impl PythonCoreTokenizer {
     }
 
     fn handle_end_of_file(&mut self) -> Option<Token> {
-
-        None
+        let token_start_position = &self.get_position();
+        match *self.source_buffer.get_char() {
+            '\0' => {
+                let trivia = if self.trivia_collector.is_empty() { None } else
+                {
+                    let mut trivia_tmp = self.trivia_collector.clone();
+                    trivia_tmp.reverse();
+                    self.trivia_collector = Box::new( Vec::new() );
+                    Some( trivia_tmp )
+                };
+                Some( Token::EOF( *token_start_position, trivia) )
+            },
+            _ => None
+        }
     }
 
     fn handle_whitespace(&mut self) -> Option<Token> {
