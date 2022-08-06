@@ -11,7 +11,8 @@ pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
     trivia_collector: Box<Vec<Box<Trivia>>>,
     symbol: Option<Box<Token>>,
-    parenthesis: Vec<char>
+    parenthesis: Vec<char>,
+    is_blank_line: bool
 }
 
 
@@ -23,7 +24,8 @@ impl PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
             trivia_collector: Box::new(Vec::new() ),
             symbol: Some( Box::new( Token::Empty ) ),
-            parenthesis: Vec::new()
+            parenthesis: Vec::new(),
+            is_blank_line: true
         }
     }
 
@@ -1177,8 +1179,52 @@ impl PythonCoreTokenizer {
     }
 
     fn handle_newlines(&mut self) -> Option<Token> {
-
-        None
+        let token_start_position = &self.get_position();
+        match &self.source_buffer.peek_three_chars() {
+            ( '\r', '\n', _ ) => {
+                for i in 1 ..= 2 { self.source_buffer.advance(); }
+                match ( &self.is_blank_line, &self.parenthesis.is_empty() ) {
+                    ( true, false ) => {
+                        let trivia_entry = Box::new( Trivia::Newline(*token_start_position, self.get_position(), '\r', '\n') );
+                        self.trivia_collector.push(trivia_entry);
+                        None
+                    },
+                    _ => {
+                        let trivia = if self.trivia_collector.is_empty() { None } else
+                        {
+                            let mut trivia_tmp = self.trivia_collector.clone();
+                            trivia_tmp.reverse();
+                            self.trivia_collector = Box::new( Vec::new() );
+                            Some( trivia_tmp )
+                        };
+                        Some( Token::Newline(*token_start_position, self.get_position(), trivia, '\r', '\n' ) )
+                    }
+                }
+            },
+            ( '\r', _ , _  ) |
+            ( '\n', _ , _  ) => {
+                let ch = self.source_buffer.get_char().clone();
+                self.source_buffer.advance();
+                match ( &self.is_blank_line, &self.parenthesis.is_empty() ) {
+                    ( true, false ) => {
+                        let trivia_entry = Box::new( Trivia::Newline(*token_start_position, self.get_position(), ch, ' ') );
+                        self.trivia_collector.push(trivia_entry);
+                        None
+                    },
+                    _ => {
+                        let trivia = if self.trivia_collector.is_empty() { None } else
+                        {
+                            let mut trivia_tmp = self.trivia_collector.clone();
+                            trivia_tmp.reverse();
+                            self.trivia_collector = Box::new( Vec::new() );
+                            Some( trivia_tmp )
+                        };
+                        Some( Token::Newline(*token_start_position, self.get_position(), trivia, ch, ' ' ) )
+                    }
+                }
+            },
+            _ => None
+        }
     }
 
     fn handle_end_of_file(&mut self) -> Option<Token> {
