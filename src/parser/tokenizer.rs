@@ -1176,6 +1176,26 @@ impl PythonCoreTokenizer {
         }
     }
 
+    fn handle_newlines(&mut self) -> Option<Token> {
+
+        None
+    }
+
+    fn handle_end_of_file(&mut self) -> Option<Token> {
+
+        None
+    }
+
+    fn handle_whitespace(&mut self) -> Option<Token> {
+
+        None
+    }
+
+    fn handle_line_continuation(&mut self) -> Option<Token> {
+
+        None
+    }
+
 }
 
 
