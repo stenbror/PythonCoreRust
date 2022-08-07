@@ -1284,6 +1284,7 @@ impl PythonCoreTokenizer {
 mod tests {
 
     use crate::parser::tokenizer::PythonCoreTokenizer;
+    use crate::parser::trivias::Trivia;
     use crate::Token;
 
 
@@ -3343,6 +3344,42 @@ mod tests {
         let res = tokenizer.handle_end_of_file();
         match &res.unwrap() {
             Token::EOF(0u32, None ) => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_line_continuation_1() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r\n".to_string()));
+        tokenizer.is_blank_line = false;
+        let _ = tokenizer.handle_line_continuation();
+        assert!(!tokenizer.trivia_collector.is_empty());
+        match *tokenizer.trivia_collector.pop().unwrap() {
+            Trivia::LineContinuation( 0u32, 3u32, '\\', '\r', '\n') => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_line_continuation_2() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r".to_string()));
+        tokenizer.is_blank_line = false;
+        let _ = tokenizer.handle_line_continuation();
+        assert!(!tokenizer.trivia_collector.is_empty());
+        match *tokenizer.trivia_collector.pop().unwrap() {
+            Trivia::LineContinuation( 0u32, 2u32, '\\', '\r', ' ') => assert!(true),
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn handling_line_continuation_3() {
+        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\n".to_string()));
+        tokenizer.is_blank_line = false;
+        let _ = tokenizer.handle_line_continuation();
+        assert!(!tokenizer.trivia_collector.is_empty());
+        match *tokenizer.trivia_collector.pop().unwrap() {
+            Trivia::LineContinuation( 0u32, 2u32, '\\', '\n', ' ') => assert!(true),
             _ => assert!(false)
         }
     }
