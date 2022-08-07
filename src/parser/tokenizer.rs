@@ -1245,8 +1245,31 @@ impl PythonCoreTokenizer {
     }
 
     fn handle_whitespace(&mut self) -> Option<Token> {
-
-        None
+        match *self.source_buffer.get_char() {
+            ' ' | '\t' => {
+                    while
+                        match *self.source_buffer.get_char() {
+                            ' ' => {
+                                let token_start_position = &self.get_position();
+                                &self.source_buffer.advance();
+                                while match *self.source_buffer.get_char() { ' ' =>  { &self.source_buffer.advance(); true }, _ => false} {};
+                                let trivia = Box::new( Trivia::Whitespace(*token_start_position, self.get_position(), ' ') );
+                                self.trivia_collector.push(trivia);
+                                true
+                            },
+                            '\t' => {
+                                let token_start_position = &self.get_position();
+                                &self.source_buffer.advance();
+                                let trivia = Box::new( Trivia::Whitespace(*token_start_position, self.get_position(), '\t') );
+                                self.trivia_collector.push(trivia);
+                                true
+                            },
+                            _ => false
+                        } {};
+                None
+            },
+            _ => None
+        }
     }
 
     fn handle_line_continuation(&mut self) -> () {
