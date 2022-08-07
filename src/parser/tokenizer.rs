@@ -1249,9 +1249,32 @@ impl PythonCoreTokenizer {
         None
     }
 
-    fn handle_line_continuation(&mut self) -> Option<Token> {
-
-        None
+    fn handle_line_continuation(&mut self) -> () {
+        let token_start_position = &self.get_position();
+        match &self.source_buffer.peek_three_chars() {
+            ( '\\', '\r', '\n' ) => {
+                let mut a = &self.source_buffer.get_char().clone();
+                &self.source_buffer.advance();
+                let mut b = &self.source_buffer.get_char().clone();
+                &self.source_buffer.advance();
+                let mut c = &self.source_buffer.get_char().clone();
+                &self.source_buffer.advance();
+                let trivia = Box::new( Trivia::LineContinuation(*token_start_position, self.get_position(), *a, *b, *c) );
+                self.trivia_collector.push(trivia );
+            },
+            ( '\\', '\r', _  )  |
+            ( '\\', '\n', _ ) => {
+                let mut a = &self.source_buffer.get_char().clone();
+                &self.source_buffer.advance();
+                let mut b = &self.source_buffer.get_char().clone();
+                &self.source_buffer.advance();
+                let trivia = Box::new( Trivia::LineContinuation(*token_start_position, self.get_position(), *a, *b, ' ') );
+                self.trivia_collector.push(trivia );
+            },
+            _ => {
+                panic!("Syntax Error at {} - Expecting newline after line continuation '\\'!", &self.get_position())
+            }
+        }
     }
 
 }
