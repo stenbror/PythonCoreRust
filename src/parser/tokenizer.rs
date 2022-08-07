@@ -565,7 +565,14 @@ impl PythonCoreTokenizer {
         }
     }
 
-    pub fn advance(&self) -> () {}
+    pub fn advance(&mut self) -> () {
+        match self.outer_loop() {
+            Some( x ) => {
+                self.symbol = Some( Box::new( x ) )
+            },
+            _ => {}
+        }
+    }
 
     pub fn get_symbol(&self) -> Box<Token> {
         match &self.symbol {
@@ -1260,13 +1267,14 @@ impl PythonCoreTokenizer {
                             '\t' => {
                                 let token_start_position = &self.get_position();
                                 &self.source_buffer.advance();
+                                while match *self.source_buffer.get_char() { ' ' =>  { &self.source_buffer.advance(); true }, _ => false} {};
                                 let trivia = Box::new( Trivia::Whitespace(*token_start_position, self.get_position(), '\t') );
                                 self.trivia_collector.push(trivia);
                                 true
                             },
                             _ => false
                         } {};
-                None
+                self.inner_loop()
             },
             _ => None
         }
@@ -1298,6 +1306,75 @@ impl PythonCoreTokenizer {
                 panic!("Syntax Error at {} - Expecting newline after line continuation '\\'!", &self.get_position())
             }
         }
+    }
+
+    fn inner_loop(&mut self) -> Option<Token> {
+        match self.handle_whitespace() { // Handle whitespace
+            Some( x ) => Some( x ),
+            _ => {
+                match self.handle_type_comment() { // Handle type comment or plain comment
+                    Some( x ) => Some( x ),
+                    _ => {
+                        match self.handle_end_of_file() { // Handle end of file
+                            Some( x ) => Some( x ),
+                            _ => {
+                                match  self.is_ident_start_letter( self.source_buffer.get_char().clone() )       { // Reserved keyword or name literal
+                                    true => {
+                                        let token_start_position = &self.get_position();
+                                        let mut buffer : String = String::new();
+                                        while   match self.is_ident_letter_or_digit( self.source_buffer.get_char().clone() ) {
+                                                    true => {
+                                                        buffer.push( self.source_buffer.get_char().clone() );
+                                                        &self.source_buffer.advance();
+                                                        true
+                                                    },
+                                            _ => false
+                                        } {};
+
+                                        self.is_reserved_keyword(token_start_position, &self.source_buffer.get_position().clone(), buffer.as_str())
+                                    },
+                                    _ => {
+                                        match self.handle_newlines() { // Handle newlines, either as a token or trivia
+                                            Some( x ) => Some( x ),
+                                            _ => {
+                                                match self.handling_numbers() { // Handle numbers
+                                                    Some( x ) => Some( x ),
+                                                    _ => {
+                                                        match self.handling_strings(None, &self.source_buffer.get_position().clone()) { // Handle strings without prefix.
+                                                            Some( x ) => Some( x.clone() ),
+                                                            _ => {
+                                                                self.handle_line_continuation(); // Handle line continuation
+
+                                                                let token_start_position = &self.get_position();
+                                                                let (a, b, c) = self.source_buffer.peek_three_chars();
+                                                                let a1 = a.clone();
+                                                                let b1 = c.clone();
+                                                                let c1 = a.clone();
+
+                                                                match self.is_operator_or_delimiter(token_start_position, &a1, &b1, &c1) { // Operator or delimiter
+                                                                    Some( x ) => Some( x.clone() ),
+                                                                    _ => {
+                                                                        panic!("Syntax Error at {} - Found illegal character!", &self.get_position())
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn outer_loop(&mut self) -> Option<Token> {
+        self.inner_loop()
     }
 
 }

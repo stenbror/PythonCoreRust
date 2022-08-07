@@ -9,27 +9,27 @@ use crate::parser::functions::{ Functions };
 
 
 pub trait Blocks {
-    fn parse_blocks_eval_input(&self) -> Box<ASTNode>;
-    fn parse_blocks_file_input(&self) -> Box<ASTNode>;
-    fn parse_blocks_single_input(&self) -> Box<ASTNode>;
-    fn parse_blocks_func_type_input(&self) -> Box<ASTNode>;
-    fn parse_blocks_decorator(&self) -> Box<ASTNode>;
-    fn parse_blocks_decorators(&self) -> Box<ASTNode>;
-    fn parse_blocks_decorated(&self) -> Box<ASTNode>;
-    fn parse_blocks_async_func_def(&self) -> Box<ASTNode>;
-    fn parse_blocks_func_def(&self) -> Box<ASTNode>;
-    fn parse_blocks_parameters(&self) -> Box<ASTNode>;
-    fn parse_blocks_typed_args_list(&self) -> Box<ASTNode>;
-    fn parse_blocks_tfp_def_assign(&self) -> Box<ASTNode>;
-    fn parse_blocks_tfp_def(&self) -> Box<ASTNode>;
-    fn parse_blocks_func_body_suite(&self) -> Box<ASTNode>;
-    fn parse_blocks_class_def(&self) -> Box<ASTNode>;
+    fn parse_blocks_eval_input(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_file_input(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_single_input(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_func_type_input(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_decorator(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_decorators(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_decorated(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_async_func_def(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_func_def(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_parameters(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_typed_args_list(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_tfp_def_assign(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_tfp_def(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_func_body_suite(&mut self) -> Box<ASTNode>;
+    fn parse_blocks_class_def(&mut self) -> Box<ASTNode>;
 }
 
 
 impl Blocks for PythonCoreParser {
-    fn parse_blocks_eval_input(&self) -> Box<ASTNode> {
-        let _ = &self.lexer.advance();
+    fn parse_blocks_eval_input(&mut self) -> Box<ASTNode> {
+        let _ = self.lexer.advance();
         let start_pos = &self.lexer.get_position();
         let right_node = self.parse_expression_test_list();
         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
@@ -37,7 +37,7 @@ impl Blocks for PythonCoreParser {
             match &*self.lexer.get_symbol() {
                 Token::Newline( .. ) => {
                     separators_list.push( self.lexer.get_symbol() );
-                    let _ = &self.lexer.advance();
+                    let _ = self.lexer.advance();
                     true
                 },
                 _ => {
@@ -48,7 +48,7 @@ impl Blocks for PythonCoreParser {
             match &*self.lexer.get_symbol() {
                 Token::EOF( .. ) => {
                     let symbol = self.lexer.get_symbol();
-                    let _ = &self.lexer.advance();
+                    let _ = self.lexer.advance();
                     let end_pos = &self.lexer.get_position();
                     Box::new( ASTNode::EvalInput(*start_pos, *end_pos, right_node, separators_list, symbol) )
                 },
@@ -58,8 +58,8 @@ impl Blocks for PythonCoreParser {
             }
     }
 
-    fn parse_blocks_file_input(&self) -> Box<ASTNode> {
-        let _ = &self.lexer.advance();
+    fn parse_blocks_file_input(&mut self) -> Box<ASTNode> {
+        let _ = self.lexer.advance();
         let start_pos = &self.lexer.get_position();
         let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
@@ -70,7 +70,7 @@ impl Blocks for PythonCoreParser {
                 },
                 Token::Newline( .. ) => {
                     separators_list.push( self.lexer.get_symbol() );
-                    let _ = &self.lexer.advance();
+                    let _ = self.lexer.advance();
                     true
                 },
                 _ => {
@@ -83,7 +83,7 @@ impl Blocks for PythonCoreParser {
         match &*self.lexer.get_symbol() {
             Token::EOF( .. ) => {
                 let symbol = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let end_pos = &self.lexer.get_position();
                 Box::new( ASTNode::FileInput(*start_pos, *end_pos, nodes_list, separators_list, symbol) )
             },
@@ -93,13 +93,13 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_single_input(&self) -> Box<ASTNode> {
-        let _ = &self.lexer.advance();
+    fn parse_blocks_single_input(&mut self) -> Box<ASTNode> {
+        let _ = self.lexer.advance();
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol()  {
             Token::Newline( .. ) => {
                 let symbol = Some( self.lexer.get_symbol() );
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let end_pos = &self.lexer.get_position();
                 Box::new( ASTNode::SingleInput(*start_pos, *end_pos, None, symbol) )
             },
@@ -116,7 +116,7 @@ impl Blocks for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::Newline( .. ) => {
                         let symbol = Some( self.lexer.get_symbol() );
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let end_pos = &self.lexer.get_position();
                         Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, symbol) )
                     },
@@ -132,7 +132,7 @@ impl Blocks for PythonCoreParser {
                         match &*self.lexer.get_symbol() {
                             Token::Newline( .. ) => {
                                 let symbol = Some( self.lexer.get_symbol() );
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let end_pos = &self.lexer.get_position();
                                 Box::new( ASTNode::SingleInput(*start_pos, *end_pos, right_node, symbol) )
                             },
@@ -156,8 +156,8 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_func_type_input(&self) -> Box<ASTNode> {
-        let _ = &self.lexer.advance();
+    fn parse_blocks_func_type_input(&mut self) -> Box<ASTNode> {
+        let _ = self.lexer.advance();
         let start_pos = &self.lexer.get_position();
         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
         let right_node = self.parse_functions_func_type();
@@ -165,7 +165,7 @@ impl Blocks for PythonCoreParser {
             match &*self.lexer.get_symbol() {
                 Token::Newline( .. ) => {
                     separators_list.push( self.lexer.get_symbol() );
-                    let _ = &self.lexer.advance();
+                    let _ = self.lexer.advance();
                     true
                 },
                 _ => {
@@ -175,7 +175,7 @@ impl Blocks for PythonCoreParser {
         match &*self.lexer.get_symbol() {
             Token::EOF( .. ) => {
                 let symbol = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 separators_list.reverse();
                 let end_pos = &self.lexer.get_position();
                 Box::new( ASTNode::FuncTypeInput(*start_pos, *end_pos, right_node, separators_list, symbol) )
@@ -186,12 +186,12 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_decorator(&self) -> Box<ASTNode> {
+    fn parse_blocks_decorator(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyMatrice( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let left_node = self.parse_statements_dotted_name();
                 let mut symbol2 : Option<Box<Token>> = None;
                 let mut right_node : Option<Box<ASTNode>> = None;
@@ -199,7 +199,7 @@ impl Blocks for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::PyLeftParen( .. ) => {
                         symbol2 = Some( self.lexer.get_symbol() );
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         match &*self.lexer.get_symbol() {
                             Token::PyRightParen( .. ) => {},
                             _ => {
@@ -209,7 +209,7 @@ impl Blocks for PythonCoreParser {
                         match &*self.lexer.get_symbol() {
                             Token::PyRightParen( .. ) => {
                                 symbol3 = Some( self.lexer.get_symbol() );
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                             },
                             _ => {
                                 panic!("Syntax Error at {} - Expected ')' in decorator statement!", &self.lexer.get_position())
@@ -221,7 +221,7 @@ impl Blocks for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::Newline( .. ) => {
                         let symbol4 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let end_pos = &self.lexer.get_position();
                         Box::new( ASTNode::Decorator(*start_pos, *end_pos, symbol1, left_node,  symbol2, right_node, symbol3, symbol4) )
                     },
@@ -236,7 +236,7 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_decorators(&self) -> Box<ASTNode> {
+    fn parse_blocks_decorators(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
         match &*self.lexer.get_symbol() {
@@ -261,7 +261,7 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_decorated(&self) -> Box<ASTNode> {
+    fn parse_blocks_decorated(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyMatrice( .. ) => {
@@ -293,12 +293,12 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_async_func_def(&self) -> Box<ASTNode> {
+    fn parse_blocks_async_func_def(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyAsync( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 match &*self.lexer.get_symbol() {
                     Token::PyDef( .. ) => {
                         let right_node = self.parse_blocks_func_def();
@@ -316,21 +316,21 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_func_def(&self) -> Box<ASTNode> {
+    fn parse_blocks_func_def(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyDef( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 match &*self.lexer.get_symbol() {
                     Token::AtomName( .. ) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let left_node : Option<Box<ASTNode>> = match &*self.lexer.get_symbol()  { Token::PyLeftParen( .. ) =>{ Some( self.parse_blocks_parameters() ) }, _ => None };
                         let ret_node : Option<Box<( Box<Token>, Box<ASTNode> )>> = match &*self.lexer.get_symbol() {
                             Token::PyArrow( .. ) => {
                                 let symbol3 = self.lexer.get_symbol();
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let res_node = self.parse_expression_test();
                                 Some( Box::new( ( symbol3 , res_node )))
                             },
@@ -341,11 +341,11 @@ impl Blocks for PythonCoreParser {
                         match &*self.lexer.get_symbol() {
                             Token::PyColon( .. ) => {
                                 let symbol4 = self.lexer.get_symbol();
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let tc_symbol : Option<Box<Token>> = match &*self.lexer.get_symbol() {
                                     Token::TypeComment( .. ) => {
                                         let symbol5 = self.lexer.get_symbol();
-                                        let _ = &self.lexer.advance();
+                                        let _ = self.lexer.advance();
                                         Some( symbol5 )
                                     },
                                     _ => None
@@ -370,12 +370,12 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_parameters(&self) -> Box<ASTNode> {
+    fn parse_blocks_parameters(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyLeftParen( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let mut right_node : Option<Box<ASTNode>> = None;
                 match &*self.lexer.get_symbol() {
                     Token::PyRightParen( .. ) => {},
@@ -386,7 +386,7 @@ impl Blocks for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::PyRightParen( .. ) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let end_pos = &self.lexer.get_position();
                         Box::new(ASTNode::Parameter(*start_pos, *end_pos, symbol1, right_node, symbol2) )
                     },
@@ -401,18 +401,18 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_typed_args_list(&self) -> Box<ASTNode> {
+    fn parse_blocks_typed_args_list(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         Box::new( ASTNode::Empty )
     }
 
-    fn parse_blocks_tfp_def_assign(&self) -> Box<ASTNode> {
+    fn parse_blocks_tfp_def_assign(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         let left_node = self.parse_blocks_tfp_def();
         match &*self.lexer.get_symbol() {
             Token::PyAssign( .. ) => {
                 let symbol = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let right_node = self.parse_expression_test();
                 let end_pos = &self.lexer.get_position();
                 Box::new( ASTNode::TFPAssign(*start_pos, *end_pos, left_node, symbol, right_node) )
@@ -423,16 +423,16 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_tfp_def(&self) -> Box<ASTNode> {
+    fn parse_blocks_tfp_def(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::AtomName( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 match &*self.lexer.get_symbol() {
                     Token::PyColon( .. ) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let right_node = self.parse_expression_test();
                         let end_pos = &self.lexer.get_position();
                         Box::new( ASTNode::TFPDef(*start_pos, *end_pos, symbol1, Some( Box::new( ( symbol2, right_node ) ) )) )
@@ -449,23 +449,23 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_func_body_suite(&self) -> Box<ASTNode> {
+    fn parse_blocks_func_body_suite(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
         match &*self.lexer.get_symbol() {
             Token::Newline( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let mut tc_symbol : Option<Box<Token>> = None;
                 let mut tc_newline : Option<Box<Token>> = None;
                 match &*self.lexer.get_symbol() {
                     Token::TypeComment( .. ) => {
                         tc_symbol = Some( self.lexer.get_symbol() );
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         match &*self.lexer.get_symbol() {
                             Token::Newline( .. ) => {
                                 tc_newline = Some( self.lexer.get_symbol() );
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                             },
                             _ => {
                                 panic!("Syntax Error at {} - Expected Newline after type comment in statement suite!", &self.lexer.get_position())
@@ -477,7 +477,7 @@ impl Blocks for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::Indent(..) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         nodes_list.push(self.parse_statements_stmt());
                         while
                             match &*self.lexer.get_symbol() {
@@ -492,7 +492,7 @@ impl Blocks for PythonCoreParser {
                         match &*self.lexer.get_symbol() {
                             Token::Dedent(..) => {
                                 let symbol3 = self.lexer.get_symbol();
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let end_pos = &self.lexer.get_position();
                                 nodes_list.reverse();
                                 Box::new(ASTNode::FuncBodySuite(*start_pos, *end_pos, symbol1, tc_symbol, tc_newline, symbol2, nodes_list, symbol3))
@@ -513,23 +513,23 @@ impl Blocks for PythonCoreParser {
         }
     }
 
-    fn parse_blocks_class_def(&self) -> Box<ASTNode> {
+    fn parse_blocks_class_def(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyClass( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 match &*self.lexer.get_symbol() {
                     Token::AtomName( .. ) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         let mut symbol3 : Option<Box<Token>> = None;
                         let mut symbol4 : Option<Box<Token>> = None;
                         let mut left_node : Option<Box<ASTNode>> = None;
                         match &*self.lexer.get_symbol() {
                             Token::PyLeftParen( .. ) => {
                                 symbol3 = Some( self.lexer.get_symbol() );
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 match &*self.lexer.get_symbol() {
                                     Token::PyRightParen( .. ) => {},
                                     _ => {
@@ -539,7 +539,7 @@ impl Blocks for PythonCoreParser {
                                 match &*self.lexer.get_symbol() {
                                     Token::PyRightParen( .. ) => {
                                         symbol4 = Some( self.lexer.get_symbol() );
-                                        let _ = &self.lexer.advance();
+                                        let _ = self.lexer.advance();
                                     },
                                     _ => {
                                         panic!("Syntax Error at {} - Expected ')' in class statement!", &self.lexer.get_position())
@@ -551,7 +551,7 @@ impl Blocks for PythonCoreParser {
                         match &*self.lexer.get_symbol() {
                             Token::PyColon( .. ) => {
                                 let symbol5 = self.lexer.get_symbol();
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let right_node = self.parse_statements_suite();
                                 let end_pos = &self.lexer.get_position();
                                 Box::new( ASTNode::ClassDef(*start_pos, *end_pos, symbol1, symbol2, symbol3, left_node, symbol4, symbol5, right_node) )     

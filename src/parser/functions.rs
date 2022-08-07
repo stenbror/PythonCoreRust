@@ -5,17 +5,17 @@ use crate::parser::parser::{ PythonCoreParser };
 use crate::parser::expressions::{ Expressions };
 
 pub trait Functions {
-    fn parse_functions_func_type(&self) -> Box<ASTNode>;
-    fn parse_functions_type_list(&self) -> Box<ASTNode>;
+    fn parse_functions_func_type(&mut self) -> Box<ASTNode>;
+    fn parse_functions_type_list(&mut self) -> Box<ASTNode>;
 }
 
 impl Functions for PythonCoreParser {
-    fn parse_functions_func_type(&self) -> Box<ASTNode> {
+    fn parse_functions_func_type(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         match &*self.lexer.get_symbol() {
             Token::PyLeftParen( .. ) => {
                 let symbol1 = self.lexer.get_symbol();
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 let mut left_node : Option<Box<ASTNode>> = None;
                 match &*self.lexer.get_symbol() {
                     Token::PyRightParen( .. ) => {},
@@ -26,11 +26,11 @@ impl Functions for PythonCoreParser {
                 match &*self.lexer.get_symbol() {
                     Token::PyRightParen( .. ) => {
                         let symbol2 = self.lexer.get_symbol();
-                        let _ = &self.lexer.advance();
+                        let _ = self.lexer.advance();
                         match &*self.lexer.get_symbol() {
                             Token::PyArrow( .. ) => {
                                 let symbol3 = self.lexer.get_symbol();
-                                let _ = &self.lexer.advance();
+                                let _ = self.lexer.advance();
                                 let right_node = self.parse_expression_test();
                                 let end_pos = &self.lexer.get_position();
                                 Box::new( ASTNode::FuncType(*start_pos, *end_pos, symbol1, left_node, symbol2, symbol3, right_node) )
@@ -51,7 +51,7 @@ impl Functions for PythonCoreParser {
         }
     }
 
-    fn parse_functions_type_list(&self) -> Box<ASTNode> {
+    fn parse_functions_type_list(&mut self) -> Box<ASTNode> {
         let start_pos = &self.lexer.get_position();
         let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
@@ -62,17 +62,17 @@ impl Functions for PythonCoreParser {
         match &*self.lexer.get_symbol() {
             Token::PyMul( .. ) => {
                 mul_symbol = Some( self.lexer.get_symbol() );
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 mul_node = Some( self.parse_expression_test() );
                 while 
                     match &*self.lexer.get_symbol() {
                         Token::PyComa( .. ) => {
                             separators_list.push( self.lexer.get_symbol() );
-                            let _ = &self.lexer.advance();
+                            let _ = self.lexer.advance();
                             match &*self.lexer.get_symbol() {
                                 Token::PyPower( .. ) => {
                                     power_symbol = Some( self.lexer.get_symbol() );
-                                    let _ = &self.lexer.advance();
+                                    let _ = self.lexer.advance();
                                     power_node = Some( self.parse_expression_test() );
                                     false
                                 },
@@ -89,7 +89,7 @@ impl Functions for PythonCoreParser {
             },
             Token::PyPower( .. ) => {
                 power_symbol = Some( self.lexer.get_symbol() );
-                let _ = &self.lexer.advance();
+                let _ = self.lexer.advance();
                 power_node = Some( self.parse_expression_test() );
             },
             _ => {
@@ -98,27 +98,27 @@ impl Functions for PythonCoreParser {
                     match &*self.lexer.get_symbol() {
                         Token::PyComa( .. ) => {
                             separators_list.push( self.lexer.get_symbol() );
-                            let _ = &self.lexer.advance();
+                            let _ = self.lexer.advance();
                             match &*self.lexer.get_symbol() {
                                 Token::PyPower( .. ) => {
                                     power_symbol = Some( self.lexer.get_symbol() );
-                                    let _ = &self.lexer.advance();
+                                    let _ = self.lexer.advance();
                                     power_node = Some( self.parse_expression_test() );
                                     false
                                 },
                                 Token::PyMul( .. ) => {
                                     mul_symbol = Some( self.lexer.get_symbol() );
-                                    let _ = &self.lexer.advance();
+                                    let _ = self.lexer.advance();
                                     mul_node = Some( self.parse_expression_test() );
                                     while 
                                         match &*self.lexer.get_symbol() {
                                             Token::PyComa( .. ) => {
                                                 separators_list.push( self.lexer.get_symbol() );
-                                                let _ = &self.lexer.advance();
+                                                let _ = self.lexer.advance();
                                                 match &*self.lexer.get_symbol() {
                                                     Token::PyPower( .. ) => {
                                                         power_symbol = Some( self.lexer.get_symbol() );
-                                                        let _ = &self.lexer.advance();
+                                                        let _ = self.lexer.advance();
                                                         power_node = Some( self.parse_expression_test() );
                                                         false
                                                     },
