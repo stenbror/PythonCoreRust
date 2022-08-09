@@ -324,3 +324,81 @@ impl Tokenizer for PythonCoreTokenizer {
         0u32
     }
 }
+
+// UnitTests for tokenizer for Python language ////////////////////////////////////////////////////
+
+#[cfg(test)]
+mod tests {
+    use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
+    use crate::Token;
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_shift_left_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyShiftLeftAssign( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_shift_left() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyShiftLeft( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_less_equal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLessEqual( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_not_equal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<>".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyNotEqual( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_less() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLess( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+}
