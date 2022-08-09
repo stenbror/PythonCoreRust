@@ -5,7 +5,7 @@ pub struct SourceBuffer {
 }
 
 
-trait SourceBufferFunctionality {
+pub trait SourceBufferFunctionality {
     fn new(buffer: String ) -> SourceBuffer;
     fn get_char(&self) -> char;
     fn peek_three_chars(&self) -> ( char, char, char );
