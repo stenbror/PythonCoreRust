@@ -117,6 +117,47 @@ impl Tokenizer for PythonCoreTokenizer {
                 Ok(Box::new( Token::PyGreater(self.token_start_position, self.source_buffer.get_position(),
                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
+            ( '.', '.', '.' ) => {
+                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyElipsis(self.token_start_position, self.source_buffer.get_position(),
+                                                     match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '.', '0' ..= '9' , _ ) => {
+                let _ = self.source_buffer.advance();
+                // Handle numbers starting with '.' later!
+
+                Err("NOT YET IMPLEMENTED!".to_string())
+            },
+            ( '.', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyDot(self.token_start_position, self.source_buffer.get_position(),
+                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '+', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyPlusAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '+', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyPlus(self.token_start_position, self.source_buffer.get_position(),
+                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '-', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyMinusAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '-', '>', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyArrow(self.token_start_position, self.source_buffer.get_position(),
+                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '-', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyMinus(self.token_start_position, self.source_buffer.get_position(),
+                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
 
             _ => {
                 let txt = format!( "Lexical error at ({}), found '{}'", self.source_buffer.get_position(), self.source_buffer.get_char() );
