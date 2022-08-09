@@ -5,7 +5,8 @@ use crate::Token;
 
 pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
-    token_start_position: u32
+    token_start_position: u32,
+    parenthesis: Vec<char>
 }
 
 
@@ -20,7 +21,8 @@ impl Tokenizer for PythonCoreTokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer {
         PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
-            token_start_position: 0u32
+            token_start_position: 0u32,
+            parenthesis: Vec::new(),
         }
     }
 
@@ -158,6 +160,157 @@ impl Tokenizer for PythonCoreTokenizer {
                 Ok(Box::new( Token::PyMinus(self.token_start_position, self.source_buffer.get_position(),
                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
+            ( '%', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyModuloAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '%', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyModulo(self.token_start_position, self.source_buffer.get_position(),
+                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '@', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyMatriceAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '@', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyMatrice(self.token_start_position, self.source_buffer.get_position(),
+                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( ':', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyColonAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                    match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( ':', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyColon(self.token_start_position, self.source_buffer.get_position(),
+                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '&', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyBitAndAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                    match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '&', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyBitAnd(self.token_start_position, self.source_buffer.get_position(),
+                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '|', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyBitOrAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '|', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyBitOr(self.token_start_position, self.source_buffer.get_position(),
+                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '^', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyBitXorAssign(self.token_start_position, self.source_buffer.get_position(),
+                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '^', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyBitXor(self.token_start_position, self.source_buffer.get_position(),
+                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '~', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyBitInvert(self.token_start_position, self.source_buffer.get_position(),
+                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( ';', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PySemiColon(self.token_start_position, self.source_buffer.get_position(),
+                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( ',', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyComa(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '=', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyEqual(self.token_start_position, self.source_buffer.get_position(),
+                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '=', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                Ok(Box::new( Token::PyAssign(self.token_start_position, self.source_buffer.get_position(),
+                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '!', '=', _ ) => {
+                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                Ok(Box::new( Token::PyNotEqual(self.token_start_position, self.source_buffer.get_position(),
+                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '(', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                self.parenthesis.push(')');
+                Ok(Box::new( Token::PyLeftParen(self.token_start_position, self.source_buffer.get_position(),
+                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '[', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                self.parenthesis.push(']');
+                Ok(Box::new( Token::PyLeftBracket(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( '{', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                self.parenthesis.push('}');
+                Ok(Box::new( Token::PyLeftCurly(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+            },
+            ( ')', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                match &self.parenthesis.last() {
+                    Some( ')' ) => {
+                        self.parenthesis.pop();
+                        Ok(Box::new( Token::PyRightParen(self.token_start_position, self.source_buffer.get_position(),
+                                                        match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+                    },
+                    _ => {
+                        let txt = format!("Syntax Error at {} - Mismatch in parenthesis, expected ')'!", self.get_position());
+                        Err(txt)
+                    }
+                }
+            },
+            ( ']', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                match &self.parenthesis.last() {
+                    Some( ']' ) => {
+                        self.parenthesis.pop();
+                        Ok(Box::new( Token::PyRightBracket(self.token_start_position, self.source_buffer.get_position(),
+                                                         match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+                    },
+                    _ => {
+                        let txt = format!("Syntax Error at {} - Mismatch in parenthesis, expected ']'!", self.get_position());
+                        Err(txt)
+                    }
+                }
+            },
+            ( '}', _ , _ ) => {
+                let _ = self.source_buffer.advance();
+                match &self.parenthesis.last() {
+                    Some( '}' ) => {
+                        self.parenthesis.pop();
+                        Ok(Box::new( Token::PyRightCurly(self.token_start_position, self.source_buffer.get_position(),
+                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
+                    },
+                    _ => {
+                        let txt = format!("Syntax Error at {} - Mismatch in parenthesis, expected right curly!", self.get_position());
+                        Err(txt)
+                    }
+                }
+            },
+
 
             _ => {
                 let txt = format!( "Lexical error at ({}), found '{}'", self.source_buffer.get_position(), self.source_buffer.get_char() );
