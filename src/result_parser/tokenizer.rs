@@ -26,50 +26,51 @@ impl Tokenizer for PythonCoreTokenizer {
 
     fn get_symbol(&mut self) -> Result<Box<Token>, String> {
 
-        let trivia_collector : Box<Vec<Box<Trivia>>> = Box::new( Vec::new() );
+        let mut trivia_collector : Box<Vec<Box<Trivia>>> = Box::new( Vec::new() );
 
         self.token_start_position = self.source_buffer.get_position(); // Saves starts of current token symbol.
+
 
         match self.source_buffer.peek_three_chars() {
             ( '*', '*', '=' ) => {
                 for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyPowerAssign(self.token_start_position, self.source_buffer.get_position(),
-                                                  match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '*', '*', _ ) => {
                 for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyPower(self.token_start_position, self.source_buffer.get_position(),
-                                                  match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '*', '=', _ ) => {
                 for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyMulAssign(self.token_start_position, self.source_buffer.get_position(),
-                                            match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '*', _ , _ ) => {
                 let _ = self.source_buffer.advance();
                 Ok(Box::new( Token::PyMul(self.token_start_position, self.source_buffer.get_position(),
-                                            match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '/', '=' ) => {
                 for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyFloorDivAssign(self.token_start_position, self.source_buffer.get_position(),
-                                                  match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '/', _ ) => {
                 for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyFloorDiv(self.token_start_position, self.source_buffer.get_position(),
-                                            match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '=', _ ) => {
                 for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyDivAssign(self.token_start_position, self.source_buffer.get_position(),
-                                                match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', _ , _ ) => {
                 let _ = self.source_buffer.advance();
                 Ok(Box::new( Token::PyDiv(self.token_start_position, self.source_buffer.get_position(),
-                                          match trivia_collector.len() { 0 => None, _ => Some( trivia_collector ) } ) ))
+                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
 
             _ => {
