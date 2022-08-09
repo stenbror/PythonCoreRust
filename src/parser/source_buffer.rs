@@ -47,104 +47,104 @@ impl SourceBuffer {
     }
 
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::parser::source_buffer::SourceBuffer;
-
-    #[test]
-    fn read_characters_from_empty_source_buffer() {
-        let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
-        assert_eq!(buffer.get_position(), &0u32);
-        assert_eq!(buffer.get_char(), &'\0');
-    }
-
-    #[test]
-    fn read_characters_from_source_buffer() {
-        let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
-        assert_eq!(buffer.get_position(), &0u32);
-        assert_eq!(buffer.get_char(), &'d');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'e');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'f');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &' ');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'a');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'(');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &')');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &':');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &' ');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'p');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'a');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'s');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'s');
-        buffer.advance();
-        assert_eq!(buffer.get_char(), &'\0');
-    }
-
-    #[test]
-    fn peek_next_three_characters_and_check_position() {
-        let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
-        let ( a, b, c ) = buffer.peek_three_chars();
-        assert_eq!(a, &'d');
-        assert_eq!(b, &'e');
-        assert_eq!(c, &'f');
-        assert_eq!(buffer.get_position(), &0u32);
-    }
-
-    #[test]
-    fn length_of_source_buffer_content() {
-        let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
-        assert_eq!(buffer.count(), (13u32 as usize));
-    }
-
-    #[test]
-    fn peek_next_three_characters_on_buffer_withy_zero_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
-        let ( a, b, c ) = buffer.peek_three_chars();
-        assert_eq!(a, &'\0');
-        assert_eq!(b, &'\0');
-        assert_eq!(c, &'\0');
-        assert_eq!(buffer.get_position(), &0u32);
-    }
-
-    #[test]
-    fn peek_next_three_characters_on_buffer_withy_one_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("d".to_string()) );
-        let ( a, b, c ) = buffer.peek_three_chars();
-        assert_eq!(a, &'d');
-        assert_eq!(b, &'\0');
-        assert_eq!(c, &'\0');
-        assert_eq!(buffer.get_position(), &0u32);
-    }
-
-    #[test]
-    fn peek_next_three_characters_on_buffer_withy_two_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("de".to_string()) );
-        let ( a, b, c ) = buffer.peek_three_chars();
-        assert_eq!(a, &'d');
-        assert_eq!(b, &'e');
-        assert_eq!(c, &'\0');
-        assert_eq!(buffer.get_position(), &0u32);
-    }
-
-    #[test]
-    fn peek_next_three_characters_on_buffer_withy_three_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("def".to_string()) );
-        let ( a, b, c ) = buffer.peek_three_chars();
-        assert_eq!(a, &'d');
-        assert_eq!(b, &'e');
-        assert_eq!(c, &'f');
-        assert_eq!(buffer.get_position(), &0u32);
-    }
-}
+//
+// #[cfg(test)]
+// mod tests {
+//     use crate::parser::source_buffer::SourceBuffer;
+//
+//     #[test]
+//     fn read_characters_from_empty_source_buffer() {
+//         let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
+//         assert_eq!(buffer.get_position(), &0u32);
+//         assert_eq!(buffer.get_char(), &'\0');
+//     }
+//
+//     #[test]
+//     fn read_characters_from_source_buffer() {
+//         let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
+//         assert_eq!(buffer.get_position(), &0u32);
+//         assert_eq!(buffer.get_char(), &'d');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'e');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'f');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &' ');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'a');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'(');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &')');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &':');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &' ');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'p');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'a');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'s');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'s');
+//         buffer.advance();
+//         assert_eq!(buffer.get_char(), &'\0');
+//     }
+//
+//     #[test]
+//     fn peek_next_three_characters_and_check_position() {
+//         let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
+//         let ( a, b, c ) = buffer.peek_three_chars();
+//         assert_eq!(a, &'d');
+//         assert_eq!(b, &'e');
+//         assert_eq!(c, &'f');
+//         assert_eq!(buffer.get_position(), &0u32);
+//     }
+//
+//     #[test]
+//     fn length_of_source_buffer_content() {
+//         let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
+//         assert_eq!(buffer.count(), (13u32 as usize));
+//     }
+//
+//     #[test]
+//     fn peek_next_three_characters_on_buffer_withy_zero_character_only() {
+//         let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
+//         let ( a, b, c ) = buffer.peek_three_chars();
+//         assert_eq!(a, &'\0');
+//         assert_eq!(b, &'\0');
+//         assert_eq!(c, &'\0');
+//         assert_eq!(buffer.get_position(), &0u32);
+//     }
+//
+//     #[test]
+//     fn peek_next_three_characters_on_buffer_withy_one_character_only() {
+//         let mut buffer = Box::new( SourceBuffer::new("d".to_string()) );
+//         let ( a, b, c ) = buffer.peek_three_chars();
+//         assert_eq!(a, &'d');
+//         assert_eq!(b, &'\0');
+//         assert_eq!(c, &'\0');
+//         assert_eq!(buffer.get_position(), &0u32);
+//     }
+//
+//     #[test]
+//     fn peek_next_three_characters_on_buffer_withy_two_character_only() {
+//         let mut buffer = Box::new( SourceBuffer::new("de".to_string()) );
+//         let ( a, b, c ) = buffer.peek_three_chars();
+//         assert_eq!(a, &'d');
+//         assert_eq!(b, &'e');
+//         assert_eq!(c, &'\0');
+//         assert_eq!(buffer.get_position(), &0u32);
+//     }
+//
+//     #[test]
+//     fn peek_next_three_characters_on_buffer_withy_three_character_only() {
+//         let mut buffer = Box::new( SourceBuffer::new("def".to_string()) );
+//         let ( a, b, c ) = buffer.peek_three_chars();
+//         assert_eq!(a, &'d');
+//         assert_eq!(b, &'e');
+//         assert_eq!(c, &'f');
+//         assert_eq!(buffer.get_position(), &0u32);
+//     }
+// }

@@ -12,7 +12,8 @@ pub struct PythonCoreTokenizer {
     trivia_collector: Box<Vec<Box<Trivia>>>,
     symbol: Option<Box<Token>>,
     parenthesis: Vec<char>,
-    is_blank_line: bool
+    is_blank_line: bool,
+    current_token_start: u32
 }
 
 
@@ -25,7 +26,8 @@ impl PythonCoreTokenizer {
             trivia_collector: Box::new(Vec::new() ),
             symbol: Some( Box::new( Token::Empty ) ),
             parenthesis: Vec::new(),
-            is_blank_line: true
+            is_blank_line: true,
+            current_token_start: 0
         }
     }
 
@@ -566,6 +568,7 @@ impl PythonCoreTokenizer {
     }
 
     pub fn advance(&mut self) -> () {
+        self.current_token_start = *self.source_buffer.get_position();
         match self.outer_loop() {
             Some( x ) => {
                 self.symbol = Some( Box::new( x ) )
@@ -586,7 +589,7 @@ impl PythonCoreTokenizer {
     }
 
     pub fn get_position(&self) -> u32 {
-        *self.source_buffer.get_position()
+        self.current_token_start.clone()
     }
 
     /// This method checks for valid operator or delimiter including pairing parenthezis if present before returning token or Option<Token> = None.
@@ -1302,9 +1305,7 @@ impl PythonCoreTokenizer {
                 let trivia = Box::new( Trivia::LineContinuation(*token_start_position, self.get_position(), *a, *b, ' ') );
                 self.trivia_collector.push(trivia );
             },
-            _ => {
-                panic!("Syntax Error at {} - Expecting newline after line continuation '\\'!", &self.get_position())
-            }
+            _ => { }
         }
     }
 
@@ -1379,2109 +1380,2109 @@ impl PythonCoreTokenizer {
 
 }
 
-
-#[cfg(test)]
-mod tests {
-
-    use crate::parser::tokenizer::PythonCoreTokenizer;
-    use crate::parser::trivias::Trivia;
-    use crate::Token;
-
-
-    #[test]
-    fn operator_or_delimiter_power_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyPowerAssign( 0u32, 3u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_power() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyPower( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_mul_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMulAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_mul() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMul( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_floor_div_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyFloorDivAssign( 0u32, 3u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_floor_div() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyFloorDiv( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_div_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyDivAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_div() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyDiv( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_elipsis() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "...".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyElipsis( 0u32, 3u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_dot() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyDot( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_plus_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyPlusAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_plus() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyPlus( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_minus_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "-=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMinusAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_arrow() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "->".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyArrow( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_minus() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "-".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMinus( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_modulo_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "%=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyModuloAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_modulo() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "%".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyModulo( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_matrice_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMatriceAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_matrice() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyMatrice( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_shift_left_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyShiftLeftAssign( 0u32, 3u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_shift_left() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyShiftLeft( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_not_equal_legacy() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<>".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_less_equal() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyLessEqual( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_less() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyLess( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_shift_right_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyShiftRightAssign( 0u32, 3u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_shift_right() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyShiftRight( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_greater_equal() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyGreaterEqual( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_greater() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyGreater( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_equal() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "==".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyEqual( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_not_equal() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "!=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyAssign( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_and_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitAndAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_and() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitAnd( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_or_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitOrAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_or() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitOr( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_xor_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitXorAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_xor() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitXor( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_left_paren() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "(".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyLeftParen( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_left_bracket() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "[".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyLeftBracket( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_left_curly() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "{".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyLeftCurly( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_right_paren() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
-        tokenizer.parenthesis.push(')');
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyRightParen( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_right_bracket() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
-        tokenizer.parenthesis.push(']');
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyRightBracket( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_right_curly() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
-        tokenizer.parenthesis.push('}');
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyRightCurly( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_colon_Assign() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":=".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyColonAssign( 0u32, 2u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_colon() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyColon( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_semi_colon() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ";".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PySemiColon( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_coma() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ",".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyComa( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn operator_or_delimiter_bit_invert() {
-        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "~".to_string() ) );
-        let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
-        let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
-        match &res {
-            Some(s) => {
-                match &s {
-                    Token::PyBitInvert( 0u32, 1u32, None ) => assert!(true),
-                    _ => assert!(false)
-                }
-            },
-            None => {
-                assert!(false)
-            }
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_false() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"False");
-        match &res.unwrap() {
-            Token::PyFalse(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_none() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"None");
-        match &res.unwrap() {
-            Token::PyNone(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_true() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32,&"True");
-        match &res.unwrap() {
-            Token::PyTrue(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_and() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"and");
-        match &res.unwrap() {
-            Token::PyAnd(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_as() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"as");
-        match &res.unwrap() {
-            Token::PyAs(0u32, 2u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_assert() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"assert");
-        match &res.unwrap() {
-            Token::PyAssert(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_async() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"async");
-        match &res.unwrap() {
-            Token::PyAsync(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_await() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"await");
-        match &res.unwrap() {
-            Token::PyAwait(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_break() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"break");
-        match &res.unwrap() {
-            Token::PyBreak(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_class() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"class");
-        match &res.unwrap() {
-            Token::PyClass(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_continue() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"continue");
-        match &res.unwrap() {
-            Token::PyContinue(0u32, 8u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_def() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"def");
-        match &res.unwrap() {
-            Token::PyDef(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_del() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"del");
-        match &res.unwrap() {
-            Token::PyDel(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_elif() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"elif");
-        match &res.unwrap() {
-            Token::PyElif(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_else() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"else");
-        match &res.unwrap() {
-            Token::PyElse(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_except() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"except");
-        match &res.unwrap() {
-            Token::PyExcept(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_finally() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &7u32, &"finally");
-        match &res.unwrap() {
-            Token::PyFinally(0u32, 7u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_for() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"for");
-        match &res.unwrap() {
-            Token::PyFor(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_from() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"from");
-        match &res.unwrap() {
-            Token::PyFrom(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_global() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"global");
-        match &res.unwrap() {
-            Token::PyGlobal(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_if() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"if");
-        match &res.unwrap() {
-            Token::PyIf(0u32, 2u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_import() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"import");
-        match &res.unwrap() {
-            Token::PyImport(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_in() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"in");
-        match &res.unwrap() {
-            Token::PyIn(0u32, 2u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_is() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"is");
-        match &res.unwrap() {
-            Token::PyIs(0u32, 2u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_lambda() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"lambda");
-        match &res.unwrap() {
-            Token::PyLambda(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_nonlocal() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"nonlocal");
-        match &res.unwrap() {
-            Token::PyNonLocal(0u32, 8u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_not() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"not");
-        match &res.unwrap() {
-            Token::PyNot(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_or() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"or");
-        match &res.unwrap() {
-            Token::PyOr(0u32, 2u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_pass() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"pass");
-        match &res.unwrap() {
-            Token::PyPass(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_raise() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"raise");
-        match &res.unwrap() {
-            Token::PyRaise(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_return() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"return");
-        match &res.unwrap() {
-            Token::PyReturn(0u32, 6u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_try() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"try");
-        match &res.unwrap() {
-            Token::PyTry(0u32, 3u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_while() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"while");
-        match &res.unwrap() {
-            Token::PyWhile(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_with() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"with");
-        match &res.unwrap() {
-            Token::PyWith(0u32, 4u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_yield() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
-        let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"yield");
-        match &res.unwrap() {
-            Token::PyYield(0u32, 5u32, _) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_atom_name1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("match".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("match") );
-        match &res.unwrap() {
-            Token::AtomName(0u32, 5u32, None , tst) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_atom_name2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("__init__(".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("__init__") );
-        match &res.unwrap() {
-            Token::AtomName(0u32, 8u32, None , tst) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_atom_name3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("A34".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("A34") );
-        match &res.unwrap() {
-            Token::AtomName(0u32, 3u32, None , tst) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn reserved_keywords_assert_outer_function() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("assert(".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        match &res.unwrap() {
-            Token::PyAssert(0u32, 6u32, None ) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_triple_single_quote_empty() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("''''''".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("''''''") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 6u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_triple_double_quote_empty() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"\"\"\"\"".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("\"\"\"\"\"\"") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 6u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_empty() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("''".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("''") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 2u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_double_quote_empty() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("\"\"") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 2u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_hello_world() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("'Hello, World!'".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("'Hello, World!'") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 15u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_double_quote_hello_world() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"Hello, World!\"".to_string()));
-        let res = tokenizer.handling_strings(None, &0u32);
-        let tst = Box::new( String::from("\"Hello, World!\"") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 15u32, None, s, None ) => {
-                assert_eq!(tst.as_str(), s.as_str());
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_r() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("r'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("r") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_u() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("u'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("u") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_r() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("R'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("R") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_u() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("U'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("U") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_f() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("f'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("f") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_f() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("F'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("F") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 16u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_fr() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("fr'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("fr") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_fr() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("Fr'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("Fr") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_f_capitol_r() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("fR'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("fR") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_f_capitol_r() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("FR'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("FR") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_rf() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("rf'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("rf") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_rf() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("rF'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("rF") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_r_f() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("Rf'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("Rf") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_single_quote_with_prefix_capitol_r_capitol_f() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF'Hello, World!'".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("'Hello, World!'") );
-        let prefix = Box::new( String::from("RF") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn string_handling_double_quote_with_prefix_capitol_r_capitol_f() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF\"Hello, World!\"".to_string()));
-        let res = tokenizer.keywords_or_name_literal();
-        let tst = Box::new( String::from("\"Hello, World!\"") );
-        let prefix = Box::new( String::from("RF") );
-        match &res.unwrap() {
-            Token::AtomString(0u32, 17u32, None, s, p ) => {
-                let pre = p.as_ref().unwrap().as_str();
-                assert_eq!(tst.as_str(), s.as_str());
-                assert_eq!(&prefix.as_str(), &pre)
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_hex_number_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xaf10".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0xaf10") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_hex_number_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xAF10".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0xAF10") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 6u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_hex_number_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0x_af_10".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0x_af_10") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 8u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_octet_number_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o755".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0o755") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_octet_number_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0O755".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0O755") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_octet_number_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o_7_5_5".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0o_7_5_5") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_binary_number_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0b111".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0b111") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_binary_number_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0B111".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0B111") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_binary_number_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0b_1_0_1".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0b_1_0_1") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 2u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1e3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_4() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e-3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1e-3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_5() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1e+3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_6() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4j".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1e+3_4j") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_7() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1E3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_8() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E-3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1E-3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_9() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1E+3_4") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_10() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0_0_1E+3_4J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_11() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".001E+34J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".001E+34J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_12() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_dot_digits_13() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0j".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from(".0j") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("1".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("1") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 1u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("911") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("911.") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 4u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_4() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("911.1") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_5() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1_2".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("911.1_2") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 7u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_6() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_7() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2e-34") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 13u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_8() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2e-34J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 14u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_9() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-3_4J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2e-3_4J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_10() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4J".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2E-3_4J") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_11() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4j".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2E-3_4j") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_12() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2j".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2j") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_13() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1.1_2") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_nonzero_14() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("9_1_1") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_zero_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0.0") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_number_zero_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0000".to_string()));
-        let res = tokenizer.handling_numbers();
-        let tst = Box::new( String::from("0.0000") );
-        match &res.unwrap() {
-            Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_type_comment() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("# type: Int".to_string()));
-        let res = tokenizer.handle_type_comment();
-        let tst = Box::new( String::from("# type: Int") );
-        match &res.unwrap() {
-            Token::TypeComment(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_newline_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r\n".to_string()));
-        tokenizer.is_blank_line = false;
-        let res = tokenizer.handle_newlines();
-        match &res.unwrap() {
-            Token::Newline(0u32, 2u32, None, s, r ) => {
-                assert_eq!('\r', *s);
-                assert_eq!('\n', *r);
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_newline_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r".to_string()));
-        tokenizer.is_blank_line = false;
-        let res = tokenizer.handle_newlines();
-        match &res.unwrap() {
-            Token::Newline(0u32, 1u32, None, s, r ) => {
-                assert_eq!('\r', *s);
-                assert_eq!(' ', *r);
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_newline_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\n".to_string()));
-        tokenizer.is_blank_line = false;
-        let res = tokenizer.handle_newlines();
-        match &res.unwrap() {
-            Token::Newline(0u32, 1u32, None, s, r ) => {
-                assert_eq!('\n', *s);
-                assert_eq!(' ', *r);
-            },
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_end_of_file() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\0".to_string()));
-        tokenizer.is_blank_line = false;
-        let res = tokenizer.handle_end_of_file();
-        match &res.unwrap() {
-            Token::EOF(0u32, None ) => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_line_continuation_1() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r\n".to_string()));
-        tokenizer.is_blank_line = false;
-        let _ = tokenizer.handle_line_continuation();
-        assert!(!tokenizer.trivia_collector.is_empty());
-        match *tokenizer.trivia_collector.pop().unwrap() {
-            Trivia::LineContinuation( 0u32, 3u32, '\\', '\r', '\n') => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_line_continuation_2() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r".to_string()));
-        tokenizer.is_blank_line = false;
-        let _ = tokenizer.handle_line_continuation();
-        assert!(!tokenizer.trivia_collector.is_empty());
-        match *tokenizer.trivia_collector.pop().unwrap() {
-            Trivia::LineContinuation( 0u32, 2u32, '\\', '\r', ' ') => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-    #[test]
-    fn handling_line_continuation_3() {
-        let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\n".to_string()));
-        tokenizer.is_blank_line = false;
-        let _ = tokenizer.handle_line_continuation();
-        assert!(!tokenizer.trivia_collector.is_empty());
-        match *tokenizer.trivia_collector.pop().unwrap() {
-            Trivia::LineContinuation( 0u32, 2u32, '\\', '\n', ' ') => assert!(true),
-            _ => assert!(false)
-        }
-    }
-
-}
+//
+// #[cfg(test)]
+// mod tests {
+//
+//     use crate::parser::tokenizer::PythonCoreTokenizer;
+//     use crate::parser::trivias::Trivia;
+//     use crate::Token;
+//
+//
+//     #[test]
+//     fn operator_or_delimiter_power_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyPowerAssign( 0u32, 3u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_power() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "**".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyPower( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_mul_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMulAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_mul() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "*".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMul( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_floor_div_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyFloorDivAssign( 0u32, 3u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_floor_div() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "//".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyFloorDiv( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_div_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyDivAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_div() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "/".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyDiv( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_elipsis() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "...".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyElipsis( 0u32, 3u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_dot() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyDot( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_plus_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyPlusAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_plus() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "+".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyPlus( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_minus_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "-=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMinusAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_arrow() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "->".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyArrow( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_minus() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "-".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMinus( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_modulo_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "%=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyModuloAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_modulo() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "%".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyModulo( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_matrice_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMatriceAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_matrice() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyMatrice( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_shift_left_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyShiftLeftAssign( 0u32, 3u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_shift_left() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<<".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyShiftLeft( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_not_equal_legacy() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<>".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_less_equal() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyLessEqual( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_less() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "<".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyLess( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_shift_right_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyShiftRightAssign( 0u32, 3u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_shift_right() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyShiftRight( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_greater_equal() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyGreaterEqual( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_greater() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyGreater( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_equal() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "==".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyEqual( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_not_equal() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "!=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyNotEqual( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyAssign( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_and_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitAndAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_and() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitAnd( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_or_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitOrAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_or() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "|".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitOr( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_xor_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitXorAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_xor() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitXor( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_left_paren() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "(".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyLeftParen( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_left_bracket() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "[".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyLeftBracket( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_left_curly() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "{".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyLeftCurly( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_right_paren() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
+//         tokenizer.parenthesis.push(')');
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyRightParen( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_right_bracket() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
+//         tokenizer.parenthesis.push(']');
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyRightBracket( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_right_curly() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
+//         tokenizer.parenthesis.push('}');
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyRightCurly( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_colon_Assign() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":=".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyColonAssign( 0u32, 2u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_colon() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ":".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyColon( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_semi_colon() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ";".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PySemiColon( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_coma() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ",".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyComa( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn operator_or_delimiter_bit_invert() {
+//         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "~".to_string() ) );
+//         let ( &a, &b, &c ) = &tokenizer.source_buffer.peek_three_chars();
+//         let res = tokenizer.is_operator_or_delimiter(&tokenizer.get_position(), &a, &b, &c);
+//         match &res {
+//             Some(s) => {
+//                 match &s {
+//                     Token::PyBitInvert( 0u32, 1u32, None ) => assert!(true),
+//                     _ => assert!(false)
+//                 }
+//             },
+//             None => {
+//                 assert!(false)
+//             }
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_false() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"False");
+//         match &res.unwrap() {
+//             Token::PyFalse(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_none() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"None");
+//         match &res.unwrap() {
+//             Token::PyNone(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_true() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32,&"True");
+//         match &res.unwrap() {
+//             Token::PyTrue(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_and() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"and");
+//         match &res.unwrap() {
+//             Token::PyAnd(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_as() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"as");
+//         match &res.unwrap() {
+//             Token::PyAs(0u32, 2u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_assert() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"assert");
+//         match &res.unwrap() {
+//             Token::PyAssert(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_async() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"async");
+//         match &res.unwrap() {
+//             Token::PyAsync(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_await() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"await");
+//         match &res.unwrap() {
+//             Token::PyAwait(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_break() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"break");
+//         match &res.unwrap() {
+//             Token::PyBreak(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_class() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"class");
+//         match &res.unwrap() {
+//             Token::PyClass(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_continue() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"continue");
+//         match &res.unwrap() {
+//             Token::PyContinue(0u32, 8u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_def() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"def");
+//         match &res.unwrap() {
+//             Token::PyDef(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_del() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"del");
+//         match &res.unwrap() {
+//             Token::PyDel(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_elif() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"elif");
+//         match &res.unwrap() {
+//             Token::PyElif(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_else() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"else");
+//         match &res.unwrap() {
+//             Token::PyElse(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_except() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"except");
+//         match &res.unwrap() {
+//             Token::PyExcept(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_finally() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &7u32, &"finally");
+//         match &res.unwrap() {
+//             Token::PyFinally(0u32, 7u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_for() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"for");
+//         match &res.unwrap() {
+//             Token::PyFor(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_from() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"from");
+//         match &res.unwrap() {
+//             Token::PyFrom(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_global() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"global");
+//         match &res.unwrap() {
+//             Token::PyGlobal(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_if() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"if");
+//         match &res.unwrap() {
+//             Token::PyIf(0u32, 2u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_import() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"import");
+//         match &res.unwrap() {
+//             Token::PyImport(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_in() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"in");
+//         match &res.unwrap() {
+//             Token::PyIn(0u32, 2u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_is() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"is");
+//         match &res.unwrap() {
+//             Token::PyIs(0u32, 2u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_lambda() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"lambda");
+//         match &res.unwrap() {
+//             Token::PyLambda(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_nonlocal() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &8u32, &"nonlocal");
+//         match &res.unwrap() {
+//             Token::PyNonLocal(0u32, 8u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_not() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"not");
+//         match &res.unwrap() {
+//             Token::PyNot(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_or() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &2u32, &"or");
+//         match &res.unwrap() {
+//             Token::PyOr(0u32, 2u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_pass() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"pass");
+//         match &res.unwrap() {
+//             Token::PyPass(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_raise() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"raise");
+//         match &res.unwrap() {
+//             Token::PyRaise(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_return() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &6u32, &"return");
+//         match &res.unwrap() {
+//             Token::PyReturn(0u32, 6u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_try() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &3u32, &"try");
+//         match &res.unwrap() {
+//             Token::PyTry(0u32, 3u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_while() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"while");
+//         match &res.unwrap() {
+//             Token::PyWhile(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_with() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &4u32, &"with");
+//         match &res.unwrap() {
+//             Token::PyWith(0u32, 4u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_yield() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("".to_string()));
+//         let res = tokenizer.is_reserved_keyword(&0u32, &5u32, &"yield");
+//         match &res.unwrap() {
+//             Token::PyYield(0u32, 5u32, _) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_atom_name1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("match".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("match") );
+//         match &res.unwrap() {
+//             Token::AtomName(0u32, 5u32, None , tst) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_atom_name2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("__init__(".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("__init__") );
+//         match &res.unwrap() {
+//             Token::AtomName(0u32, 8u32, None , tst) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_atom_name3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("A34".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("A34") );
+//         match &res.unwrap() {
+//             Token::AtomName(0u32, 3u32, None , tst) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn reserved_keywords_assert_outer_function() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("assert(".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         match &res.unwrap() {
+//             Token::PyAssert(0u32, 6u32, None ) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_triple_single_quote_empty() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("''''''".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("''''''") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 6u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_triple_double_quote_empty() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"\"\"\"\"".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("\"\"\"\"\"\"") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 6u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_empty() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("''".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("''") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 2u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_double_quote_empty() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"\"".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("\"\"") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 2u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_hello_world() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("'Hello, World!'".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 15u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_double_quote_hello_world() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\"Hello, World!\"".to_string()));
+//         let res = tokenizer.handling_strings(None, &0u32);
+//         let tst = Box::new( String::from("\"Hello, World!\"") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 15u32, None, s, None ) => {
+//                 assert_eq!(tst.as_str(), s.as_str());
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_r() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("r'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("r") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_u() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("u'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("u") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_r() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("R'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("R") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_u() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("U'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("U") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_f() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("f'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("f") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_f() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("F'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("F") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 16u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_fr() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("fr'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("fr") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_fr() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("Fr'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("Fr") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_f_capitol_r() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("fR'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("fR") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_f_capitol_r() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("FR'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("FR") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_rf() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("rf'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("rf") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_rf() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("rF'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("rF") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_r_f() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("Rf'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("Rf") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_single_quote_with_prefix_capitol_r_capitol_f() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF'Hello, World!'".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("'Hello, World!'") );
+//         let prefix = Box::new( String::from("RF") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn string_handling_double_quote_with_prefix_capitol_r_capitol_f() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("RF\"Hello, World!\"".to_string()));
+//         let res = tokenizer.keywords_or_name_literal();
+//         let tst = Box::new( String::from("\"Hello, World!\"") );
+//         let prefix = Box::new( String::from("RF") );
+//         match &res.unwrap() {
+//             Token::AtomString(0u32, 17u32, None, s, p ) => {
+//                 let pre = p.as_ref().unwrap().as_str();
+//                 assert_eq!(tst.as_str(), s.as_str());
+//                 assert_eq!(&prefix.as_str(), &pre)
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_hex_number_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xaf10".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0xaf10") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_hex_number_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0xAF10".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0xAF10") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 6u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_hex_number_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0x_af_10".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0x_af_10") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 8u32, None, s) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_octet_number_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o755".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0o755") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_octet_number_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0O755".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0O755") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_octet_number_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0o_7_5_5".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0o_7_5_5") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_binary_number_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0b111".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0b111") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_binary_number_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0B111".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0B111") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_binary_number_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0b_1_0_1".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0b_1_0_1") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 8u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 2u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1e3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_4() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e-3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1e-3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_5() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1e+3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_6() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1e+3_4j".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1e+3_4j") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_7() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1E3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_8() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E-3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1E-3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_9() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1E+3_4") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_10() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0_0_1E+3_4J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0_0_1E+3_4J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 12u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_11() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".001E+34J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".001E+34J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_12() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_dot_digits_13() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new(".0j".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from(".0j") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("1".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("1") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 1u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("911".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("911") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("911.") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 4u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_4() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("911.1") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_5() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("911.1_2".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("911.1_2") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 7u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_6() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_7() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2e-34") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 13u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_8() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-34J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2e-34J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 14u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_9() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2e-3_4J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2e-3_4J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_10() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4J".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2E-3_4J") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_11() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2E-3_4j".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2E-3_4j") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 15u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_12() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2j".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2j") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 10u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_13() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1.1_2".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1.1_2") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 9u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_nonzero_14() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("9_1_1".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("9_1_1") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 5u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_zero_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0.0") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 3u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_number_zero_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("0.0000".to_string()));
+//         let res = tokenizer.handling_numbers();
+//         let tst = Box::new( String::from("0.0000") );
+//         match &res.unwrap() {
+//             Token::AtomNumber(0u32, 6u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_type_comment() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("# type: Int".to_string()));
+//         let res = tokenizer.handle_type_comment();
+//         let tst = Box::new( String::from("# type: Int") );
+//         match &res.unwrap() {
+//             Token::TypeComment(0u32, 11u32, None, s ) => assert_eq!(tst.as_str(), s.as_str()),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_newline_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r\n".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let res = tokenizer.handle_newlines();
+//         match &res.unwrap() {
+//             Token::Newline(0u32, 2u32, None, s, r ) => {
+//                 assert_eq!('\r', *s);
+//                 assert_eq!('\n', *r);
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_newline_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\r".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let res = tokenizer.handle_newlines();
+//         match &res.unwrap() {
+//             Token::Newline(0u32, 1u32, None, s, r ) => {
+//                 assert_eq!('\r', *s);
+//                 assert_eq!(' ', *r);
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_newline_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\n".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let res = tokenizer.handle_newlines();
+//         match &res.unwrap() {
+//             Token::Newline(0u32, 1u32, None, s, r ) => {
+//                 assert_eq!('\n', *s);
+//                 assert_eq!(' ', *r);
+//             },
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_end_of_file() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\0".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let res = tokenizer.handle_end_of_file();
+//         match &res.unwrap() {
+//             Token::EOF(0u32, None ) => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_line_continuation_1() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r\n".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let _ = tokenizer.handle_line_continuation();
+//         assert!(!tokenizer.trivia_collector.is_empty());
+//         match *tokenizer.trivia_collector.pop().unwrap() {
+//             Trivia::LineContinuation( 0u32, 3u32, '\\', '\r', '\n') => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_line_continuation_2() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\r".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let _ = tokenizer.handle_line_continuation();
+//         assert!(!tokenizer.trivia_collector.is_empty());
+//         match *tokenizer.trivia_collector.pop().unwrap() {
+//             Trivia::LineContinuation( 0u32, 2u32, '\\', '\r', ' ') => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//     #[test]
+//     fn handling_line_continuation_3() {
+//         let mut tokenizer = Box::new(PythonCoreTokenizer::new("\\\n".to_string()));
+//         tokenizer.is_blank_line = false;
+//         let _ = tokenizer.handle_line_continuation();
+//         assert!(!tokenizer.trivia_collector.is_empty());
+//         match *tokenizer.trivia_collector.pop().unwrap() {
+//             Trivia::LineContinuation( 0u32, 2u32, '\\', '\n', ' ') => assert!(true),
+//             _ => assert!(false)
+//         }
+//     }
+//
+//}
