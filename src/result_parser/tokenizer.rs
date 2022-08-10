@@ -402,4 +402,60 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_shift_right_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyShiftRightAssign( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_shift_right() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">>".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyShiftRight( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_greater_equal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyGreaterEqual( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_greater() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ">".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyGreater( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
