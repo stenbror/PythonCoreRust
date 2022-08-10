@@ -323,6 +323,7 @@ impl Tokenizer for PythonCoreTokenizer {
     fn get_position(&self) -> u32 {
         0u32
     }
+
 }
 
 // UnitTests for tokenizer for Python language ////////////////////////////////////////////////////
