@@ -367,6 +367,26 @@ impl Tokenizer for PythonCoreTokenizer {
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "lambda" => Ok(Box::new(Token::PyLambda(self.token_start_position, self.source_buffer.get_position(),
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "nonlocal" => Ok(Box::new(Token::PyNonLocal(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "not" => Ok(Box::new(Token::PyNot(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "or" => Ok(Box::new(Token::PyOr(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "pass" => Ok(Box::new(Token::PyPass(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "raise" => Ok(Box::new(Token::PyRaise(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "return" => Ok(Box::new(Token::PyReturn(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "try" => Ok(Box::new(Token::PyTry(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "while" => Ok(Box::new(Token::PyWhile(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "with" => Ok(Box::new(Token::PyWith(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "yield" => Ok(Box::new(Token::PyYield(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1442,6 +1462,146 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyLambda( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_nonlocal() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "nonlocal".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyNonLocal( 0u32, 8u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_not() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "not".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyNot( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_or() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "or".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyOr( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_pass() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "pass".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyPass( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_raise() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "raise".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRaise( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_return() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "return".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyReturn( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_try() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "try".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyTry( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_while() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "while".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyWhile( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_with() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "with".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyWith( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_yield() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "yield".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyYield( 0u32, 5u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
