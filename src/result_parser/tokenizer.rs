@@ -310,6 +310,20 @@ impl Tokenizer for PythonCoreTokenizer {
                     }
                 }
             },
+            ( s, _ , _ ) if s.is_alphabetic() || s == '_' => {
+                let mut buffer = String::new();
+                while self.source_buffer.get_char().is_alphanumeric() || self.source_buffer.get_char() == '_' {
+                    buffer.push(self.source_buffer.get_char());
+                    let _ = self.source_buffer.advance();
+                }
+                match buffer.as_str() {
+                    "False" => Ok(Box::new(Token::PyFalse(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    _ => Ok(Box::new(Token::Empty))
+                }
+
+
+            }
 
 
             _ => {
@@ -1034,6 +1048,19 @@ mod tests {
                 }
             }
             Err( e ) => assert!(true)
+        }
+    }
+    #[test]
+    fn tokenizer_reserved_keyword_false() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "False".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyFalse( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
         }
     }
 }
