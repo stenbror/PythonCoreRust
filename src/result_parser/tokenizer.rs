@@ -319,6 +319,10 @@ impl Tokenizer for PythonCoreTokenizer {
                 match buffer.as_str() {
                     "False" => Ok(Box::new(Token::PyFalse(self.token_start_position, self.source_buffer.get_position(),
                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "None" => Ok(Box::new(Token::PyNone(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "True" => Ok(Box::new(Token::PyTrue(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1050,6 +1054,7 @@ mod tests {
             Err( e ) => assert!(true)
         }
     }
+
     #[test]
     fn tokenizer_reserved_keyword_false() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "False".to_string() ) );
@@ -1057,6 +1062,34 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyFalse( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_none() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "None".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyNone( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_true() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "True".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyTrue( 0u32, 4u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
