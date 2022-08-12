@@ -724,4 +724,32 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_bit_and_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyBitAndAssign( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_bit() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "&".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyBitAnd( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
