@@ -387,7 +387,22 @@ impl Tokenizer for PythonCoreTokenizer {
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "yield" => Ok(Box::new(Token::PyYield(self.token_start_position, self.source_buffer.get_position(),
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
-                    _ => Ok(Box::new(Token::Empty))
+                    "r" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "u" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "R" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "U" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "f" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "F" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "fr" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "Fr" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "fR" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "FR" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "rf" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "rF" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "Rf" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "RF" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    _ => Ok(Box::new(Token::AtomName(self.token_start_position, self.source_buffer.get_position(),
+                                                     match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer))))
                 }
 
 
@@ -1602,6 +1617,54 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyYield( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_name_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "__init__".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomName( 0u32, 8u32, None, txt) => {
+                        assert_eq!("__init__", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_name_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "rf".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomName( 0u32, 2u32, None, txt) => {
+                        assert_eq!("rf", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_name_3() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "T3est".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomName( 0u32, 5u32, None, txt) => {
+                        assert_eq!("T3est", *txt)
+                    },
                     _ => assert!(false)
                 }
             }
