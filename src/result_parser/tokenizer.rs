@@ -780,4 +780,32 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_bit_xor_assign() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^=".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyBitXorAssign( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_bit_xor() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "^".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyBitXor( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
