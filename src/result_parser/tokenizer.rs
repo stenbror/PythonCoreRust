@@ -349,6 +349,14 @@ impl Tokenizer for PythonCoreTokenizer {
                                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "except" => Ok(Box::new(Token::PyExcept(self.token_start_position, self.source_buffer.get_position(),
                                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "finally" => Ok(Box::new(Token::PyFinally(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "for" => Ok(Box::new(Token::PyFor(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "from" => Ok(Box::new(Token::PyFrom(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "global" => Ok(Box::new(Token::PyGlobal(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1298,6 +1306,62 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyExcept( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_finally() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "finally".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyFinally( 0u32, 7u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_for() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "for".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyFor( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_from() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "from".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyFrom( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_global() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "global".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyGlobal( 0u32, 6u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
