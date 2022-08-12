@@ -357,6 +357,16 @@ impl Tokenizer for PythonCoreTokenizer {
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "global" => Ok(Box::new(Token::PyGlobal(self.token_start_position, self.source_buffer.get_position(),
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "if" => Ok(Box::new(Token::PyIf(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "import" => Ok(Box::new(Token::PyImport(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "in" => Ok(Box::new(Token::PyIn(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "is" => Ok(Box::new(Token::PyIs(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "lambda" => Ok(Box::new(Token::PyLambda(self.token_start_position, self.source_buffer.get_position(),
+                                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1362,6 +1372,76 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyGlobal( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_if() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "if".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyIf( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_import() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "import".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyImport( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_in() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "in".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyIn( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_is() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "is".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyIs( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_lambda() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "lambda".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLambda( 0u32, 6u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
