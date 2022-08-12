@@ -333,6 +333,12 @@ impl Tokenizer for PythonCoreTokenizer {
                                                       match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "await" => Ok(Box::new(Token::PyAwait(self.token_start_position, self.source_buffer.get_position(),
                                                       match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "break" => Ok(Box::new(Token::PyBreak(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "class" => Ok(Box::new(Token::PyClass(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "continue" => Ok(Box::new(Token::PyContinue(self.token_start_position, self.source_buffer.get_position(),
+                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1170,6 +1176,48 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyAwait( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_break() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "break".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyBreak( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_class() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "class".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyClass( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_continue() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "continue".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyContinue( 0u32, 8u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
