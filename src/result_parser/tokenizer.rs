@@ -323,6 +323,16 @@ impl Tokenizer for PythonCoreTokenizer {
                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "True" => Ok(Box::new(Token::PyTrue(self.token_start_position, self.source_buffer.get_position(),
                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "and" => Ok(Box::new(Token::PyAnd(self.token_start_position, self.source_buffer.get_position(),
+                                                        match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "as" => Ok(Box::new(Token::PyAs(self.token_start_position, self.source_buffer.get_position(),
+                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "assert" => Ok(Box::new(Token::PyAssert(self.token_start_position, self.source_buffer.get_position(),
+                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "async" => Ok(Box::new(Token::PyAsync(self.token_start_position, self.source_buffer.get_position(),
+                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "await" => Ok(Box::new(Token::PyAwait(self.token_start_position, self.source_buffer.get_position(),
+                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1090,6 +1100,76 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyTrue( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_and() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "and".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyAnd( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_as() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "as".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyAs( 0u32, 2u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_assert() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "assert".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyAssert( 0u32, 6u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_async() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "async".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyAsync( 0u32, 5u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_await() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "await".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyAwait( 0u32, 5u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
