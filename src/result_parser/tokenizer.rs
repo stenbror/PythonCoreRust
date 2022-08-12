@@ -332,6 +332,7 @@ impl Tokenizer for PythonCoreTokenizer {
 mod tests {
     use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
     use crate::Token;
+    use crate::Token::PySemiColon;
 
     #[test]
     fn tokenizer_operator_or_delimiter_shift_left_assign() {
@@ -872,6 +873,62 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyAssign( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_semicolon() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ";".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PySemiColon( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_left_paren() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "(".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLeftParen( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_left_bracket() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "[".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLeftBracket( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_left_curly() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "{".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyLeftCurly( 0u32, 1u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
