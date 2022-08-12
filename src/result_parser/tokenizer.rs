@@ -895,6 +895,20 @@ mod tests {
     }
 
     #[test]
+    fn tokenizer_operator_or_delimiter_comma() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ",".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyComa( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
     fn tokenizer_operator_or_delimiter_left_paren() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "(".to_string() ) );
         match tokenizer.get_symbol() {
@@ -933,6 +947,93 @@ mod tests {
                 }
             }
             Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_paren() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
+        tokenizer.parenthesis.push(')');
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightParen( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_paren_failing() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ")".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightParen( 0u32, 1u32, None) => assert!(false),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(true)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_bracket() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
+        tokenizer.parenthesis.push(']');
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightBracket( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_bracket_failing() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "]".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightBracket( 0u32, 1u32, None) => assert!(false),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(true)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_curly() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
+        tokenizer.parenthesis.push('}');
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightCurly( 0u32, 1u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_operator_or_delimiter_right_bracket_curly() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "}".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyRightCurly( 0u32, 1u32, None) => assert!(false),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(true)
         }
     }
 }
