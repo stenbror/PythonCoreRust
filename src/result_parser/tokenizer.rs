@@ -339,6 +339,16 @@ impl Tokenizer for PythonCoreTokenizer {
                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "continue" => Ok(Box::new(Token::PyContinue(self.token_start_position, self.source_buffer.get_position(),
                                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "def" => Ok(Box::new(Token::PyDef(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "del" => Ok(Box::new(Token::PyDel(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "elif" => Ok(Box::new(Token::PyElif(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "else" => Ok(Box::new(Token::PyElse(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
+                    "except" => Ok(Box::new(Token::PyExcept(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     _ => Ok(Box::new(Token::Empty))
                 }
 
@@ -1218,6 +1228,76 @@ mod tests {
             Ok( s ) => {
                 match *s {
                     Token::PyContinue( 0u32, 8u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_def() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "def".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyDef( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_del() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "del".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyDel( 0u32, 3u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_elif() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "elif".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyElif( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_else() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "else".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyElse( 0u32, 4u32, None) => assert!(true),
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_reserved_keyword_except() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "except".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::PyExcept( 0u32, 6u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
