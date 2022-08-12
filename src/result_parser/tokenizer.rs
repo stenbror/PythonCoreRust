@@ -124,13 +124,7 @@ impl Tokenizer for PythonCoreTokenizer {
                 Ok(Box::new( Token::PyElipsis(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
-            ( '.', '0' ..= '9' , _ ) => {
-                let _ = self.source_buffer.advance();
-                // Handle numbers starting with '.' later!
-
-                Err("NOT YET IMPLEMENTED!".to_string())
-            },
-            ( '.', _ , _ ) => {
+            ( '.', s , _ ) if s.is_ascii_digit() == false => {
                 let _ = self.source_buffer.advance();
                 Ok(Box::new( Token::PyDot(self.token_start_position, self.source_buffer.get_position(),
                                               match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
@@ -404,8 +398,15 @@ impl Tokenizer for PythonCoreTokenizer {
                     _ => Ok(Box::new(Token::AtomName(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer))))
                 }
-
-
+            },
+            ( '0' , _ , _  ) => {
+                Ok( Box::new( Token::Empty ) )
+            },
+            ( '.', '0' ..= '9', _ ) => {
+                Ok( Box::new( Token::Empty ) )
+            },
+            ( '1' ..= '9', _ , _ ) => {
+                Ok( Box::new( Token::Empty ) )
             }
 
 
