@@ -2724,4 +2724,140 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_literal_string_empty_10() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "fr\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("fr", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_11() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "Fr\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("Fr", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_12() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "fR\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("fR", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_13() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "FR\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("FR", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_14() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "rf\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("rf", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_15() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "rF\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("rF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_16() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "Rf\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("Rf", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_empty_17() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 4u32, None, txt, prefix) => {
+                        assert_eq!("\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
