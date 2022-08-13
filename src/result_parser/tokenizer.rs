@@ -13,6 +13,7 @@ pub struct PythonCoreTokenizer {
 trait Tokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer;
     fn get_symbol(&mut self) -> Result<Box<Token>, String>;
+    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>) -> Result<Box<Token>, String>;
     fn get_position(&self) -> u32;
 }
 
@@ -381,20 +382,35 @@ impl Tokenizer for PythonCoreTokenizer {
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
                     "yield" => Ok(Box::new(Token::PyYield(self.token_start_position, self.source_buffer.get_position(),
                                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ))),
-                    "r" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "u" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "R" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "U" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "f" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "F" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "fr" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "Fr" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "fR" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "FR" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "rf" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "rF" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "Rf" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
-                    "RF" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => Ok( Box::new(Token::Empty) ),
+                    "r" |
+                    "u" |
+                    "R" |
+                    "U" |
+                    "f" |
+                    "F" |
+                    "fr" |
+                    "Fr" |
+                    "fR" |
+                    "FR" |
+                    "rf" |
+                    "rF" |
+                    "Rf" |
+                    "RF" if self.source_buffer.get_char() == '\'' || self.source_buffer.get_char() == '"' => {
+                        match self.source_buffer.peek_three_chars() {
+                            ( '\'', '\'', '\'' ) |
+                            ( '"', '"', '"' ) => {
+                                self.handle_string(self.token_start_position, true, Some(buffer))
+                            },
+                            ( '\'', '\'', _  ) |
+                            ( '"', '"', _ ) => {
+                                let mut buf = String::new();
+                                for i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
+                                Ok( Box::new( Token::AtomString(self.token_start_position, self.source_buffer.get_position(),
+                                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buf), Some( buffer) )) )
+                            },
+                            _ => self.handle_string(self.token_start_position, false, Some(buffer))
+                        }
+                    }
                     _ => Ok(Box::new(Token::AtomName(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer))))
                 }
@@ -732,14 +748,29 @@ impl Tokenizer for PythonCoreTokenizer {
                 }
                 Ok( Box::new( Token::AtomNumber(self.token_start_position, self.source_buffer.get_position(),
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer)  ) ) )
-            }
-
-
+            },
+            ( '\'', '\'', '\'' ) |
+            ( '"', '"', '"' ) => {
+                self.handle_string(self.token_start_position, true, None)
+            },
+            ( '\'', '\'', _  ) |
+            ( '"', '"', _ ) => {
+                let mut buf = String::new();
+                for i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
+                Ok( Box::new( Token::AtomString(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buf), None )) )
+            },
+            ( '\'', _ , _  ) |
+            ( '"', _ , _  )     => self.handle_string(self.token_start_position, false, None),
             _ => {
                 let txt = format!( "Lexical error at ({}), found '{}'", self.source_buffer.get_position(), self.source_buffer.get_char() );
                 Err(txt)
             }
         }
+    }
+
+    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>) -> Result<Box<Token>, String> {
+        Ok(Box::new(Token::Empty))
     }
 
     fn get_position(&self) -> u32 {
