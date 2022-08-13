@@ -36,17 +36,17 @@ impl Tokenizer for PythonCoreTokenizer {
 
         match self.source_buffer.peek_three_chars() {
             ( '*', '*', '=' ) => {
-                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyPowerAssign(self.token_start_position, self.source_buffer.get_position(),
                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '*', '*', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyPower(self.token_start_position, self.source_buffer.get_position(),
                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '*', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyMulAssign(self.token_start_position, self.source_buffer.get_position(),
                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -56,17 +56,17 @@ impl Tokenizer for PythonCoreTokenizer {
                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '/', '=' ) => {
-                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyFloorDivAssign(self.token_start_position, self.source_buffer.get_position(),
                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '/', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyFloorDiv(self.token_start_position, self.source_buffer.get_position(),
                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '/', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyDivAssign(self.token_start_position, self.source_buffer.get_position(),
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -76,22 +76,22 @@ impl Tokenizer for PythonCoreTokenizer {
                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '<', '<', '=' ) => {
-                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyShiftLeftAssign(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '<', '<', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyShiftLeft(self.token_start_position, self.source_buffer.get_position(),
                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '<', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyLessEqual(self.token_start_position, self.source_buffer.get_position(),
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '<', '>', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyNotEqual(self.token_start_position, self.source_buffer.get_position(),
                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -101,17 +101,17 @@ impl Tokenizer for PythonCoreTokenizer {
                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '>', '>', '=' ) => {
-                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyShiftRightAssign(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '>', '>', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyShiftRight(self.token_start_position, self.source_buffer.get_position(),
                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '>', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyGreaterEqual(self.token_start_position, self.source_buffer.get_position(),
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -121,7 +121,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                           match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '.', '.', '.' ) => {
-                for i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyElipsis(self.token_start_position, self.source_buffer.get_position(),
                                                      match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -131,7 +131,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                               match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '+', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyPlusAssign(self.token_start_position, self.source_buffer.get_position(),
                                                    match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -141,12 +141,12 @@ impl Tokenizer for PythonCoreTokenizer {
                                               match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '-', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyMinusAssign(self.token_start_position, self.source_buffer.get_position(),
                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '-', '>', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyArrow(self.token_start_position, self.source_buffer.get_position(),
                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -156,7 +156,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '%', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyModuloAssign(self.token_start_position, self.source_buffer.get_position(),
                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -166,7 +166,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '@', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyMatriceAssign(self.token_start_position, self.source_buffer.get_position(),
                                                  match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -176,7 +176,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                            match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( ':', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyColonAssign(self.token_start_position, self.source_buffer.get_position(),
                                                     match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -186,7 +186,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                               match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '&', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyBitAndAssign(self.token_start_position, self.source_buffer.get_position(),
                                                     match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -196,7 +196,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                               match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '|', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyBitOrAssign(self.token_start_position, self.source_buffer.get_position(),
                                                    match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -206,7 +206,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '^', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyBitXorAssign(self.token_start_position, self.source_buffer.get_position(),
                                                   match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -231,7 +231,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '=', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyEqual(self.token_start_position, self.source_buffer.get_position(),
                                                    match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -241,7 +241,7 @@ impl Tokenizer for PythonCoreTokenizer {
                                              match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
             ( '!', '=', _ ) => {
-                for i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
                 Ok(Box::new( Token::PyNotEqual(self.token_start_position, self.source_buffer.get_position(),
                                             match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } ) ))
             },
@@ -404,7 +404,7 @@ impl Tokenizer for PythonCoreTokenizer {
                             ( '\'', '\'', _  ) |
                             ( '"', '"', _ ) => {
                                 let mut buf = String::new();
-                                for i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
+                                for _i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
                                 Ok( Box::new( Token::AtomString(self.token_start_position, self.source_buffer.get_position(),
                                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buf), Some( buffer) )) )
                             },
@@ -604,7 +604,7 @@ impl Tokenizer for PythonCoreTokenizer {
             },
             ( '.', '0' ..= '9', _ ) => {
                 let mut buffer = String::new();
-                for i in 1..= 2 {
+                for _i in 1..= 2 {
                     buffer.push( self.source_buffer.get_char() );
                     let _ = self.source_buffer.advance();
                 }
@@ -756,7 +756,7 @@ impl Tokenizer for PythonCoreTokenizer {
             ( '\'', '\'', _  ) |
             ( '"', '"', _ ) => {
                 let mut buf = String::new();
-                for i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
+                for _i in 1 ..= 2 {  buf.push(self.source_buffer.get_char()); self.source_buffer.advance(); }
                 Ok( Box::new( Token::AtomString(self.token_start_position, self.source_buffer.get_position(),
                                                 match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buf), None )) )
             },
@@ -774,13 +774,13 @@ impl Tokenizer for PythonCoreTokenizer {
         let quote = self.source_buffer.get_char();
         match triple {
             true => {
-                for i in 1 ..= 3 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
+                for _i in 1 ..= 3 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
                 while match self.source_buffer.peek_three_chars() {
                     ( '\0', _ , _  ) => {
                         return Err("MORE DATA!".to_string())
                     },
                     ( '\r', '\n', _  ) => {
-                        for i in 1 ..= 2 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
+                        for _i in 1 ..= 2 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
                         true
                     },
                     ( '\r', _ , _ ) |
@@ -790,7 +790,7 @@ impl Tokenizer for PythonCoreTokenizer {
                         true
                     },
                     ( a, b, c) if quote == a && quote == b && quote == c => {
-                        for i in 1 ..= 3 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
+                        for _i in 1 ..= 3 { buffer.push(self.source_buffer.get_char()); let _ = self.source_buffer.advance(); }
                         false
                     },
                     _ => {
