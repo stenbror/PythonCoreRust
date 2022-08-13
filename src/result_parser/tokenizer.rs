@@ -1996,4 +1996,100 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_literal_hex_number_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0xaf10".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 6u32, None, txt) => {
+                        assert_eq!("0xaf10", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_hex_number_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0xAF10".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 6u32, None, txt) => {
+                        assert_eq!("0xAF10", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_hex_number_3() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0x_af_10".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 8u32, None, txt) => {
+                        assert_eq!("0x_af_10", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_octet_number_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0o755".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 5u32, None, txt) => {
+                        assert_eq!("0o755", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_octet_number_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0O755".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 5u32, None, txt) => {
+                        assert_eq!("0O755", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_octet_number_3() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "0O_7_5_5".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 8u32, None, txt) => {
+                        assert_eq!("0O_7_5_5", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
