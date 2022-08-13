@@ -400,13 +400,338 @@ impl Tokenizer for PythonCoreTokenizer {
                 }
             },
             ( '0' , _ , _  ) => {
-                Ok( Box::new( Token::Empty ) )
+                let mut buffer = String::new();
+                buffer.push(self.source_buffer.get_char());
+                let _ = self.source_buffer.advance();
+                match self.source_buffer.get_char() {
+                    'x' | 'X' => {  /* Hex digits */
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' | '_' => {},
+                            _ => {
+                                return Err(format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", self.get_position()))
+                            }
+                        }
+                        while match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match &self.source_buffer.get_char() {
+                                    '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' => {},
+                                    _ => {
+                                        return Err(format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", self.get_position()))
+                                    }
+                                }
+                                true
+                            },
+                            '0' ..= '9' | 'a' ..= 'f' | 'A' ..= 'F' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    'o' | 'O' => {  /* Octet digits */
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '0' ..= '7' | '_' => {},
+                            _ => {
+                                return Err( format!("Syntax Error at {} - Expected digit or '_' after '0o' or '0O'!", self.get_position()) )
+                            }
+                        }
+                        while match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '0' ..= '7' => {},
+                                    _ => {
+                                        return Err( format!("Syntax Error at {} - Expected digit or '_' after '0o' or '0O'!", self.get_position()) )
+                                    }
+                                }
+                                true
+                            },
+                            '0' ..= '7' => {
+                                buffer.push( self.source_buffer.get_char().clone() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    'b' | 'B' => {  /* Binary digits */
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+
+                        match self.source_buffer.get_char() {
+                            '0' | '1' | '_' => {},
+                            _ => {
+                                return Err(format!("Syntax Error at {} - Expected digit or '_' after '0b' or '0B'!", self.get_position()) )
+                            }
+                        }
+                        while match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '0' | '1' => {},
+                                    _ => {
+                                        return Err( format!("Syntax Error at {} - Expected digit or '_' after '0b' or '0B'!", self.get_position()) )
+                                    }
+                                }
+                                true
+                            },
+                            '0' | '1' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {
+                        let mut non_zero = false;
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        while   match self.source_buffer.get_char() {
+                            '0' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            '1' ..= '9' => {
+                                non_zero = true;
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                        match self.source_buffer.get_char() {
+                            '.'  => {
+                                non_zero = false;
+                                buffer.push(self.source_buffer.get_char());
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '_' => return Err( format!("Syntax Error at {} - Expected digit after '.'!", &self.get_position()) ),
+                                    _ => {}
+                                }
+                                while   match self.source_buffer.get_char() {
+                                    '_' => {
+                                        buffer.push( self.source_buffer.get_char() );
+                                        let _ = self.source_buffer.advance();
+                                        match self.source_buffer.get_char() {
+                                            '0'..='9' => true,
+                                            _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                                        }
+                                    },
+                                    '0' ..= '9' => {
+                                        buffer.push( self.source_buffer.get_char() );
+                                        let _ = self.source_buffer.advance();
+                                        true
+                                    },
+                                    _ => false
+                                } {};
+                            },
+                            _ => {}
+                        }
+                        match self.source_buffer.get_char() {
+                            'e' | 'E' => {
+                                non_zero = false;
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '+' | '-' => {
+                                        buffer.push(self.source_buffer.get_char());
+                                        let _ = self.source_buffer.advance();
+                                    },
+                                    _ => {}
+                                }
+                                while   match self.source_buffer.get_char() {
+                                    '_' => {
+                                        buffer.push( self.source_buffer.get_char() );
+                                        let _ = self.source_buffer.advance();
+                                        match self.source_buffer.get_char() {
+                                            '0'..='9' => true,
+                                            _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                                        }
+                                    },
+                                    '0' ..= '9' => {
+                                        buffer.push( self.source_buffer.get_char().clone() );
+                                        self.source_buffer.advance();
+                                        true
+                                    },
+                                    _ => false
+                                } {};
+                            },
+                            _ => {}
+                        }
+                        match self.source_buffer.get_char() {
+                            'j' | 'J' => {
+                                non_zero = false;
+                                buffer.push(self.source_buffer.get_char());
+                                let _ = self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        match &non_zero {
+                            true => return Err( format!("Syntax Error at {} - Leading zero in a integer number is not allowed'!", self.get_position()) ),
+                            _ => {}
+                        }
+                    }
+                }
+                Ok( Box::new( Token::AtomNumber(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer)  ) ) )
             },
             ( '.', '0' ..= '9', _ ) => {
-                Ok( Box::new( Token::Empty ) )
+                let mut buffer = String::new();
+                for i in 1..= 2 {
+                    buffer.push( self.source_buffer.get_char() );
+                    let _ = self.source_buffer.advance();
+                }
+                while   match self.source_buffer.get_char() {
+                    '_' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '0'..='9' => true,
+                            _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                        }
+                    },
+                    '0' ..= '9' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        true
+                    },
+                    _ => false
+                } {};
+                match self.source_buffer.get_char() {
+                    'e' | 'E' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '+' | '-' => {
+                                buffer.push(self.source_buffer.get_char());
+                                let _ = self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        while   match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {}
+                }
+                match self.source_buffer.get_char() {
+                    'j' | 'J' => {
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+                    },
+                    _ => {}
+                }
+                Ok( Box::new( Token::AtomNumber(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer)  ) ) )
             },
             ( '1' ..= '9', _ , _ ) => {
-                Ok( Box::new( Token::Empty ) )
+                let mut buffer = String::new();
+                while   match self.source_buffer.get_char() {
+                    '_' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '0'..='9' => true,
+                            _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                        }
+                    },
+                    '0' ..= '9' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        true
+                    },
+                    _ => false
+                } {};
+                match self.source_buffer.get_char() {
+                    '.'  => {
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '_' => return Err( format!("Syntax Error at {} - Expected digit after '.'!", &self.get_position()) ),
+                            _ => {}
+                        }
+                        while   match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {}
+                }
+                match &self.source_buffer.get_char() {
+                    'e' | 'E' => {
+                        buffer.push( self.source_buffer.get_char() );
+                        let _ = self.source_buffer.advance();
+                        match self.source_buffer.get_char() {
+                            '+' | '-' => {
+                                buffer.push(self.source_buffer.get_char());
+                                let _ = self.source_buffer.advance();
+                            },
+                            _ => {}
+                        }
+                        while   match self.source_buffer.get_char() {
+                            '_' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                match self.source_buffer.get_char() {
+                                    '0'..='9' => true,
+                                    _ => return Err( format!("Syntax Error at {} - Expected digit or '_' after '0x' or '0X'!", &self.get_position()) )
+                                }
+                            },
+                            '0' ..= '9' => {
+                                buffer.push( self.source_buffer.get_char() );
+                                let _ = self.source_buffer.advance();
+                                true
+                            },
+                            _ => false
+                        } {};
+                    },
+                    _ => {}
+                }
+                match self.source_buffer.get_char() {
+                    'j' | 'J' => {
+                        buffer.push(self.source_buffer.get_char());
+                        let _ = self.source_buffer.advance();
+                    },
+                    _ => {}
+                }
+                Ok( Box::new( Token::AtomNumber(self.token_start_position, self.source_buffer.get_position(),
+                                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer)  ) ) )
             }
 
 
@@ -415,7 +740,6 @@ impl Tokenizer for PythonCoreTokenizer {
                 Err(txt)
             }
         }
-
     }
 
     fn get_position(&self) -> u32 {
