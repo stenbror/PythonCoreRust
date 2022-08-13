@@ -2913,4 +2913,89 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_literal_string_tripple_empty_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF\"\"\"\"\"\"".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 8u32, None, txt, prefix) => {
+                        assert_eq!("\"\"\"\"\"\"", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_tripple_empty_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF''''''".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 8u32, None, txt, prefix) => {
+                        assert_eq!("''''''", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_tripple_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF'''Hello, World!'''".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 21u32, None, txt, prefix) => {
+                        assert_eq!("'''Hello, World!'''", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_tripple_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF'''Hello,\r\n World!'''".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 23u32, None, txt, prefix) => {
+                        assert_eq!("'''Hello,\r\n World!'''", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_string_single_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF'Hello, World!'".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomString( 0u32, 17u32, None, txt, prefix) => {
+                        assert_eq!("'Hello, World!'", *txt);
+                        match prefix { Some(x) => assert_eq!("RF", x), _ => assert!(true) }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
