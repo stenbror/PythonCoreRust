@@ -107,7 +107,7 @@ impl Tokenizer for PythonCoreTokenizer {
             }
 
             /* Checking for pending indent or dedent in block control */
-            match &self.pending {
+            match self.pending {
                 _ if self.pending < 0 => {
                     self.pending += 1;
                     return Ok( Box::new( Token::Dedent(None) ) )
