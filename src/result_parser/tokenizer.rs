@@ -2140,4 +2140,212 @@ mod tests {
             Err( e ) => assert!(false)
         }
     }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_1() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 2u32, None, txt) => {
+                        assert_eq!(".0", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_2() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 6u32, None, txt) => {
+                        assert_eq!(".0_0_1", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_3() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 10u32, None, txt) => {
+                        assert_eq!(".0_0_1e3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_4() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e-3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 11u32, None, txt) => {
+                        assert_eq!(".0_0_1e-3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_5() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e+3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 11u32, None, txt) => {
+                        assert_eq!(".0_0_1e+3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_6() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e+3_4j".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 12u32, None, txt) => {
+                        assert_eq!(".0_0_1e+3_4j", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_7() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 10u32, None, txt) => {
+                        assert_eq!(".0_0_1E3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_8() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E-3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 11u32, None, txt) => {
+                        assert_eq!(".0_0_1E-3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_9() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E+3_4".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 11u32, None, txt) => {
+                        assert_eq!(".0_0_1E+3_4", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_10() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E+3_4J".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 12u32, None, txt) => {
+                        assert_eq!(".0_0_1E+3_4J", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_11() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".001E+34J".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 9u32, None, txt) => {
+                        assert_eq!(".001E+34J", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_12() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0J".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 3u32, None, txt) => {
+                        assert_eq!(".0J", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn tokenizer_literal_dot_digits__number_13() {
+        let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0j".to_string() ) );
+        match tokenizer.get_symbol() {
+            Ok( s ) => {
+                match *s {
+                    Token::AtomNumber( 0u32, 3u32, None, txt) => {
+                        assert_eq!(".0j", *txt)
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( e ) => assert!(false)
+        }
+    }
 }
