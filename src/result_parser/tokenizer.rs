@@ -2226,7 +2226,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_1() {
+    fn tokenizer_literal_dot_digits_number_1() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2242,7 +2242,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_2() {
+    fn tokenizer_literal_dot_digits_number_2() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2258,7 +2258,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_3() {
+    fn tokenizer_literal_dot_digits_number_3() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2274,7 +2274,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_4() {
+    fn tokenizer_literal_dot_digits_number_4() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e-3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2290,7 +2290,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_5() {
+    fn tokenizer_literal_dot_digits_number_5() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e+3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2306,7 +2306,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_6() {
+    fn tokenizer_literal_dot_digits_number_6() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1e+3_4j".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2322,7 +2322,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_7() {
+    fn tokenizer_literal_dot_digits_number_7() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2338,7 +2338,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_8() {
+    fn tokenizer_literal_dot_digits_number_8() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E-3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2354,7 +2354,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_9() {
+    fn tokenizer_literal_dot_digits_number_9() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E+3_4".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2370,7 +2370,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_10() {
+    fn tokenizer_literal_dot_digits_number_10() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0_0_1E+3_4J".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2386,7 +2386,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_11() {
+    fn tokenizer_literal_dot_digits_number_11() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".001E+34J".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2402,7 +2402,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_12() {
+    fn tokenizer_literal_dot_digits_number_12() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0J".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2418,7 +2418,7 @@ mod tests {
     }
 
     #[test]
-    fn tokenizer_literal_dot_digits__number_13() {
+    fn tokenizer_literal_dot_digits_number_13() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( ".0j".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
