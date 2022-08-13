@@ -44,7 +44,6 @@ impl Tokenizer for PythonCoreTokenizer {
         self.token_start_position = self.source_buffer.get_position(); // Saves starts of current token symbol.
         let mut is_blank_line= false;
 
-
         'outer: loop {
 
             /* Analyzing indentation level in code at beginning of line */
@@ -108,6 +107,17 @@ impl Tokenizer for PythonCoreTokenizer {
             }
 
             /* Checking for pending indent or dedent in block control */
+            match &self.pending {
+                _ if self.pending < 0 => {
+                    self.pending += 1;
+                    return Ok( Box::new( Token::Dedent(None) ) )
+                },
+                _ if self.pending > 0 => {
+                    self.pending -= 1;
+                    return Ok( Box::new( Token::Indent(None) ) )
+                },
+                _ => { }
+            }
 
             'inner: loop {
 
