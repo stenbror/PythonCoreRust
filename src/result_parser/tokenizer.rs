@@ -13,7 +13,7 @@ pub struct PythonCoreTokenizer {
 trait Tokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer;
     fn get_symbol(&mut self) -> Result<Box<Token>, String>;
-    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>, trivias: Box<Vec<Box<Trivia>>>) -> Result<Box<Token>, String>;
+    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>, trivia: Box<Vec<Box<Trivia>>>) -> Result<Box<Token>, String>;
     fn get_position(&self) -> u32;
 }
 
@@ -769,7 +769,7 @@ impl Tokenizer for PythonCoreTokenizer {
         }
     }
 
-    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>, mut trivias: Box<Vec<Box<Trivia>>>) -> Result<Box<Token>, String> {
+    fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>, mut trivia: Box<Vec<Box<Trivia>>>) -> Result<Box<Token>, String> {
         let mut buffer = String::new();
         let quote = self.source_buffer.get_char();
         match triple {
@@ -800,13 +800,13 @@ impl Tokenizer for PythonCoreTokenizer {
                     }
                 } {};
                 Ok(Box::new(Token::AtomString(start, self.source_buffer.get_position(),
-                                              match trivias.len() { 0 => None, _ => Some( { trivias.reverse(); trivias } ) }, Box::new(buffer), prefix )) )
+                                              match trivia.len() { 0 => None, _ => Some( { trivia.reverse(); trivia } ) }, Box::new(buffer), prefix )) )
             },
             _ => {
                 buffer.push(self.source_buffer.get_char());
                 let _ = self.source_buffer.advance();
                 while match self.source_buffer.get_char() {
-                    '\0' | '\r' | '\n' => return Err(format!("Unterminated sinqle quote string at {}!", self.source_buffer.get_position()).to_string()),
+                    '\0' | '\r' | '\n' => return Err(format!("Unterminated single quote string at {}!", self.source_buffer.get_position()).to_string()),
                     _ => {
                         if self.source_buffer.get_char() == quote {
                             buffer.push(self.source_buffer.get_char());
@@ -821,7 +821,7 @@ impl Tokenizer for PythonCoreTokenizer {
                     }
                 } {};
                 Ok(Box::new(Token::AtomString(start, self.source_buffer.get_position(),
-                                              match trivias.len() { 0 => None, _ => Some( { trivias.reverse(); trivias } ) }, Box::new(buffer), prefix )) )
+                                              match trivia.len() { 0 => None, _ => Some( { trivia.reverse(); trivia } ) }, Box::new(buffer), prefix )) )
             }
         }
     }
@@ -850,7 +850,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -864,7 +864,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -878,7 +878,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -892,7 +892,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -906,7 +906,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -920,7 +920,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -934,7 +934,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -948,7 +948,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -962,7 +962,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -976,7 +976,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -990,7 +990,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1004,7 +1004,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1018,7 +1018,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1032,7 +1032,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1046,7 +1046,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1060,7 +1060,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1074,12 +1074,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_operator_or_delimiter_elipsis() {
+    fn tokenizer_operator_or_delimiter_ellipsis() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "...".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -1088,7 +1088,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1102,7 +1102,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1116,7 +1116,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1130,7 +1130,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1144,7 +1144,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1158,7 +1158,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1172,7 +1172,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1186,7 +1186,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1200,7 +1200,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1214,7 +1214,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1228,7 +1228,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1242,7 +1242,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1256,7 +1256,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1270,7 +1270,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1284,7 +1284,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1298,7 +1298,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1312,12 +1312,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_operator_or_delimiter_bit_matrice_assign() {
+    fn tokenizer_operator_or_delimiter_bit_matrices_assign() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@=".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -1326,12 +1326,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_operator_or_delimiter_matrice() {
+    fn tokenizer_operator_or_delimiter_matrices() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "@".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -1340,7 +1340,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1354,7 +1354,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1368,7 +1368,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1382,7 +1382,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1392,11 +1392,11 @@ mod tests {
         match tokenizer.get_symbol() {
             Ok( s ) => {
                 match *s {
-                    Token::PySemiColon( 0u32, 1u32, None) => assert!(true),
+                    PySemiColon( 0u32, 1u32, None) => assert!(true),
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1410,7 +1410,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1424,7 +1424,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1438,7 +1438,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1452,7 +1452,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1467,7 +1467,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1481,7 +1481,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(true)
+            Err( _e ) => assert!(true)
         }
     }
 
@@ -1496,7 +1496,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1510,7 +1510,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(true)
+            Err( _e ) => assert!(true)
         }
     }
 
@@ -1525,7 +1525,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1539,7 +1539,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(true)
+            Err( _e ) => assert!(true)
         }
     }
 
@@ -1553,7 +1553,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1567,7 +1567,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1581,7 +1581,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1595,7 +1595,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1609,7 +1609,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1623,7 +1623,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1637,7 +1637,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1651,7 +1651,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1665,7 +1665,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1679,7 +1679,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1693,7 +1693,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1707,7 +1707,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1721,7 +1721,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1735,7 +1735,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1749,7 +1749,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1763,7 +1763,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1777,7 +1777,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1791,7 +1791,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1805,7 +1805,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1819,7 +1819,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1833,7 +1833,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1847,7 +1847,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1861,7 +1861,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1875,7 +1875,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1889,7 +1889,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1903,7 +1903,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1917,7 +1917,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1931,7 +1931,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1945,7 +1945,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1959,7 +1959,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1973,7 +1973,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -1987,7 +1987,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2001,7 +2001,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2015,7 +2015,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2029,7 +2029,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2045,7 +2045,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2061,7 +2061,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2077,7 +2077,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2093,7 +2093,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2109,7 +2109,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2125,7 +2125,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2141,7 +2141,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2157,7 +2157,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2173,7 +2173,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2189,7 +2189,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2205,7 +2205,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2221,7 +2221,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2237,7 +2237,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2253,7 +2253,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2269,7 +2269,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2285,7 +2285,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2301,7 +2301,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2317,7 +2317,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2333,7 +2333,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2349,7 +2349,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2365,7 +2365,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2381,7 +2381,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2397,7 +2397,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2413,7 +2413,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2429,7 +2429,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2445,7 +2445,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2461,7 +2461,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2477,7 +2477,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2493,7 +2493,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2509,7 +2509,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2525,7 +2525,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2541,7 +2541,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2557,7 +2557,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2573,7 +2573,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2589,7 +2589,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2605,7 +2605,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2621,7 +2621,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2638,7 +2638,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2655,7 +2655,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2672,7 +2672,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2689,7 +2689,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2706,7 +2706,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2723,7 +2723,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2740,7 +2740,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2757,7 +2757,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2774,7 +2774,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2791,7 +2791,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2808,7 +2808,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2825,7 +2825,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2842,7 +2842,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2859,7 +2859,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2876,7 +2876,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2893,7 +2893,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2910,12 +2910,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_literal_string_tripple_empty_1() {
+    fn tokenizer_literal_string_triple_empty_1() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF\"\"\"\"\"\"".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2927,12 +2927,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_literal_string_tripple_empty_2() {
+    fn tokenizer_literal_string_triple_empty_2() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF''''''".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2944,12 +2944,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_literal_string_tripple_1() {
+    fn tokenizer_literal_string_triple_1() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF'''Hello, World!'''".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2961,12 +2961,12 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
     #[test]
-    fn tokenizer_literal_string_tripple_2() {
+    fn tokenizer_literal_string_triple_2() {
         let mut tokenizer = Box::new( PythonCoreTokenizer::new( "RF'''Hello,\r\n World!'''".to_string() ) );
         match tokenizer.get_symbol() {
             Ok( s ) => {
@@ -2978,7 +2978,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 
@@ -2995,7 +2995,7 @@ mod tests {
                     _ => assert!(false)
                 }
             }
-            Err( e ) => assert!(false)
+            Err( _e ) => assert!(false)
         }
     }
 }
