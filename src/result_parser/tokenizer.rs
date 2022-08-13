@@ -6,7 +6,12 @@ use crate::Token;
 pub struct PythonCoreTokenizer {
     source_buffer: Box<SourceBuffer>,
     token_start_position: u32,
-    parenthesis: Vec<char>
+    parenthesis: Vec<char>,
+    is_at_beginning_of_line: bool,
+    tab_size: u32,
+    is_interactive: bool,
+    pending: i32,
+    indent_stack: Vec<u32>
 }
 
 
@@ -24,6 +29,11 @@ impl Tokenizer for PythonCoreTokenizer {
             source_buffer: Box::new( SourceBuffer::new(buffer) ),
             token_start_position: 0u32,
             parenthesis: Vec::new(),
+            is_at_beginning_of_line: true,
+            tab_size: 4,
+            is_interactive: false,
+            pending: 0,
+            indent_stack: { let mut stack : Vec<u32> = Vec::new(); stack.push(0); stack }
         }
     }
 
@@ -32,6 +42,78 @@ impl Tokenizer for PythonCoreTokenizer {
         let mut trivia_collector : Box<Vec<Box<Trivia>>> = Box::new( Vec::new() );
 
         self.token_start_position = self.source_buffer.get_position(); // Saves starts of current token symbol.
+        let mut is_blank_line= false;
+
+
+        'outer: loop {
+
+            /* Analyzing indentation level in code at beginning of line */
+            match &self.is_at_beginning_of_line {
+                true => {
+                    self.is_at_beginning_of_line = false;
+                    let mut col: u32 = 0;
+                    while   match self.source_buffer.get_char() {
+                            ' ' => {
+                                col += 1;
+                                true
+                            },
+                            '\t' => {
+                                col = (col / self.tab_size + 1) * self.tab_size;
+                                true
+                            },
+                            _ => false
+                            } {
+                        let _ = self.source_buffer.advance();
+                    };
+
+                    match self.source_buffer.get_char() {
+                        '#' | '\r' | '\n' | '\\' => {
+                            if col == 0 && self.is_interactive {
+                                match self.source_buffer.get_char() {
+                                    '\r' | '\n' => {
+                                        is_blank_line = false
+                                    },
+                                    _ => { }
+                                }
+                            }
+                            else if self.is_interactive {
+                                is_blank_line = false;
+                                col = 0u32;
+                            }
+                            else {
+                                is_blank_line = true
+                            }
+                        },
+                        _ => { }
+                    }
+
+                    if is_blank_line == false && self.parenthesis.is_empty() {
+                        if self.indent_stack.is_empty() == false && col == match self.indent_stack.last() { Some(x) => *x, _ => 0 } { }
+                        else if self.indent_stack.is_empty() == false && col > match self.indent_stack.last() { Some(x) => *x, _ => 0 } {
+                            self.pending += 1;
+                            self.indent_stack.push(col);
+                        }
+                        else {
+                            while self.indent_stack.is_empty() == false && col < match self.indent_stack.last() { Some(x) => *x, _ => 0 } && self.indent_stack.len() > 1 {
+                                self.indent_stack.pop();
+                                self.pending -= 1;
+                            }
+                            if self.indent_stack.is_empty() || col < match self.indent_stack.last() { Some(x) => *x, _ => 0 } {
+                                return Err("Inconsistent indentation level in block control!".to_string())
+                            }
+                        }
+                    }
+                },
+                _ => { }
+            }
+
+            /* Checking for pending indent or dedent in block control */
+
+            'inner: loop {
+
+                break 'outer;
+            }
+        }
 
 
         match self.source_buffer.peek_three_chars() {
