@@ -169,8 +169,13 @@ impl Tokenizer for PythonCoreTokenizer {
                     _ => {}
                 }
 
-
-
+                /* Handle End Of File */
+                match self.source_buffer.get_char() {
+                    '\0' => {
+                        return Ok(Box::new(Token::EOF(self.source_buffer.get_position(), match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) } )))
+                    },
+                    _ => {}
+                }
 
 
 
