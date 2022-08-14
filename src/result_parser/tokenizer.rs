@@ -15,7 +15,7 @@ pub struct PythonCoreTokenizer {
 }
 
 
-trait Tokenizer {
+pub trait Tokenizer {
     fn new(buffer: String) -> PythonCoreTokenizer;
     fn get_symbol(&mut self) -> Result<Box<Token>, String>;
     fn handle_string(&mut self, start: u32, triple: bool, prefix: Option<String>, trivia: Box<Vec<Box<Trivia>>>) -> Result<Box<Token>, String>;
