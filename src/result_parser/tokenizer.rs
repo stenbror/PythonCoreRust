@@ -145,7 +145,29 @@ impl Tokenizer for PythonCoreTokenizer {
 
                 self.token_start_position = self.source_buffer.get_position();
 
-
+                /* Type comment or standard comment trivia */
+                match self.source_buffer.get_char() {
+                    '#' => {
+                        let mut buffer = String::new();
+                        while   match self.source_buffer.get_char() {
+                                    '\r' | '\n' | '\0' => false,
+                                    _ => {
+                                        buffer.push(self.source_buffer.get_char());
+                                        let _ = self.source_buffer.advance();
+                                        true
+                                    }
+                                } {};
+                        match buffer.as_str().starts_with("# type:") {
+                            true => return Ok(Box::new(Token::TypeComment(self.token_start_position, self.source_buffer.get_position(),
+                                                                          match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) }, Box::new(buffer)))),
+                            _ => {
+                                trivia_collector.push(Box::new( Trivia::Comment(self.token_start_position, self.source_buffer.get_position(), Box::new(buffer)) ) );
+                            }
+                        };
+                        continue 'inner
+                    },
+                    _ => {}
+                }
 
 
 

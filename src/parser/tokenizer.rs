@@ -1179,7 +1179,7 @@ impl PythonCoreTokenizer {
                         Some( Token::TypeComment(*token_start_position, self.get_position(), trivia, Box::new( buffer ) ) )
                     },
                     _ => {
-                        self.trivia_collector.push(Box::new( Trivia::Comment(*token_start_position, self.get_position(), buffer) ) );
+                        self.trivia_collector.push(Box::new( Trivia::Comment(*token_start_position, self.get_position(), Box::new(buffer)) ) );
                         None
                     }
                 }
