@@ -1263,7 +1263,7 @@ impl PythonCoreTokenizer {
                                 let token_start_position = &self.get_position();
                                 &self.source_buffer.advance();
                                 while match *self.source_buffer.get_char() { ' ' =>  { &self.source_buffer.advance(); true }, _ => false} {};
-                                let trivia = Box::new( Trivia::Whitespace(*token_start_position, self.get_position(), ' ') );
+                                let trivia = Box::new( Trivia::WhiteSpace(*token_start_position, self.get_position(), ' ') );
                                 self.trivia_collector.push(trivia);
                                 true
                             },
@@ -1271,7 +1271,7 @@ impl PythonCoreTokenizer {
                                 let token_start_position = &self.get_position();
                                 &self.source_buffer.advance();
                                 while match *self.source_buffer.get_char() { ' ' =>  { &self.source_buffer.advance(); true }, _ => false} {};
-                                let trivia = Box::new( Trivia::Whitespace(*token_start_position, self.get_position(), '\t') );
+                                let trivia = Box::new( Trivia::WhiteSpace(*token_start_position, self.get_position(), '\t') );
                                 self.trivia_collector.push(trivia);
                                 true
                             },

@@ -121,6 +121,38 @@ impl Tokenizer for PythonCoreTokenizer {
 
             'inner: loop {
 
+                /* Handle whitespace in source code that is not indent / dedent control and add it as trivia for next token */
+                while   match self.source_buffer.get_char() {
+                            ' ' => {
+                                self.token_start_position = self.source_buffer.get_position();
+                                while   match self.source_buffer.get_char() {
+                                            ' ' => {
+                                                let _ = self.source_buffer.get_char();
+                                                true
+                                            }, _ => false
+                                        } {};
+                                trivia_collector.push(Box::new( Trivia::WhiteSpace(self.token_start_position, self.source_buffer.get_position(), ' ') ) );
+                                true
+                            },
+                            '\t' => {
+                                self.token_start_position = self.source_buffer.get_position();
+                                let _ = self.source_buffer.get_char();
+                                trivia_collector.push(Box::new( Trivia::WhiteSpace(self.token_start_position, self.source_buffer.get_position(), '\t') ) );
+                                true
+                            },
+                            _ => false
+                        } {};
+
+                self.token_start_position = self.source_buffer.get_position();
+
+
+
+
+
+
+
+
+
                 break 'outer;
             }
         }
