@@ -177,14 +177,52 @@ impl Tokenizer for PythonCoreTokenizer {
                     _ => {}
                 }
 
+                self.token_start_position = self.source_buffer.get_position();
 
+                /* Handle newline as token or trivia as needed */
+                match self.source_buffer.peek_three_chars() {
+                    ( '\r', '\n', _  ) => {
 
+                    },
+                    ( '\r', _ , _ ) => {
+
+                    },
+                    ( '\n', _ , _ ) => {
+
+                    },
+                    _ => {}
+                }
+
+                /* Handling line continuation */
+                match self.source_buffer.peek_three_chars() {
+                    ( '\\', '\r', '\n' ) => {
+                        for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                        trivia_collector.push(Box::new( Trivia::LineContinuation(self.token_start_position, self.source_buffer.get_position(), '\\', '\r', '\n') ) );
+                        continue 'inner;
+                    },
+                    ( '\\', '\r', _ ) => {
+                        for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                        trivia_collector.push(Box::new( Trivia::LineContinuation(self.token_start_position, self.source_buffer.get_position(), '\\', '\r', ' ') ) );
+                        continue 'inner;
+                    },
+                    ( '\\', '\n', _ ) => {
+                        for _i in 1 ..= 2 { let _ = self.source_buffer.advance(); }
+                        trivia_collector.push(Box::new( Trivia::LineContinuation(self.token_start_position, self.source_buffer.get_position(), '\\', '\n', ' ') ) );
+                        continue 'inner;
+                    },
+                    ( '\\', _ , _ ) => {
+                        return Err(format!("Line continuation at {} not followed by newline!", self.source_buffer.get_position()).to_string())
+                    },
+                    _ => {}
+                };
 
                 break 'outer;
             }
         }
 
+        self.token_start_position = self.source_buffer.get_position();
 
+        /* Handling all other valid tokens */
         match self.source_buffer.peek_three_chars() {
             ( '*', '*', '=' ) => {
                 for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
