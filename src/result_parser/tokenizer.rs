@@ -182,13 +182,55 @@ impl Tokenizer for PythonCoreTokenizer {
                 /* Handle newline as token or trivia as needed */
                 match self.source_buffer.peek_three_chars() {
                     ( '\r', '\n', _  ) => {
-
+                        for _i in 1 ..= 3 { let _ = self.source_buffer.advance(); }
+                        self.is_at_beginning_of_line = true;
+                        if is_blank_line || self.parenthesis.is_empty() == false {
+                            trivia_collector.push(Box::new( Trivia::Newline(self.token_start_position, self.source_buffer.get_position(), '\r', '\n') ) );
+                            continue 'outer;
+                        }
+                        else {
+                            return Ok(Box::new(Token::Newline(
+                                self.token_start_position,
+                                self.source_buffer.get_position(),
+                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) },
+                                '\r',
+                                '\n'
+                            )))
+                        }
                     },
                     ( '\r', _ , _ ) => {
-
+                        let _ = self.source_buffer.advance();
+                        self.is_at_beginning_of_line = true;
+                        if is_blank_line || self.parenthesis.is_empty() == false {
+                            trivia_collector.push(Box::new( Trivia::Newline(self.token_start_position, self.source_buffer.get_position(), '\r', '\n') ) );
+                            continue 'outer;
+                        }
+                        else {
+                            return Ok(Box::new(Token::Newline(
+                                self.token_start_position,
+                                self.source_buffer.get_position(),
+                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) },
+                                '\r',
+                                ' '
+                            )))
+                        }
                     },
                     ( '\n', _ , _ ) => {
-
+                        let _ = self.source_buffer.advance();
+                        self.is_at_beginning_of_line = true;
+                        if is_blank_line || self.parenthesis.is_empty() == false {
+                            trivia_collector.push(Box::new( Trivia::Newline(self.token_start_position, self.source_buffer.get_position(), '\r', '\n') ) );
+                            continue 'outer;
+                        }
+                        else {
+                            return Ok(Box::new(Token::Newline(
+                                self.token_start_position,
+                                self.source_buffer.get_position(),
+                                match trivia_collector.len() { 0 => None, _ => Some( { trivia_collector.reverse(); trivia_collector } ) },
+                                '\n',
+                                ' '
+                            )))
+                        }
                     },
                     _ => {}
                 }
