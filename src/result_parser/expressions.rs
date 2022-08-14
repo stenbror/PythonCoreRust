@@ -14,24 +14,33 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         match &self.symbol {
             Ok(s) => {
-                let symb1 = (&**s).clone();
-                match symb1 {
+                let symbol1 = (&**s).clone();
+                match symbol1 {
                     Token::PyElipsis(..)  => {
                         let _ = self.advance();
-                        Ok(Box::new(ASTNode::AtomElipsis(start_pos, self.lexer.get_position(), Box::new(symb1))))
+                        Ok(Box::new(ASTNode::AtomElipsis(start_pos, self.lexer.get_position(), Box::new(symbol1))))
                     },
                     Token::PyFalse(..)  => {
                         let _ = self.advance();
-                        Ok(Box::new(ASTNode::AtomFalse(start_pos, self.lexer.get_position(), Box::new(symb1))))
+                        Ok(Box::new(ASTNode::AtomFalse(start_pos, self.lexer.get_position(), Box::new(symbol1))))
                     },
                     Token::PyNone(..)  => {
                         let _ = self.advance();
-                        Ok(Box::new(ASTNode::AtomNone(start_pos, self.lexer.get_position(), Box::new(symb1))))
+                        Ok(Box::new(ASTNode::AtomNone(start_pos, self.lexer.get_position(), Box::new(symbol1))))
                     },
                     Token::PyTrue(..)  => {
                         let _ = self.advance();
-                        Ok(Box::new(ASTNode::AtomTrue(start_pos, self.lexer.get_position(), Box::new(symb1))))
+                        Ok(Box::new(ASTNode::AtomTrue(start_pos, self.lexer.get_position(), Box::new(symbol1))))
                     },
+                    Token::AtomName(..)  => {
+                        let _ = self.advance();
+                        Ok(Box::new(ASTNode::AtomName(start_pos, self.lexer.get_position(), Box::new(symbol1))))
+                    },
+                    Token::AtomNumber(..)  => {
+                        let _ = self.advance();
+                        Ok(Box::new(ASTNode::AtomNumber(start_pos, self.lexer.get_position(), Box::new(symbol1))))
+                    },
+
 
                     _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
                 }
@@ -136,6 +145,60 @@ mod tests {
                     ASTNode::AtomTrue( 0, 4, tok) => {
                         match &**tok {
                             Token::PyTrue(0, 4, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_name() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomName( 0, 8, tok) => {
+                        match &**tok {
+                            Token::AtomName(0, 8, None, txt) => {
+                                match &*txt.as_str() {
+                                    "__init__" => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_number() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("0.32e-4J".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomNumber( 0, 8, tok) => {
+                        match &**tok {
+                            Token::AtomNumber(0, 8, None, txt) => {
+                                match &*txt.as_str() {
+                                    "0.32e-4J" => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
                             _ => assert!(false)
                         }
                     },
