@@ -12,9 +12,9 @@ pub trait Expressions {
 impl Expressions for PythonCoreParser {
     fn parse_expressions_parser_atom(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        match &self.symbol {
+        match self.symbol.clone() {
             Ok(s) => {
-                let symbol1 = (&**s).clone();
+                let symbol1 = (*s).clone();
                 match symbol1 {
                     Token::PyElipsis(..)  => {
                         let _ = self.advance();
@@ -40,8 +40,27 @@ impl Expressions for PythonCoreParser {
                         let _ = self.advance();
                         Ok(Box::new(ASTNode::AtomNumber(start_pos, self.lexer.get_position(), Box::new(symbol1))))
                     },
-
-
+                    Token::AtomString(..)  => {
+                        let mut lst: Vec<Box<Token>> = Vec::new();
+                        lst.push(Box::new(symbol1));
+                        let _ = &self.advance();
+                        while   match self.symbol.clone() {
+                                Ok(s) => {
+                                    let symbol1 = (*s).clone();
+                                    match symbol1 {
+                                        Token::AtomString(..) => {
+                                            lst.push(Box::new(symbol1));
+                                            let _ = &self.advance();
+                                            true
+                                        },
+                                        _ => false
+                                    }
+                                },
+                            _ => false
+                            } {};
+                        lst.reverse();
+                        Ok(Box::new(ASTNode::AtomString(start_pos, self.lexer.get_position(), Box::new(lst))))
+                    }
                     _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
                 }
             },
@@ -196,6 +215,39 @@ mod tests {
                             Token::AtomNumber(0, 8, None, txt) => {
                                 match &*txt.as_str() {
                                     "0.32e-4J" => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_single_string() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!'".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomString( 0, 15, tok) => {
+                       let el = (*tok).last();
+                        match el {
+                            Some(el2) => {
+                                match *el2.clone() {
+                                    Token::AtomString( 0, 15, None, txt, None ) => {
+                                        match &*txt.as_str() {
+                                            "'Hello, World!'" => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    },
                                     _ => assert!(false)
                                 }
                             },
