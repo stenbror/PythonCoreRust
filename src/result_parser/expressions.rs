@@ -9,6 +9,7 @@ pub trait Expressions {
     fn parse_expressions_power(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_factor(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_term(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -292,6 +293,56 @@ impl Expressions for PythonCoreParser {
                             },
                             _ => return Err(format!("SyntaxError at {}: Expecting symbol in term expression!", start_pos))
                         } {};
+                left_node_raw
+            },
+            _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_term();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyPlus(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_term();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::PlusArithExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyMinus(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_term();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::MinusArithExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in arith expression!", start_pos))
+                } {};
                 left_node_raw
             },
             _ => left_node_raw
@@ -872,7 +923,7 @@ mod tests {
     }
 
     #[test]
-    fn expression_term_operator_floot_div() {
+    fn expression_term_operator_floor_div() {
         let mut lexer = Box::new( PythonCoreTokenizer::new("a // b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
@@ -952,6 +1003,131 @@ mod tests {
                         }
                         match &**symbol {
                             Token::PyMatrice(6, 7, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 8, 9 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_arith_operator_plus() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a + b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_arith();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::PlusArithExpr( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyPlus(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_arith_operator_minus() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a - b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_arith();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::MinusArithExpr( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyMinus(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_arith_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_arith();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_arith_operator_plus_minus_double() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a + b - c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_arith();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::MinusArithExpr( 0, 9, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::PlusArithExpr( 0, 6 , left2 , symbol2 , right2 ) => {
+                                match &**left2 {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**symbol2 {
+                                    Token::PyPlus(2, 3, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**right2 {
+                                    ASTNode::AtomName( 4, 6 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyMinus(6, 7, _ ) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
