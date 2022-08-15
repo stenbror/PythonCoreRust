@@ -10,6 +10,7 @@ pub trait Expressions {
     fn parse_expressions_factor(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_term(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_shift(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -330,6 +331,56 @@ impl Expressions for PythonCoreParser {
                                             Ok(s) => {
                                                 let right_node = (**s).clone();
                                                 left_node_raw = Ok(Box::new(ASTNode::MinusArithExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in arith expression!", start_pos))
+                } {};
+                left_node_raw
+            },
+            _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_shift(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_arith();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyShiftLeft(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_arith();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::ShiftLeftExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyShiftRight(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_arith();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::ShiftRightExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
                                                 true
                                             },
                                             _ => return right_node_raw
