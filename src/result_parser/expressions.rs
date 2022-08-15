@@ -1193,4 +1193,129 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_shift_operator_left() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a << b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_shift();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::ShiftLeftExpr( 0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyShiftLeft(2, 4, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 5, 6 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_shift_operator_right() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a >> b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_shift();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::ShiftRightExpr( 0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyShiftRight(2, 4, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 5, 6 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_shift_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_shift();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_shift_operator_left_right_double() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a << b >> c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_shift();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::ShiftRightExpr( 0, 11, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::ShiftLeftExpr( 0, 7 , left2 , symbol2 , right2 ) => {
+                                match &**left2 {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**symbol2 {
+                                    Token::PyShiftLeft(2, 4, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**right2 {
+                                    ASTNode::AtomName( 5, 7 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyShiftRight(7, 9, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 10, 11 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
