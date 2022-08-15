@@ -751,4 +751,176 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_term_operator_mul() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a * b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::MulTerm( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyMul(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_term_operator_div() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a / b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::DivTerm( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyDiv(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_term_operator_modulo() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a % b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::ModuloTerm( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyModulo(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_term_operator_matrice() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a @ b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::MatriceTerm( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyMatrice(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_term_operator_floot_div() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a // b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::FloorDivTerm( 0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyFloorDiv(2, 4, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 5, 6 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_term_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_term();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
