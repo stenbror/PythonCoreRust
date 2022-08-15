@@ -470,7 +470,7 @@ impl Expressions for PythonCoreParser {
                             _ => false
                         }
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in and expression!", start_pos))
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in xor expression!", start_pos))
                 } {};
                 left_node_raw
             },
@@ -1477,6 +1477,103 @@ mod tests {
                         }
                         match &**symbol {
                             Token::PyBitAnd(6, 7, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 8, 9 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+
+
+    #[test]
+    fn expression_bit_xor_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a ^ b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_xor_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::XorExpr( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyBitXor(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_bit_xor_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_xor_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_bit_xor_operator_double() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a ^ b ^ c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_xor_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::XorExpr( 0, 9, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::XorExpr( 0, 6 , left2 , symbol2 , right2 ) => {
+                                match &**left2 {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**symbol2 {
+                                    Token::PyBitXor(2, 3, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**right2 {
+                                    ASTNode::AtomName( 4, 6 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyBitXor(6, 7, _ ) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
