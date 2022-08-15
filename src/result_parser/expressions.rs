@@ -6,6 +6,10 @@ use crate::result_parser::tokenizer::Tokenizer;
 pub trait Expressions {
     fn parse_expressions_parser_atom(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_parser_atom_expr(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expression_power(&mut self) -> Result<Box<ASTNode>, String>;
+
+
+    fn parse_expression_trailer(&mut self) -> Result<Box<ASTNode>, String>;
 }
 
 
@@ -68,8 +72,71 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_parser_atom_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
 
-        Ok(Box::new(ASTNode::Empty))
+        /* Optional 'await' prefix */
+        let mut await_symbol: Option<Box<Token>> = None;
+        match self.symbol.clone() {
+            Ok(s) => {
+                let symbol1 = (*s).clone();
+                match symbol1 {
+                    Token::PyAwait(..) => {
+                        await_symbol = Some( Box::new(symbol1 ));
+                        let _ = &self.advance();
+                    },
+                    _ => {}
+                }
+            },
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom_expr expression!", start_pos))
+        }
+
+        /* main node collector */
+        let right_node_raw = self.parse_expressions_parser_atom();
+        match right_node_raw {
+            Ok(s) => {
+                let right_node = s;
+
+                /* Optional trailers */
+                let mut lst : Vec<Box<ASTNode>> = Vec::new();
+                while   match self.symbol.clone() {
+                            Ok(s) => {
+                                match *s {
+                                    Token::PyLeftParen(..) |
+                                    Token::PyLeftBracket(..) |
+                                    Token::PyDot(..) => {
+                                        let next_node_raw = self.parse_expression_trailer();
+                                        match next_node_raw {
+                                            Ok(s) => {
+                                                lst.push(s);
+                                            },
+                                            _ => return next_node_raw
+                                        }
+                                        true
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        } {};
+
+                /* Returning needed node */
+                match ( &await_symbol, lst.len() ) {
+                    ( None, 0 ) => Ok(right_node),
+                    ( _ , _ ) => {
+                        Ok(Box::new(ASTNode::AtomExpr(start_pos, self.lexer.get_position(), await_symbol, right_node, Box::new(lst))))
+                    }
+                }
+            },
+            _ => right_node_raw
+        }
+    }
+
+    fn parse_expression_power(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expression_trailer(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
     }
 }
 
@@ -282,6 +349,85 @@ mod tests {
                             Token::AtomString( _ , _ , None, txt, None) => assert_eq!("'123'", &**txt),
                             _ => assert!(false)
                         }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_non_await_name() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomName( 0, 8, tok) => {
+                        match &**tok {
+                            Token::AtomName(0, 8, None, txt) => {
+                                match &*txt.as_str() {
+                                    "__init__" => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_await_name() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("await __init__".to_string()) ); // 14
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomExpr(0, 14, tok, right, next) => {
+                        match &tok {
+                            Some( s ) => {
+                                match &**s {
+                                    Token::PyAwait( 0, 5, None) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                assert!(true)
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(6, 14, tok2) => {
+                                let symbol_text = &**tok2;
+                                let pattern = Box::new( ("__init__".to_string()));
+                                match &**tok2 {
+                                    Token::AtomName(6, 14, trivia , pattern) => {
+                                        match &trivia {
+                                            Some(s) => {
+                                                let x = &**s;
+                                                assert_eq!(1, x.len());
+                                                match *x[0] {
+                                                    Trivia::WhiteSpace( 5 , 6 , ' ') => assert!(true),
+                                                    _ => assert!(false)
+                                                }
+                                            },
+                                            _ => assert!(false)
+                                        }
+                                    },
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(0, (**next).len()); // No trailers added to node as expected!
                     },
                     _ => assert!(false)
                 }
