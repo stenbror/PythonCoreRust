@@ -58,7 +58,6 @@ impl Expressions for PythonCoreParser {
                                 },
                             _ => false
                             } {};
-                        lst.reverse();
                         Ok(Box::new(ASTNode::AtomString(start_pos, self.lexer.get_position(), Box::new(lst))))
                     }
                     _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
@@ -251,6 +250,36 @@ mod tests {
                                     _ => assert!(false)
                                 }
                             },
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_atom_multiple_string() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!''123'".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_parser_atom();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomString( 0, 20 , tok) => {
+                        let lst = (**tok).clone();
+                        assert_eq!(2, lst.len());
+                        let a = &*lst[0]; // First string Token
+                        let b = &*lst[1]; // Second string Token
+                        match a {
+                            Token::AtomString( _ , _ , None, txt, None) => assert_eq!("'Hello, World!'", &**txt),
+                            _ => assert!(false)
+                        }
+                        match b {
+                            Token::AtomString( _ , _ , None, txt, None) => assert_eq!("'123'", &**txt),
                             _ => assert!(false)
                         }
                     },
