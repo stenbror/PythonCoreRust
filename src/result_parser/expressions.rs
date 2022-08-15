@@ -542,4 +542,126 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_no_power_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_power();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_factor_operator_plus() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("+b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_factor();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::UnaryPlus( 0, 2, symbol, right) => {
+                        match &**symbol {
+                            Token::PyPlus(0, 1, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 1, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_factor_operator_minus() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("-b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_factor();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::UnaryMinus( 0, 2, symbol, right) => {
+                        match &**symbol {
+                            Token::PyMinus(0, 1, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 1, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_factor_operator_bit_invert() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("~b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_factor();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::UnaryInvert( 0, 2, symbol, right) => {
+                        match &**symbol {
+                            Token::PyBitInvert(0, 1, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 1, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_factor_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_factor();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
