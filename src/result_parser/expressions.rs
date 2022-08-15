@@ -164,7 +164,51 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_factor(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyPlus(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node_raw = self.parse_expressions_factor();
+                        match &right_node_raw {
+                            Ok(s) => {
+                                let right_node = (**s).clone();
+                                Ok(Box::new(ASTNode::UnaryPlus(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
+                            },
+                            _ => right_node_raw
+                        }
+                    },
+                    Token::PyMinus(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node_raw = self.parse_expressions_factor();
+                        match &right_node_raw {
+                            Ok(s) => {
+                                let right_node = (**s).clone();
+                                Ok(Box::new(ASTNode::UnaryMinus(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
+                            },
+                            _ => right_node_raw
+                        }
+                    },
+                    Token::PyBitInvert(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node_raw = self.parse_expressions_factor();
+                        match &right_node_raw {
+                            Ok(s) => {
+                                let right_node = (**s).clone();
+                                Ok(Box::new(ASTNode::UnaryInvert(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
+                            },
+                            _ => right_node_raw
+                        }
+                    },
+                    _ => self.parse_expressions_power()
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in factor expression!", start_pos))
+        }
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
