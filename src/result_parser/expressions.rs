@@ -11,6 +11,7 @@ pub trait Expressions {
     fn parse_expressions_term(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_shift(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_and_expr(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -392,7 +393,45 @@ impl Expressions for PythonCoreParser {
                             _ => false
                         }
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in arith expression!", start_pos))
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in shift expression!", start_pos))
+                } {};
+                left_node_raw
+            },
+            _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_and_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_shift();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyBitAnd(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_shift();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::AndExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in and expression!", start_pos))
                 } {};
                 left_node_raw
             },
