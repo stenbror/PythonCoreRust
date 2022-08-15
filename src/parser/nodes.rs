@@ -1,6 +1,7 @@
 
 use crate::parser::tokens::{ Token };
 
+#[derive(Clone)]
 pub enum ASTNode {
     NamedExpr(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     Test(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>, Box<Token>, Box<ASTNode>),

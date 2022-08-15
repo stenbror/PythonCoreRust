@@ -4,17 +4,18 @@ use crate::result_parser::tokenizer::Tokenizer;
 
 
 pub trait Expressions {
-    fn parse_expressions_parser_atom(&mut self) -> Result<Box<ASTNode>, String>;
-    fn parse_expressions_parser_atom_expr(&mut self) -> Result<Box<ASTNode>, String>;
-    fn parse_expression_power(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_atom(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_atom_expr(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_power(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_factor(&mut self) -> Result<Box<ASTNode>, String>;
 
 
-    fn parse_expression_trailer(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
 }
 
 
 impl Expressions for PythonCoreParser {
-    fn parse_expressions_parser_atom(&mut self) -> Result<Box<ASTNode>, String> {
+    fn parse_expressions_atom(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
         match self.symbol.clone() {
             Ok(s) => {
@@ -71,7 +72,7 @@ impl Expressions for PythonCoreParser {
         }
     }
 
-    fn parse_expressions_parser_atom_expr(&mut self) -> Result<Box<ASTNode>, String> {
+    fn parse_expressions_atom_expr(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
 
         /* Optional 'await' prefix */
@@ -91,7 +92,7 @@ impl Expressions for PythonCoreParser {
         }
 
         /* main node collector */
-        let right_node_raw = self.parse_expressions_parser_atom();
+        let right_node_raw = self.parse_expressions_atom();
         match right_node_raw {
             Ok(s) => {
                 let right_node = s;
@@ -104,7 +105,7 @@ impl Expressions for PythonCoreParser {
                                     Token::PyLeftParen(..) |
                                     Token::PyLeftBracket(..) |
                                     Token::PyDot(..) => {
-                                        let next_node_raw = self.parse_expression_trailer();
+                                        let next_node_raw = self.parse_expressions_trailer();
                                         match next_node_raw {
                                             Ok(s) => {
                                                 lst.push(s);
@@ -131,11 +132,42 @@ impl Expressions for PythonCoreParser {
         }
     }
 
-    fn parse_expression_power(&mut self) -> Result<Box<ASTNode>, String> {
+    fn parse_expressions_power(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let left_node_raw = self.parse_expressions_atom_expr();
+        match &left_node_raw {
+            Ok(s) => {
+                let left_node = (**s).clone();
+                match &self.symbol {
+                    Ok(s) => {
+                        match &**s {
+                            Token::PyPower(..) => {
+                                let symbol = (**s).clone();
+                                let _ = self.advance();
+                                let right_node_raw = self.parse_expressions_factor();
+                                match &right_node_raw {
+                                    Ok(s) => {
+                                        let right_node = (**s).clone();
+                                        Ok(Box::new(ASTNode::PowerExpr(start_pos, self.lexer.get_position(), Box::new(left_node), Box::new(symbol), Box::new(right_node))))
+                                    },
+                                    _ => right_node_raw
+                                }
+                            },
+                            _ => left_node_raw
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting symbol in power expression!", start_pos))
+                }
+            },
+            _ => left_node_raw // This returns the error state for left node!
+        }
+    }
+
+    fn parse_expressions_factor(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 
-    fn parse_expression_trailer(&mut self) -> Result<Box<ASTNode>, String> {
+    fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 }
@@ -157,7 +189,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -179,7 +211,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("False".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -201,7 +233,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("None".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -223,7 +255,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("True".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -245,7 +277,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -272,7 +304,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("0.32e-4J".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -299,7 +331,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!'".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -332,7 +364,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!''123'".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom();
+        let res = parser.parse_expressions_atom();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -362,7 +394,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom_expr();
+        let res = parser.parse_expressions_atom_expr();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -389,7 +421,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("await __init__".to_string()) ); // 14
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_parser_atom_expr();
+        let res = parser.parse_expressions_atom_expr();
         match &res {
             Ok(s) => {
                 match &**s {
