@@ -14,6 +14,7 @@ pub trait Expressions {
     fn parse_expressions_and_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_xor_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_expr(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -514,6 +515,30 @@ impl Expressions for PythonCoreParser {
                 left_node_raw
             },
             _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyMul(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node_raw = self.parse_expressions_expr();
+                        match &right_node_raw {
+                            Ok(s) => {
+                                let right_node = (**s).clone();
+                                Ok(Box::new(ASTNode::StarExpr(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
+                            },
+                            _ => right_node_raw
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting '*' in star expression!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in star expression!", start_pos))
         }
     }
 
