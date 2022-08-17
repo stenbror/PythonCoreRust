@@ -15,6 +15,7 @@ pub trait Expressions {
     fn parse_expressions_xor_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_comparison(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -539,6 +540,179 @@ impl Expressions for PythonCoreParser {
                 }
             },
             _ => Err(format!("SyntaxError at {}: Expecting symbol in star expression!", start_pos))
+        }
+    }
+
+    fn parse_expressions_comparison(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_expr();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyLess(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::LessComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyLessEqual(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::LessEqualComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyEqual(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::EqualComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyGreaterEqual(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::GreaterEqualComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyGreater(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::GreaterComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyNotEqual(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::NotEqualComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyIn(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_expr();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::InComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    Token::PyIs(..) => {
+                                        let _ = self.advance();
+                                        match &self.symbol {
+                                            Ok(symbol_x) => {
+                                                let symbol2 = (**symbol_x).clone();
+                                                match &symbol2 {
+                                                    Token::PyNot(..) => {
+                                                        let _ = self.advance();
+                                                        let right_node_raw = self.parse_expressions_expr();
+                                                        match &right_node_raw {
+                                                            Ok(s) => {
+                                                                let right_node = (**s).clone();
+                                                                left_node_raw = Ok(Box::new(ASTNode::IsNotComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(symbol2), Box::new(right_node))));
+                                                            },
+                                                            _ => return right_node_raw
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        let right_node_raw = self.parse_expressions_expr();
+                                                        match &right_node_raw {
+                                                            Ok(s) => {
+                                                                let right_node = (**s).clone();
+                                                                left_node_raw = Ok(Box::new(ASTNode::IsComparison(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                            },
+                                                            _ => return right_node_raw
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                return Err(format!("SyntaxError at {}: Expecting 'is' pr 'is not' in comparison expression!", start_pos))
+                                            }
+                                        }
+                                        true
+                                    },
+                                    Token::PyNot(..) => {
+                                        let _ = self.advance();
+                                        match &self.symbol {
+                                            Ok(symbol_x) => {
+                                                let symbol2 = (**symbol_x).clone();
+                                                match &symbol2 {
+                                                    Token::PyIn(..) => {
+                                                        let _ = self.advance();
+                                                        let right_node_raw = self.parse_expressions_expr();
+                                                        match &right_node_raw {
+                                                            Ok(s) => {
+                                                                let right_node = (**s).clone();
+                                                                left_node_raw = Ok(Box::new(ASTNode::NotInComparison(start_pos, self.lexer.get_position(), Box::new(left_node), Box::new(symbol), Box::new(symbol2), Box::new(right_node))));
+                                                            },
+                                                            _ => return right_node_raw
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        return Err(format!("SyntaxError at {}: Expecting 'in' pr 'not in' in comparison expression!", start_pos))
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                return Err(format!("SyntaxError at {}: Expecting 'is' pr 'is not' in comparison expression!", start_pos))
+                                            }
+                                        }
+                                        true
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in comparison expression!", start_pos))
+                } {};
+                left_node_raw
+            },
+            _ => left_node_raw
         }
     }
 
