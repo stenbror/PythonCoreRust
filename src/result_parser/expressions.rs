@@ -2043,13 +2043,13 @@ mod tests {
             match &res {
                 Ok(s) => {
                     match &**s {
-                        ASTNode::GreaterEqualComparison(0, 6, left, symbol, right) => {
+                        ASTNode::GreaterComparison(0, 6, left, symbol, right) => {
                             match &**left {
                                 ASTNode::AtomName(0, 2, _) => assert!(true),
                                 _ => assert!(false)
                             }
                             match &**symbol {
-                                Token::PyGreaterEqual(2, 4, _) => assert!(true),
+                                Token::PyGreater(2, 4, _) => assert!(true),
                                 _ => assert!(false)
                             }
                             match &**right {
@@ -2061,6 +2061,36 @@ mod tests {
                     }
                 }
                 Err(..) => assert!(false)
+            }
+        }
+
+        #[test]
+        fn expression_comparison_operator_greater() {
+            let mut lexer = Box::new( PythonCoreTokenizer::new("a > b".to_string()) );
+            let mut parser = PythonCoreParser::new(lexer);
+            parser.advance();
+            let res = parser.parse_expressions_comparison();
+            match &res {
+                Ok(s) => {
+                    match &**s {
+                        ASTNode::EqualComparison( 0, 5, left, symbol, right) => {
+                            match &**left {
+                                ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                _ => assert!(false)
+                            }
+                            match &**symbol {
+                                Token::PyEqual(2, 3, _ ) => assert!(true),
+                                _ => assert!(false)
+                            }
+                            match &**right {
+                                ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                                _ => assert!(false)
+                            }
+                        },
+                        _ => assert!(false)
+                    }
+                }
+                Err( .. ) => assert!(false)
             }
         }
 
