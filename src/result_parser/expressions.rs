@@ -1977,20 +1977,50 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_less_equal() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a <= b".to_string()) );
+        let mut lexer = Box::new(PythonCoreTokenizer::new("a <= b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
         match &res {
             Ok(s) => {
                 match &**s {
-                    ASTNode::LessEqualComparison( 0, 6, left, symbol, right) => {
+                    ASTNode::LessEqualComparison(0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyLessEqual(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_comparison_operator_equal() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a == b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::EqualComparison( 0, 6, left, symbol, right) => {
                         match &**left {
                             ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**symbol {
-                            Token::PyLessEqual(2, 4, _ ) => assert!(true),
+                            Token::PyEqual(2, 4, _ ) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
@@ -2003,127 +2033,126 @@ mod tests {
             }
             Err( .. ) => assert!(false)
         }
+    }
 
-        #[test]
-        fn expression_comparison_operator_equal() {
-            let mut lexer = Box::new( PythonCoreTokenizer::new("a = b".to_string()) );
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::EqualComparison( 0, 5, left, symbol, right) => {
-                            match &**left {
-                                ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol {
-                                Token::PyEqual(2, 3, _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
+    #[test]
+    fn expression_comparison_operator_greater_equal() {
+        let mut lexer = Box::new(PythonCoreTokenizer::new("a >= b".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::GreaterEqualComparison(0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyGreaterEqual(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
                 }
-                Err( .. ) => assert!(false)
             }
+            Err(..) => assert!(false)
         }
+    }
 
-        #[test]
-        fn expression_comparison_operator_greater_equal() {
-            let mut lexer = Box::new(PythonCoreTokenizer::new("a >= b".to_string()));
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::GreaterComparison(0, 6, left, symbol, right) => {
-                            match &**left {
-                                ASTNode::AtomName(0, 2, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol {
-                                Token::PyGreater(2, 4, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName(5, 6, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
+    #[test]
+    fn expression_comparison_operator_not_equal() {
+        let mut lexer = Box::new(PythonCoreTokenizer::new("a != b".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::NotEqualComparison(0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyNotEqual(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
                 }
-                Err(..) => assert!(false)
             }
+            Err(..) => assert!(false)
         }
+    }
 
-        #[test]
-        fn expression_comparison_operator_not_equal() {
-            let mut lexer = Box::new(PythonCoreTokenizer::new("a != b".to_string()));
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::NotEqualComparison(0, 6, left, symbol, right) => {
-                            match &**left {
-                                ASTNode::AtomName(0, 2, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol {
-                                Token::PyNotEqual(2, 4, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName(5, 6, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
+    #[test]
+    fn expression_comparison_operator_not_equal_legacy() {
+        let mut lexer = Box::new(PythonCoreTokenizer::new("a <> b".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::NotEqualComparison(0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyNotEqual(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
                 }
-                Err(..) => assert!(false)
             }
+            Err(..) => assert!(false)
         }
+    }
 
-        #[test]
-        fn expression_comparison_operator_greater() {
-            let mut lexer = Box::new( PythonCoreTokenizer::new("a > b".to_string()) );
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::EqualComparison( 0, 5, left, symbol, right) => {
-                            match &**left {
-                                ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol {
-                                Token::PyEqual(2, 3, _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
+    #[test]
+    fn expression_comparison_operator_greater() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a > b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::GreaterComparison( 0, 5, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyGreater(2, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
                 }
-                Err( .. ) => assert!(false)
             }
+            Err( .. ) => assert!(false)
         }
-
     }
 
 }
