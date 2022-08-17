@@ -1745,4 +1745,30 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_star_expression_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("*b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_star_expr();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::StarExpr( 0, 2, symbol, right) => {
+                        match &**symbol {
+                            Token::PyMul(0, 1, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 1, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
