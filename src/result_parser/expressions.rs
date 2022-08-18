@@ -2155,4 +2155,34 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_comparison_operator_is() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a is b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::IsComparison( 0, 6, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyIs(2, 4, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 5, 6 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
