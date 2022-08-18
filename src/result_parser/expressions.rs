@@ -2217,6 +2217,40 @@ mod tests {
                 Err(..) => assert!(false)
             }
         }
+
+        #[test]
+        fn expression_comparison_operator_not_in() {
+            let mut lexer = Box::new(PythonCoreTokenizer::new("a not in b".to_string()));
+            let mut parser = PythonCoreParser::new(lexer);
+            parser.advance();
+            let res = parser.parse_expressions_comparison();
+            match &res {
+                Ok(s) => {
+                    match &**s {
+                        ASTNode::NotInComparison(0, 10, left, symbol1, symbol2, right) => {
+                            match &**left {
+                                ASTNode::AtomName(0, 2, _) => assert!(true),
+                                _ => assert!(false)
+                            }
+                            match &**symbol1 {
+                                Token::PyNot(2, 6, _) => assert!(true),
+                                _ => assert!(false)
+                            }
+                            match &**symbol2 {
+                                Token::PyIn(6, 9, _) => assert!(true),
+                                _ => assert!(false)
+                            }
+                            match &**right {
+                                ASTNode::AtomName(9, 10, _) => assert!(true),
+                                _ => assert!(false)
+                            }
+                        },
+                        _ => assert!(false)
+                    }
+                }
+                Err(..) => assert!(false)
+            }
+        }
     }
 
 }
