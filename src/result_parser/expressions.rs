@@ -16,6 +16,7 @@ pub trait Expressions {
     fn parse_expressions_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_comparison(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_not_test(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -713,6 +714,30 @@ impl Expressions for PythonCoreParser {
                 left_node_raw
             },
             _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_not_test(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyNot(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node_raw = self.parse_expressions_not_test();
+                        match &right_node_raw {
+                            Ok(s) => {
+                                let right_node = (**s).clone();
+                                Ok(Box::new(ASTNode::NotTest(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
+                            },
+                            _ => right_node_raw
+                        }
+                    },
+                    _ => self.parse_expressions_power()
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in not test expression!", start_pos))
         }
     }
 
@@ -2286,6 +2311,54 @@ mod tests {
                         }
                         match &**right {
                             ASTNode::AtomName( 8, 9 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_not_test_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("not b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_not_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::NotTest( 0, 5, symbol, right) => {
+                        match &**symbol {
+                            Token::PyNot(0, 3, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 4, 5 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_not_test_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_not_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
                             _ => assert!(false)
                         }
                     },
