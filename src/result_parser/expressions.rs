@@ -2253,4 +2253,47 @@ mod tests {
         }
     }
 
+    #[test]
+    fn expression_comparison_operator_double() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a < b > c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::GreaterComparison( 0, 9, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::LessComparison( 0, 6 , left2 , symbol2 , right2 ) => {
+                                match &**left2 {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**symbol2 {
+                                    Token::PyLess(2, 3, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**right2 {
+                                    ASTNode::AtomName( 4, 6 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyGreater(6, 7, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 8, 9 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
 }
