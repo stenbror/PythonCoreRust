@@ -19,6 +19,10 @@ pub trait Expressions {
     fn parse_expressions_not_test(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_and_test(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_or_test(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_lambda_def(&mut self, cond: bool) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_no_cond_test(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_test(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_named_Expression(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -817,6 +821,31 @@ impl Expressions for PythonCoreParser {
             },
             _ => left_node_raw
         }
+    }
+
+    fn parse_expressions_lambda_def(&mut self, cond: bool) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_no_cond_test(&mut self) -> Result<Box<ASTNode>, String> {
+        match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol = (**symbol_x).clone();
+                match &symbol {
+                    Token::PyLambda(..) => self.parse_expressions_lambda_def(false),
+                    _ => self.parse_expressions_or_test()
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in non conditional test expression!", self.lexer.get_position()))
+        }
+    }
+
+    fn parse_expressions_test(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_named_Expression(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
