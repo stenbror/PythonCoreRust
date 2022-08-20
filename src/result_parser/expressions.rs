@@ -2447,4 +2447,99 @@ mod tests {
         }
     }
 
+
+    #[test]
+    fn expression_and_test_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a and b".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_and_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AndTest( 0, 7, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyAnd(2, 5, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 6, 7 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_comparison_and_test_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a and b and c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_and_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AndTest( 0, 13, left, symbol, right) => {
+                        match &**left {
+                            ASTNode::AndTest( 0, 8 , left2 , symbol2 , right2 ) => {
+                                match &**left2 {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**symbol2 {
+                                    Token::PyAnd(2, 5, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &**right2 {
+                                    ASTNode::AtomName( 6, 8 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        match &**symbol {
+                            Token::PyAnd(8, 11, _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName( 12, 13 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_no_and_test_operator() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_and_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::AtomElipsis( 0, 3, tok) => {
+                        match &**tok {
+                            Token::PyElipsis(0, 3, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
 }
