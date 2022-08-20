@@ -17,6 +17,8 @@ pub trait Expressions {
     fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_comparison(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_not_test(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_and_test(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_or_test(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -739,6 +741,48 @@ impl Expressions for PythonCoreParser {
             },
             _ => Err(format!("SyntaxError at {}: Expecting symbol in not test expression!", start_pos))
         }
+    }
+
+    fn parse_expressions_and_test(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_not_test();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyAnd(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_not_test();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::AndTest(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in and test expression!", start_pos))
+                } {};
+                left_node_raw
+            },
+            _ => left_node_raw
+        }
+    }
+
+    fn parse_expressions_or_test(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
