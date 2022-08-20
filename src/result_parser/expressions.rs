@@ -26,6 +26,7 @@ pub trait Expressions {
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String>;
 }
 
 
@@ -824,7 +825,61 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_lambda_def(&mut self, cond: bool) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol1 = (**symbol_x).clone(); // 'lambda'
+                match &symbol1 {
+                    Token::PyLambda(..) => {
+                        let _ = self.advance();
+                        let mut left_node : Option<Box<ASTNode>> = None;
+
+                        match &self.symbol {
+                            Ok(symbol_x) => {
+                                let symbol2 = (**symbol_x).clone();
+
+                                /* Handle optional left node or colon */
+                                match &symbol1 {
+                                    Token::PyColon(..) => {},
+                                    _ => {
+                                        let left_node_raw = self.parse_expressions_and_test();
+                                        match &left_node_raw {
+                                            Ok(s1) => {
+                                                left_node = Some(Box::new((**s1).clone()));
+                                            },
+                                            _ => return left_node_raw
+                                        }
+                                    }
+                                }
+
+                                match &self.symbol {
+                                    Ok(symbol_x) => {
+                                        let symbol3 = (**symbol_x).clone();
+                                        match &symbol1 {
+                                            Token::PyColon(..) => {
+                                                let _ = self.advance(); // ':'
+                                                let right_node = if cond { self.parse_expressions_test() } else { self.parse_expressions_no_cond_test() };
+                                                match right_node {
+                                                    Ok(right) => {
+                                                        Ok(Box::new(ASTNode::Lambda(start_pos, self.lexer.get_position(), Box::new(symbol1), left_node, Box::new(symbol3), right)))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting expression after ':' in lambda expression!", self.lexer.get_position()))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting ':' in lambda expression!", self.lexer.get_position()))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'lambda' in lambda expression!", self.lexer.get_position()))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_no_cond_test(&mut self) -> Result<Box<ASTNode>, String> {
@@ -836,7 +891,7 @@ impl Expressions for PythonCoreParser {
                     _ => self.parse_expressions_or_test()
                 }
             },
-            _ => Err(format!("SyntaxError at {}: Expecting symbol in non conditional test expression!", self.lexer.get_position()))
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in non conditional test expression!", self.lexer.get_position()))
         }
     }
 
@@ -849,6 +904,10 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 }
