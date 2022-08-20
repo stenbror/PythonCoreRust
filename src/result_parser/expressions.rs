@@ -900,7 +900,41 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_named_Expression(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut left_node_raw = self.parse_expressions_test();
+        match &left_node_raw {
+            Ok(s) => {
+                while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyColonAssign(..) => {
+                                        let _ = self.advance();
+                                        let right_node_raw = self.parse_expressions_test();
+                                        match &right_node_raw {
+                                            Ok(s) => {
+                                                let right_node = (**s).clone();
+                                                left_node_raw = Ok(Box::new(ASTNode::NamedExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
+                                                true
+                                            },
+                                            _ => return right_node_raw
+                                        }
+                                    },
+                                    _ => false
+                                }
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in named test expression!", start_pos))
+                } {};
+                left_node_raw
+            },
+            _ => left_node_raw
+        }
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
