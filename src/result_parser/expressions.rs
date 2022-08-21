@@ -22,7 +22,7 @@ pub trait Expressions {
     fn parse_expressions_lambda_def(&mut self, cond: bool) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_no_cond_test(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_test(&mut self) -> Result<Box<ASTNode>, String>;
-    fn parse_expressions_named_Expression(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_named_expression(&mut self) -> Result<Box<ASTNode>, String>;
 
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
@@ -231,7 +231,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_factor();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                             Ok(symbol_x) => {
                                 let symbol = (**symbol_x).clone();
@@ -317,7 +317,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_term();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -367,7 +367,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_arith();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -417,7 +417,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_shift();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -455,7 +455,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_and_expr();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -493,7 +493,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_xor_expr();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -555,7 +555,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_expr();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -752,7 +752,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_not_test();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -790,7 +790,7 @@ impl Expressions for PythonCoreParser {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_and_test();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -835,8 +835,8 @@ impl Expressions for PythonCoreParser {
                         let mut left_node : Option<Box<ASTNode>> = None;
 
                         match &self.symbol {
-                            Ok(symbol_x) => {
-                                let symbol2 = (**symbol_x).clone();
+                            Ok(..) => {
+                                //let symbol2 = (**symbol_x).clone();
 
                                 /* Handle optional left node or colon */
                                 match &symbol1 {
@@ -899,11 +899,11 @@ impl Expressions for PythonCoreParser {
         todo!()
     }
 
-    fn parse_expressions_named_Expression(&mut self) -> Result<Box<ASTNode>, String> {
+    fn parse_expressions_named_expression(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
         let mut left_node_raw = self.parse_expressions_test();
         match &left_node_raw {
-            Ok(s) => {
+            Ok(..) => {
                 while   match &self.symbol {
                     Ok(symbol_x) => {
                         let symbol = (**symbol_x).clone();
@@ -1485,7 +1485,7 @@ mod tests {
     }
 
     #[test]
-    fn expression_term_operator_matrice() {
+    fn expression_term_operator_matrices() {
         let mut lexer = Box::new( PythonCoreTokenizer::new("a @ b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
@@ -1567,7 +1567,7 @@ mod tests {
     }
 
     #[test]
-    fn expression_term_operator_matrice_double() {
+    fn expression_term_operator_matrices_double() {
         let mut lexer = Box::new( PythonCoreTokenizer::new("a @ b @ c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
@@ -2765,7 +2765,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("a := b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_named_Expression();
+        let res = parser.parse_expressions_named_expression();
         match &res {
             Ok(s) => {
                 match &**s {
@@ -2795,7 +2795,7 @@ mod tests {
         let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
-        let res = parser.parse_expressions_named_Expression();
+        let res = parser.parse_expressions_named_expression();
         match &res {
             Ok(s) => {
                 match &**s {
