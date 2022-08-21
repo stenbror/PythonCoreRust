@@ -896,7 +896,35 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_test(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol = (**symbol_x).clone();
+                match &symbol {
+                    Token::PyLambda(..) => self.parse_expressions_lambda_def(true),
+                    _ => {
+                        let left_node_raw = self.parse_expressions_or_test();
+
+
+                        match &left_node_raw {
+                            Ok(s) => {
+                                let left_node = (**s).clone();
+                                match &symbol {
+                                    Token::PyIf(..) => {
+
+
+                                        Ok(Box::new(ASTNode::Empty))
+                                    },
+                                    _ => left_node_raw
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
+                        }
+                    }
+                }
+            },
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_named_expression(&mut self) -> Result<Box<ASTNode>, String> {
