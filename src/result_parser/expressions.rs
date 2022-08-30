@@ -904,18 +904,56 @@ impl Expressions for PythonCoreParser {
                     Token::PyLambda(..) => self.parse_expressions_lambda_def(true),
                     _ => {
                         let left_node_raw = self.parse_expressions_or_test();
-
-
                         match &left_node_raw {
                             Ok(s) => {
                                 let left_node = (**s).clone();
-                                match &symbol {
-                                    Token::PyIf(..) => {
-
-
-                                        Ok(Box::new(ASTNode::Empty))
+                                let symbol_y = self.lexer.get_symbol();
+                                match &symbol_y {
+                                    Ok(s2) => {
+                                        let symbol1 = (**s2).clone();
+                                        match &symbol1 {
+                                            Token::PyIf(..) => {
+                                                let _ = self.advance();
+                                                let right_node_raw = self.parse_expressions_or_test();
+                                                match &left_node_raw {
+                                                    Ok(s3) => {
+                                                        let right_node = (**s3).clone();
+                                                        let symbol_y = self.lexer.get_symbol();
+                                                        match &symbol_y {
+                                                            Ok(s4) => {
+                                                                let symbol2 = (**s4).clone();
+                                                                match &symbol2 {
+                                                                    Token::PyElse(..) => {
+                                                                        let _ = self.advance();
+                                                                        let next_node_raw = self.parse_expressions_test();
+                                                                        match &next_node_raw {
+                                                                            Ok(s5) => {
+                                                                                let next_node = (**s5).clone();
+                                                                                Ok(Box::new(ASTNode::Test(
+                                                                                    start_pos,
+                                                                                    self.lexer.get_position() ,
+                                                                            Box::new(left_node ),
+                                                                              Box::new(symbol1),
+                                                                            Box::new(right_node),
+                                                                              Box::new(symbol2),
+                                                                            Box::new(next_node))))
+                                                                            },
+                                                                            _ => Err(format!("SyntaxError at {}: Expecting expression after 'else' in test expression!", self.lexer.get_position()))
+                                                                        }
+                                                                    },
+                                                                    _ => Err(format!("SyntaxError at {}: Expecting 'else' in test expression!", self.lexer.get_position()))
+                                                                }
+                                                            },
+                                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
+                                                        }
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting expression after 'if' in test expression!", self.lexer.get_position()))
+                                                }
+                                            },
+                                            _ => left_node_raw
+                                        }
                                     },
-                                    _ => left_node_raw
+                                    _ => Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
                                 }
                             },
                             _ => Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
@@ -923,45 +961,39 @@ impl Expressions for PythonCoreParser {
                     }
                 }
             },
-            _ => return Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in test expression!", self.lexer.get_position()))
         }
     }
 
     fn parse_expressions_named_expression(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let mut left_node_raw = self.parse_expressions_test();
+        let left_node_raw = self.parse_expressions_test();
         match &left_node_raw {
-            Ok(..) => {
-                while   match &self.symbol {
-                    Ok(symbol_x) => {
-                        let symbol = (**symbol_x).clone();
-                        match &left_node_raw {
-                            Ok(s) => {
-                                let left_node = (**s).clone();
-                                match &symbol {
-                                    Token::PyColonAssign(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_test();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::NamedExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
+            Ok(s) => {
+                let left_node = (**s).clone();
+                let symbol_x = self.lexer.get_symbol();
+                match &symbol_x {
+                    Ok(s2) => {
+                        let symbol1 = (**s2).clone();
+                        match &symbol1 {
+                            Token::PyColonAssign(..) => {
+                                let _ = self.advance();
+                                let right_node_raw = self.parse_expressions_test();
+                                match &left_node_raw {
+                                    Ok(s3) => {
+                                        let right_node = (**s3).clone();
+                                        Ok(Box::new(ASTNode::NamedExpr(start_pos, self.lexer.get_position(), Box::new(left_node), Box::new(symbol1), Box::new(right_node))))
                                     },
-                                    _ => false
+                                    _ => Err(format!("SyntaxError at {}: Expecting expression after ':=' in named expression!", self.lexer.get_position()))
                                 }
                             },
-                            _ => false
+                            _ => left_node_raw
                         }
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in named test expression!", start_pos))
-                } {};
-                left_node_raw
+                    _ => Err(format!("SyntaxError at {}: Expecting symbol in named expression!", self.lexer.get_position()))
+                }
             },
-            _ => left_node_raw
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in named expression!", self.lexer.get_position()))
         }
     }
 
@@ -2854,6 +2886,25 @@ mod tests {
                             Token::PyElipsis(0, 3, None) => assert!(true),
                             _ => assert!(false)
                         }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_if_else_test_expression() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("a if b else c".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::Test( 0, _, left, symbol1, right, symbol2, next ) => {
+                       assert!(true)
                     },
                     _ => assert!(false)
                 }
