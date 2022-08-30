@@ -2862,8 +2862,27 @@ mod tests {
         match &res {
             Ok(s) => {
                 match &**s {
-                    ASTNode::Test( 0, _, left, symbol1, right, symbol2, next ) => {
-                       assert!(true)
+                    ASTNode::Test( 0, 13, left, symbol1, right, symbol2, next ) => {
+                        match &**left {
+                            ASTNode::AtomName( 0,  2 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        // match &**symbol1 {
+                        //     Token::PyIf(_, _, _) => assert!(true),
+                        //     _ => assert!(false)
+                        // }
+                        match &**right {
+                            ASTNode::AtomName( 5, 7 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        // match &**symbol1 {
+                        //     Token::PyElse(_, _, _) => assert!(true),
+                        //     _ => assert!(false)
+                        // }
+                        match &**next {
+                            ASTNode::AtomName( 12, 13 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
                     },
                     _ => assert!(false)
                 }
