@@ -917,7 +917,7 @@ impl Expressions for PythonCoreParser {
                                                     Token::PyElse(..) => {
                                                         let _ = self.advance();
                                                         let next = self.parse_expressions_test()?;
-                                                        Ok(Box::new(ASTNode::Test(start_pos, self.lexer.get_position(), left, Box::new(symbol1), right, Box::new(symbol2), next)))
+                                                        Ok(Box::new(ASTNode::Test(start_pos, self.lexer.get_position(), left, Box::new(symbol1.clone()), right, Box::new(symbol2.clone()), next)))
                                                     },
                                                     _ => Err(format!("SyntaxError at {}: Expecting 'else' in test expression!", self.lexer.get_position()))
                                                 }
@@ -2867,18 +2867,18 @@ mod tests {
                             ASTNode::AtomName( 0,  2 , _ ) => assert!(true),
                             _ => assert!(false)
                         }
-                        // match &**symbol1 {
-                        //     Token::PyIf(_, _, _) => assert!(true),
-                        //     _ => assert!(false)
-                        // }
+                        match (&**symbol1).clone() {
+                            Token::PyIf(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
                         match &**right {
                             ASTNode::AtomName( 5, 7 , _ ) => assert!(true),
                             _ => assert!(false)
                         }
-                        // match &**symbol1 {
-                        //     Token::PyElse(_, _, _) => assert!(true),
-                        //     _ => assert!(false)
-                        // }
+                        match &(**symbol2).clone() {
+                            Token::PyElse(7, 11, _) => assert!(true),
+                            _ => assert!(false)
+                        }
                         match &**next {
                             ASTNode::AtomName( 12, 13 , _ ) => assert!(true),
                             _ => assert!(false)
