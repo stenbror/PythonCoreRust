@@ -248,7 +248,6 @@ impl Expressions for PythonCoreParser {
         while   match &self.symbol {
             Ok(symbol_x) => {
                 let symbol = (**symbol_x).clone();
-
                 match &symbol {
                     Token::PyPlus(..) => {
                         let _ = self.advance();
