@@ -827,58 +827,43 @@ impl Expressions for PythonCoreParser {
     fn parse_expressions_lambda_def(&mut self, cond: bool) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
         match &self.symbol {
-            Ok(symbol_x) => {
-                let symbol1 = (**symbol_x).clone(); // 'lambda'
-                match &symbol1 {
-                    Token::PyLambda(..) => {
-                        let _ = self.advance();
-                        let mut left_node : Option<Box<ASTNode>> = None;
-
-                        match &self.symbol {
-                            Ok(..) => {
-                                //let symbol2 = (**symbol_x).clone();
-
-                                /* Handle optional left node or colon */
-                                match &symbol1 {
-                                    Token::PyColon(..) => {},
-                                    _ => {
-                                        let left_node_raw = self.parse_expressions_and_test();
-                                        match &left_node_raw {
-                                            Ok(s1) => {
-                                                left_node = Some(Box::new((**s1).clone()));
-                                            },
-                                            _ => return left_node_raw
-                                        }
-                                    }
-                                }
-
-                                match &self.symbol {
-                                    Ok(symbol_x) => {
-                                        let symbol3 = (**symbol_x).clone();
-                                        match &symbol1 {
-                                            Token::PyColon(..) => {
-                                                let _ = self.advance(); // ':'
-                                                let right_node = if cond { self.parse_expressions_test() } else { self.parse_expressions_no_cond_test() };
-                                                match right_node {
-                                                    Ok(right) => {
-                                                        Ok(Box::new(ASTNode::Lambda(start_pos, self.lexer.get_position(), Box::new(symbol1), left_node, Box::new(symbol3), right)))
-                                                    },
-                                                    _ => Err(format!("SyntaxError at {}: Expecting expression after ':' in lambda expression!", self.lexer.get_position()))
-                                                }
-                                            },
-                                            _ => Err(format!("SyntaxError at {}: Expecting ':' in lambda expression!", self.lexer.get_position()))
-                                        }
-                                    },
-                                    _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
-                                }
-                            },
-                            _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
+            Ok(s1) => {
+                let symbol1 = (*s1).clone();
+                let _ = self.advance();
+                let mut left : Option<Box<ASTNode>> = None;
+                match &self.symbol {
+                    Ok(s2) => {
+                        match &**s2 {
+                            Token::PyColon(..) => { },
+                            _ => left = Some(self.parse_expressions_var_args_list()?)
                         }
                     },
-                    _ => Err(format!("SyntaxError at {}: Expecting 'lambda' in lambda expression!", self.lexer.get_position()))
+                    _=> return Err(format!("SyntaxError at {}: Expecting symbol in 'lambda' expression!", self.lexer.get_position()))
+                }
+                match &self.symbol {
+                    Ok(s2) => {
+                        match &**s2 {
+                            Token::PyColon(..) => {
+                                let symbol2 = (*s2).clone();
+                                let _ = self.advance();
+                                match cond {
+                                    true => {
+                                        let right = self.parse_expressions_test()?;
+                                        Ok(Box::new(ASTNode::Lambda(start_pos, self.lexer.get_position(), symbol1, left, symbol2, right )))
+                                    },
+                                    _ => {
+                                        let right = self.parse_expressions_or_test()?;
+                                        Ok(Box::new(ASTNode::Lambda(start_pos, self.lexer.get_position(), symbol1, left, symbol2, right )))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting ':' in 'lambda' expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting symbol in 'lambda' expression!", self.lexer.get_position()))
                 }
             },
-            _ => Err(format!("SyntaxError at {}: Expecting symbol in lambda expression!", self.lexer.get_position()))
+            _=> Err(format!("SyntaxError at {}: Expecting symbol in 'lambda' expression!", self.lexer.get_position()))
         }
     }
 
@@ -891,7 +876,7 @@ impl Expressions for PythonCoreParser {
                     _ => self.parse_expressions_or_test()
                 }
             },
-            _ => return Err(format!("SyntaxError at {}: Expecting symbol in non conditional test expression!", self.lexer.get_position()))
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in non conditional test expression!", self.lexer.get_position()))
         }
     }
 
@@ -2881,6 +2866,36 @@ mod tests {
                         }
                         match &**next {
                             ASTNode::AtomName( 12, 13 , _ ) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err( .. ) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_lambda_test_expression_no_arguments() {
+        let mut lexer = Box::new( PythonCoreTokenizer::new("lambda: a * a".to_string()) );
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_test();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::Lambda( 0, 13, symbol1, None, symbol2, right) => {
+                        match &**symbol1 {
+                            Token::PyLambda(0, 6, None) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol2 {
+                            Token::PyColon(6, 7, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::MulTerm( 9, 13 , _ , _ , _ ) => assert!(true),
                             _ => assert!(false)
                         }
                     },
