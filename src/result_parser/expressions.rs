@@ -199,88 +199,47 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_term(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let mut left_node_raw = self.parse_expressions_factor();
-        match &left_node_raw {
-            Ok(..) => {
-                while   match &self.symbol {
-                            Ok(symbol_x) => {
-                                let symbol = (**symbol_x).clone();
-                                match &left_node_raw {
-                                    Ok(s) => {
-                                        let left_node = (**s).clone();
-                                        match &symbol {
-                                            Token::PyMul(..) => {
-                                                let _ = self.advance();
-                                                let right_node_raw = self.parse_expressions_factor();
-                                                match &right_node_raw {
-                                                    Ok(s) => {
-                                                        let right_node = (**s).clone();
-                                                        left_node_raw = Ok(Box::new(ASTNode::MulTerm(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                        true
-                                                    },
-                                                    _ => return right_node_raw
-                                                }
-                                            },
-                                            Token::PyDiv(..) => {
-                                                let _ = self.advance();
-                                                let right_node_raw = self.parse_expressions_factor();
-                                                match &right_node_raw {
-                                                    Ok(s) => {
-                                                        let right_node = (**s).clone();
-                                                        left_node_raw = Ok(Box::new(ASTNode::DivTerm(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                        true
-                                                    },
-                                                    _ => return right_node_raw
-                                                }
-                                            },
-                                            Token::PyFloorDiv(..) => {
-                                                let _ = self.advance();
-                                                let right_node_raw = self.parse_expressions_factor();
-                                                match &right_node_raw {
-                                                    Ok(s) => {
-                                                        let right_node = (**s).clone();
-                                                        left_node_raw = Ok(Box::new(ASTNode::FloorDivTerm(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                        true
-                                                    },
-                                                    _ => return right_node_raw
-                                                }
-                                            },
-                                            Token::PyModulo(..) => {
-                                                let _ = self.advance();
-                                                let right_node_raw = self.parse_expressions_factor();
-                                                match &right_node_raw {
-                                                    Ok(s) => {
-                                                        let right_node = (**s).clone();
-                                                        left_node_raw = Ok(Box::new(ASTNode::ModuloTerm(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                        true
-                                                    },
-                                                    _ => return right_node_raw
-                                                }
-                                            },
-                                            Token::PyMatrice(..) => {
-                                                let _ = self.advance();
-                                                let right_node_raw = self.parse_expressions_factor();
-                                                match &right_node_raw {
-                                                    Ok(s) => {
-                                                        let right_node = (**s).clone();
-                                                        left_node_raw = Ok(Box::new(ASTNode::MatriceTerm(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                        true
-                                                    },
-                                                    _ => return right_node_raw
-                                                }
-                                            },
-                                            _ => false
-                                        }
-                                    },
-                                    _ => false
-                                }
+        let mut left_node = self.parse_expressions_factor()?;
+        while   match &self.symbol {
+                    Ok(symbol_x) => {
+                        let symbol = (**symbol_x).clone();
+                        match &symbol {
+                            Token::PyMul(..) => {
+                                let _ = self.advance();
+                                let right_node = self.parse_expressions_factor()?;
+                                left_node = Box::new(ASTNode::MulTerm(start_pos, self.lexer.get_position(),left_node.clone(), Box::new(symbol), right_node));
+                                true
                             },
-                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in term expression!", start_pos))
-                        } {};
-                left_node_raw
-            },
-            _ => left_node_raw
-        }
+                            Token::PyDiv(..) => {
+                                let _ = self.advance();
+                                let right_node = self.parse_expressions_factor()?;
+                                left_node = Box::new(ASTNode::DivTerm(start_pos, self.lexer.get_position(),left_node.clone(), Box::new(symbol), right_node));
+                                true
+                            },
+                            Token::PyFloorDiv(..) => {
+                                let _ = self.advance();
+                                let right_node = self.parse_expressions_factor()?;
+                                left_node = Box::new(ASTNode::FloorDivTerm(start_pos, self.lexer.get_position(),left_node.clone(), Box::new(symbol), right_node));
+                                true
+                            },
+                            Token::PyModulo(..) => {
+                                let _ = self.advance();
+                                let right_node = self.parse_expressions_factor()?;
+                                left_node = Box::new(ASTNode::ModuloTerm(start_pos, self.lexer.get_position(), left_node.clone(), Box::new(symbol), right_node));
+                                true
+                            },
+                            Token::PyMatrice(..) => {
+                                let _ = self.advance();
+                                let right_node = self.parse_expressions_factor()?;
+                                left_node = Box::new(ASTNode::MatriceTerm(start_pos, self.lexer.get_position(),left_node.clone(), Box::new(symbol), right_node));
+                                true
+                            },
+                            _ => false
+                        }
+                    },
+                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in term expression!", start_pos))
+                } {};
+        Ok(left_node)
     }
 
     fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String> {
