@@ -175,38 +175,20 @@ impl Expressions for PythonCoreParser {
                     Token::PyPlus(..) => {
                         let symbol = (**s).clone();
                         let _ = self.advance();
-                        let right_node_raw = self.parse_expressions_factor();
-                        match &right_node_raw {
-                            Ok(s) => {
-                                let right_node = (**s).clone();
-                                Ok(Box::new(ASTNode::UnaryPlus(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
-                            },
-                            _ => right_node_raw
-                        }
+                        let right_node = self.parse_expressions_factor()?;
+                        Ok(Box::new(ASTNode::UnaryPlus(start_pos, self.lexer.get_position(), Box::new(symbol), right_node)))
                     },
                     Token::PyMinus(..) => {
                         let symbol = (**s).clone();
                         let _ = self.advance();
-                        let right_node_raw = self.parse_expressions_factor();
-                        match &right_node_raw {
-                            Ok(s) => {
-                                let right_node = (**s).clone();
-                                Ok(Box::new(ASTNode::UnaryMinus(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
-                            },
-                            _ => right_node_raw
-                        }
+                        let right_node = self.parse_expressions_factor()?;
+                        Ok(Box::new(ASTNode::UnaryMinus(start_pos, self.lexer.get_position(), Box::new(symbol), right_node)))
                     },
                     Token::PyBitInvert(..) => {
                         let symbol = (**s).clone();
                         let _ = self.advance();
-                        let right_node_raw = self.parse_expressions_factor();
-                        match &right_node_raw {
-                            Ok(s) => {
-                                let right_node = (**s).clone();
-                                Ok(Box::new(ASTNode::UnaryInvert(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
-                            },
-                            _ => right_node_raw
-                        }
+                        let right_node = self.parse_expressions_factor()?;
+                        Ok(Box::new(ASTNode::UnaryInvert(start_pos, self.lexer.get_position(), Box::new(symbol), right_node)))
                     },
                     _ => self.parse_expressions_power()
                 }
