@@ -244,52 +244,30 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_arith(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let mut left_node_raw = self.parse_expressions_term();
-        match &left_node_raw {
-            Ok(..) => {
-                while   match &self.symbol {
-                    Ok(symbol_x) => {
-                        let symbol = (**symbol_x).clone();
-                        match &left_node_raw {
-                            Ok(s) => {
-                                let left_node = (**s).clone();
-                                match &symbol {
-                                    Token::PyPlus(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_term();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::PlusArithExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
-                                    },
-                                    Token::PyMinus(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_term();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::MinusArithExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
-                                    },
-                                    _ => false
-                                }
-                            },
-                            _ => false
-                        }
+        let mut left_node = self.parse_expressions_term()?;
+        while   match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol = (**symbol_x).clone();
+
+                match &symbol {
+                    Token::PyPlus(..) => {
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_term()?;
+                        left_node = Box::new(ASTNode::PlusArithExpr(start_pos, self.lexer.get_position(), left_node.clone(),Box::new(symbol), right_node));
+                        true
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in arith expression!", start_pos))
-                } {};
-                left_node_raw
+                    Token::PyMinus(..) => {
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_term()?;
+                        left_node = Box::new(ASTNode::MinusArithExpr(start_pos, self.lexer.get_position(), left_node.clone(),Box::new(symbol), right_node));
+                        true
+                    },
+                    _ => false
+                }
             },
-            _ => left_node_raw
-        }
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in arith expression!", start_pos))
+        } {};
+        Ok(left_node)
     }
 
     fn parse_expressions_shift(&mut self) -> Result<Box<ASTNode>, String> {
