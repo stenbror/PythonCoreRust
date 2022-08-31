@@ -150,32 +150,20 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_power(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let left_node_raw = self.parse_expressions_atom_expr();
-        match &left_node_raw {
+        let left_node = self.parse_expressions_atom_expr()?;
+        match &self.symbol {
             Ok(s) => {
-                let left_node = (**s).clone();
-                match &self.symbol {
-                    Ok(s) => {
-                        match &**s {
-                            Token::PyPower(..) => {
-                                let symbol = (**s).clone();
-                                let _ = self.advance();
-                                let right_node_raw = self.parse_expressions_factor();
-                                match &right_node_raw {
-                                    Ok(s) => {
-                                        let right_node = (**s).clone();
-                                        Ok(Box::new(ASTNode::PowerExpr(start_pos, self.lexer.get_position(), Box::new(left_node), Box::new(symbol), Box::new(right_node))))
-                                    },
-                                    _ => right_node_raw
-                                }
-                            },
-                            _ => left_node_raw
-                        }
+                match **s {
+                    Token::PyPower(..) => {
+                        let symbol = (**s).clone();
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_factor()?;
+                        Ok(Box::new(ASTNode::PowerExpr(start_pos, self.lexer.get_position(), left_node, Box::new(symbol), right_node)))
                     },
-                    _ => Err(format!("SyntaxError at {}: Expecting symbol in power expression!", start_pos))
+                    _ => Ok(left_node)
                 }
             },
-            _ => left_node_raw // This returns the error state for left node!
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in power expression!", start_pos))
         }
     }
 
