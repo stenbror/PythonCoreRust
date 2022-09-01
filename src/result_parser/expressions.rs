@@ -340,40 +340,23 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_expr(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let mut left_node_raw = self.parse_expressions_xor_expr();
-        match &left_node_raw {
-            Ok(..) => {
-                while   match &self.symbol {
-                    Ok(symbol_x) => {
-                        let symbol = (**symbol_x).clone();
-                        match &left_node_raw {
-                            Ok(s) => {
-                                let left_node = (**s).clone();
-                                match &symbol {
-                                    Token::PyBitOr(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_xor_expr();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::Expr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
-                                    },
-                                    _ => false
-                                }
-                            },
-                            _ => false
-                        }
+        let mut left_node = self.parse_expressions_xor_expr()?;
+        while   match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol = (**symbol_x).clone();
+                match &symbol {
+                    Token::PyBitOr(..) => {
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_xor_expr()?;
+                        left_node = Box::new(ASTNode::Expr(start_pos, self.lexer.get_position(), left_node.clone(),Box::new(symbol), right_node));
+                        true
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in xor expression!", start_pos))
-                } {};
-                left_node_raw
+                    _ => false
+                }
             },
-            _ => left_node_raw
-        }
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in xor expression!", start_pos))
+        } {};
+        Ok(left_node)
     }
 
     fn parse_expressions_star_expr(&mut self) -> Result<Box<ASTNode>, String> {
