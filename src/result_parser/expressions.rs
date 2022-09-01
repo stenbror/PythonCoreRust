@@ -1,5 +1,5 @@
-use crate::{ASTNode, Token};
-use crate::result_parser::parser::{Parser, PythonCoreParser};
+use crate::{ ASTNode, Token };
+use crate::result_parser::parser::{ Parser, PythonCoreParser };
 use crate::result_parser::tokenizer::Tokenizer;
 
 
@@ -31,7 +31,7 @@ pub trait Expressions {
     fn parse_expressions_testlist(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_dictorset_maker(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_arglist(&mut self) -> Result<Box<ASTNode>, String>;
-    fn parse_expressions_argument&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_argument(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_comp_iter(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_sync_comp_for(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_comp_for(&mut self) -> Result<Box<ASTNode>, String>;
@@ -702,7 +702,7 @@ impl Expressions for PythonCoreParser {
         todo!()
     }
 
-    fn parse_expressions_argument {
+    fn parse_expressions_argument(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 
