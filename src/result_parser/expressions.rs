@@ -2610,7 +2610,7 @@ mod tests {
                             _ => assert!(false)
                         }
                         match &**right {
-                            ASTNode::MulTerm( 9, 13 , _ , _ , _ ) => assert!(true),
+                            ASTNode::MulTerm( 8, 13 , _ , _ , _ ) => assert!(true),
                             _ => assert!(false)
                         }
                     },
