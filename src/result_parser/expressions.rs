@@ -354,7 +354,7 @@ impl Expressions for PythonCoreParser {
                     _ => false
                 }
             },
-            _ => return Err(format!("SyntaxError at {}: Expecting symbol in xor expression!", start_pos))
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in or expression!", start_pos))
         } {};
         Ok(left_node)
     }
@@ -367,14 +367,8 @@ impl Expressions for PythonCoreParser {
                     Token::PyMul(..) => {
                         let symbol = (**s).clone();
                         let _ = self.advance();
-                        let right_node_raw = self.parse_expressions_expr();
-                        match &right_node_raw {
-                            Ok(s) => {
-                                let right_node = (**s).clone();
-                                Ok(Box::new(ASTNode::StarExpr(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
-                            },
-                            _ => right_node_raw
-                        }
+                        let right_node = self.parse_expressions_expr()?;
+                        Ok(Box::new(ASTNode::StarExpr(start_pos, self.lexer.get_position(), Box::new(symbol), right_node)))
                     },
                     _ => Err(format!("SyntaxError at {}: Expecting '*' in star expression!", start_pos))
                 }
