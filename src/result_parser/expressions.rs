@@ -23,10 +23,24 @@ pub trait Expressions {
     fn parse_expressions_no_cond_test(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_test(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_named_expression(&mut self) -> Result<Box<ASTNode>, String>;
-
-
+    fn parse_expressions_testlist_comp(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_subscript_list(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_subscript(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_exprlist(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_testlist(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_dictorset_maker(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_arglist(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_argument&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_comp_iter(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_sync_comp_for(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_comp_for(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_comp_if(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_yield_expr(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_testlist_star_expr(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_var_args_assignments(&mut self) -> Result<Box<ASTNode>, String>;
+    fn parse_expressions_vfp_def(&mut self) -> Result<Box<ASTNode>, String>;
 }
 
 
@@ -656,11 +670,75 @@ impl Expressions for PythonCoreParser {
         }
     }
 
+    fn parse_expressions_testlist_comp(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 
+    fn parse_expressions_subscript_list(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_subscript(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_exprlist(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_testlist(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_dictorset_maker(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_arglist(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_argument {
+        todo!()
+    }
+
+    fn parse_expressions_comp_iter(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_sync_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_comp_if(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_yield_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_testlist_star_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
     fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_var_args_assignments(&mut self) -> Result<Box<ASTNode>, String> {
+        todo!()
+    }
+
+    fn parse_expressions_vfp_def(&mut self) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 }
