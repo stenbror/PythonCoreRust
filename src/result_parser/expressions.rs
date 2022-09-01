@@ -271,52 +271,29 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_shift(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        let mut left_node_raw = self.parse_expressions_arith();
-        match &left_node_raw {
-            Ok(..) => {
-                while   match &self.symbol {
-                    Ok(symbol_x) => {
-                        let symbol = (**symbol_x).clone();
-                        match &left_node_raw {
-                            Ok(s) => {
-                                let left_node = (**s).clone();
-                                match &symbol {
-                                    Token::PyShiftLeft(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_arith();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::ShiftLeftExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
-                                    },
-                                    Token::PyShiftRight(..) => {
-                                        let _ = self.advance();
-                                        let right_node_raw = self.parse_expressions_arith();
-                                        match &right_node_raw {
-                                            Ok(s) => {
-                                                let right_node = (**s).clone();
-                                                left_node_raw = Ok(Box::new(ASTNode::ShiftRightExpr(start_pos, self.lexer.get_position(), Box::new(left_node),Box::new(symbol), Box::new(right_node))));
-                                                true
-                                            },
-                                            _ => return right_node_raw
-                                        }
-                                    },
-                                    _ => false
-                                }
-                            },
-                            _ => false
-                        }
+        let mut left_node = self.parse_expressions_arith()?;
+        while   match &self.symbol {
+            Ok(symbol_x) => {
+                let symbol = (**symbol_x).clone();
+                match &symbol {
+                    Token::PyShiftLeft(..) => {
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_arith()?;
+                        left_node = Box::new(ASTNode::ShiftLeftExpr(start_pos, self.lexer.get_position(), left_node.clone(),Box::new(symbol), right_node));
+                        true
                     },
-                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in shift expression!", start_pos))
-                } {};
-                left_node_raw
+                    Token::PyShiftRight(..) => {
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_arith()?;
+                        left_node = Box::new(ASTNode::ShiftRightExpr(start_pos, self.lexer.get_position(), left_node.clone(),Box::new(symbol), right_node));
+                        true
+                    },
+                    _ => false
+                }
             },
-            _ => left_node_raw
-        }
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in shift expression!", start_pos))
+        } {};
+        Ok(left_node)
     }
 
     fn parse_expressions_and_expr(&mut self) -> Result<Box<ASTNode>, String> {
