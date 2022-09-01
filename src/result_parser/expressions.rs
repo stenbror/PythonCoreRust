@@ -487,16 +487,10 @@ impl Expressions for PythonCoreParser {
                     Token::PyNot(..) => {
                         let symbol = (**s).clone();
                         let _ = self.advance();
-                        let right_node_raw = self.parse_expressions_not_test();
-                        match &right_node_raw {
-                            Ok(s) => {
-                                let right_node = (**s).clone();
-                                Ok(Box::new(ASTNode::NotTest(start_pos, self.lexer.get_position(), Box::new(symbol), Box::new(right_node))))
-                            },
-                            _ => right_node_raw
-                        }
+                        let right_node = self.parse_expressions_not_test()?;
+                        Ok(Box::new(ASTNode::NotTest(start_pos, self.lexer.get_position(), Box::new(symbol), right_node)))
                     },
-                    _ => self.parse_expressions_power()
+                    _ => self.parse_expressions_comparison()
                 }
             },
             _ => Err(format!("SyntaxError at {}: Expecting symbol in not test expression!", start_pos))
