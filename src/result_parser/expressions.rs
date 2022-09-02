@@ -711,8 +711,6 @@ impl Expressions for PythonCoreParser {
                                             },
                                             _ => return Err(format!("SyntaxError at {}: Expecting symbol in list expression!", self.lexer.get_position()))
                                         }
-
-
                                         true
                                     },
                                     _ => false
@@ -732,7 +730,75 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_trailer(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                let symbol1 = (**s).clone();
+                match &symbol1 {
+                    Token::PyLeftParen(..) => {
+                        let mut right : Option<Box<ASTNode>> = None;
+                        let _ = self.advance();
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &(**s2) {
+                                    Token::PyRightParen(..) => { },
+                                    _ => right = Some(self.parse_expressions_subscript_list()?)
+                                }
+                            },
+                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in trailer expression!", self.lexer.get_position()))
+                        }
+                        match &self.symbol {
+                            Ok(s3) => {
+                                let symbol2 = (**s3).clone();
+                                match &symbol2 {
+                                    Token::PyRightParen(..) => {
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::CallTrailer(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                    },
+                                    _ => Err(format!("Syntax Error at {} - Expecting ')' in trailer expression!", self.lexer.get_position()))
+                                }
+                            },
+                            _ => Err(format!("Syntax Error at {} - Expecting symbol in trailer expression!", self.lexer.get_position()))
+                        }
+                    },
+                    Token::PyLeftBracket(..) => {
+                        let _ = self.advance();
+                        let right = self.parse_expressions_subscript_list()?;
+                        match &self.symbol {
+                            Ok(s3) => {
+                                let symbol2 = (**s3).clone();
+                                match &symbol2 {
+                                    Token::PyRightBracket(..) => {
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::IndexTrailer(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                    },
+                                    _ => Err(format!("Syntax Error at {} - Expecting ']' in trailer expression!", self.lexer.get_position()))
+                                }
+                            },
+                            _ => Err(format!("Syntax Error at {} - Expecting symbol in trailer expression!", self.lexer.get_position()))
+                        }
+                    },
+                    Token::PyDot(..) => {
+                        let _ = self.advance();
+                        match &self.symbol {
+                            Ok(s2) => {
+                                let symbol2 = (**s2).clone();
+                                match &symbol2 {
+                                    Token::AtomName(..) => {
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::DotNameTrailer(start_pos, self.lexer.get_position(), Box::new(symbol1), Box::new(symbol2))))
+                                    },
+                                    _ => Err(format!("Syntax Error at {} - Expecting a valid name after '.' in trailer expression!", self.lexer.get_position()))
+                                }
+                            },
+                            _ => Err(format!("Syntax Error at {} - Expecting symbol in trailer expression!", self.lexer.get_position()))
+                        }
+                    }
+                    _ => Err(format!("Syntax Error at {} - Expecting a valid trailer expression!", self.lexer.get_position()))
+                }
+            },
+            _ => Err(format!("Syntax Error at {} - Expecting symbol in trailer expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_subscript_list(&mut self) -> Result<Box<ASTNode>, String> {
