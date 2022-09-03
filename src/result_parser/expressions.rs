@@ -802,7 +802,29 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_subscript_list(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_expressions_subscript()? );
+        while
+            match &self.symbol {
+                Ok(s) => {
+                    match &**s {
+                        Token::PyComa(..) => {
+                            let symbol1 = (**s).clone();
+                            separators_list.push( Box::new(symbol1) );
+                            let _ = self.advance();
+                            nodes_list.push( self.parse_expressions_subscript()? );
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript list expression!", self.lexer.get_position()))
+            } {};
+        separators_list.reverse();
+        nodes_list.reverse();
+        Ok(Box::new(ASTNode::SubscriptList(start_pos, self.lexer.get_position(), nodes_list, separators_list)))
     }
 
     fn parse_expressions_subscript(&mut self) -> Result<Box<ASTNode>, String> {
