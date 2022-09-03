@@ -916,10 +916,16 @@ impl Expressions for PythonCoreParser {
                             match &self.symbol {
                                 Ok(s2) => {
                                     match &(**s2) {
+                                        Token::PyIn(..) => false,
+                                        Token::PyComa(..) => return Err(format!("SyntaxError at {}: Missing elementes between two ',' in list expression!", self.lexer.get_position())),
                                         Token::PyMul(..) => {
-                                            nodes_list.push(self.parse_expressions_star_expr()?)
+                                            nodes_list.push(self.parse_expressions_star_expr()?);
+                                            true
                                         },
-                                        _ => nodes_list.push(self.parse_expressions_named_expression()?)
+                                        _ => {
+                                            nodes_list.push(self.parse_expressions_named_expression()?);
+                                            true
+                                        }
                                     }
                                 },
                                 _ => return Err(format!("SyntaxError at {}: Expecting symbol in list expression!", self.lexer.get_position()))
