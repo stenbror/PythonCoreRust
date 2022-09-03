@@ -828,7 +828,66 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_subscript(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let mut first_node : Option<Box<ASTNode>> = None;
+        let mut second_node : Option<Box<ASTNode>> = None;
+        let mut third_node : Option<Box<ASTNode>> = None;
+        let mut symbol1 : Option<Box<Token>> = None;
+        let mut symbol2 : Option<Box<Token>> = None;
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyColon(..) => { },
+                    _ => first_node = Some(self.parse_expressions_test()?)
+                }
+            },
+            _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript expression!", self.lexer.get_position()))
+        };
+        match &self.symbol.clone() {
+            Ok(s2) => {
+                match &**s2{
+                    Token::PyColon(..) => {
+                        symbol1 = Some(Box::new((**s2).clone()));
+                        let _ = self.advance();
+                        match &self.symbol {
+                            Ok(s3) => {
+                                match &**s3 {
+                                    Token::PyRightBracket(..) |
+                                    Token::PyColon(..) => { },
+                                    _ => second_node = Some(self.parse_expressions_test()?)
+                                }
+                            },
+                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript expression!", self.lexer.get_position()))
+                        };
+                        match &self.symbol {
+                            Ok(s3) => {
+                                match &**s2{
+                                    Token::PyColon(..) => {
+                                        symbol2 = Some(Box::new((**s3).clone()));
+                                        let _ = self.advance();
+                                        match &self.symbol {
+                                            Ok(s4) => {
+                                                match &**s4 {
+                                                    Token::PyRightBracket(..) |
+                                                    Token::PyColon(..) => { },
+                                                    _ => third_node = Some(self.parse_expressions_test()?)
+                                                }
+                                            },
+                                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript expression!", self.lexer.get_position()))
+                                        }; //
+                                    },
+                                    _ => { }
+                                }
+                            },
+                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript expression!", self.lexer.get_position()))
+                        };
+                    },
+                    _ => { }
+                }
+            },
+            _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript expression!", self.lexer.get_position()))
+        };
+        Ok(Box::new(ASTNode::Subscript(start_pos, self.lexer.get_position(), first_node, symbol1, second_node, symbol2, third_node)))
     }
 
     fn parse_expressions_exprlist(&mut self) -> Result<Box<ASTNode>, String> {
