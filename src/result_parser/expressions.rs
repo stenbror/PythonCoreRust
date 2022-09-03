@@ -1,4 +1,4 @@
-use crate::{ ASTNode, Token };
+use crate::{ASTNode, Token };
 use crate::result_parser::parser::{ Parser, PythonCoreParser };
 use crate::result_parser::tokenizer::Tokenizer;
 
@@ -1025,7 +1025,46 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_argument(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyMul(..) |
+                    Token::PyPower(..) => {
+                        let symbol1 = Some(Box::new((**s).clone()));
+                        let _ = self.advance();
+                        let right_node = Some( self.parse_expressions_test()? );
+                        Ok(Box::new(ASTNode::Argument(start_pos, self.lexer.get_position(), None, symbol1, right_node)))
+                    },
+                    _ => {
+                        let left_node = Some( self.parse_expressions_test()? );
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &**s2 {
+                                    Token::PyFor(..) |
+                                    Token::PyAsync(..) => {
+                                        let right_node = Some( self.parse_expressions_comp_for()? );
+                                        Ok(Box::new(ASTNode::Argument(start_pos, self.lexer.get_position(), left_node, None, right_node)))
+                                    },
+                                    Token::PyColonAssign(..) |
+                                    Token::PyAssign(..) => {
+                                        let symbol1 = Some(Box::new((**s2).clone()));
+                                        let _ = self.advance();
+                                        let right_node = Some( self.parse_expressions_test()? );
+                                        Ok(Box::new(ASTNode::Argument(start_pos, self.lexer.get_position(), left_node, symbol1, right_node)))
+                                    },
+                                    _ => {
+                                        Ok(Box::new(ASTNode::Argument(start_pos, self.lexer.get_position(), left_node, None, None)))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("Syntax Error at {} - Expecting symbol in argument expression!", self.lexer.get_position()))
+                        }
+                    }
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in argument expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_comp_iter(&mut self) -> Result<Box<ASTNode>, String> {
