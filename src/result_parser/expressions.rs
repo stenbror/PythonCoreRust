@@ -891,7 +891,49 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_exprlist(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match &self.symbol {
+            Ok(s) => {
+                match &(**s) {
+                    Token::PyMul(..) => {
+                        nodes_list.push(self.parse_expressions_star_expr()?)
+                    },
+                    _ => nodes_list.push(self.parse_expressions_named_expression()?)
+                }
+            },
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in list expression!", self.lexer.get_position()))
+        };
+        while
+            match &self.symbol {
+                Ok(s) => {
+                    match &**s {
+                        Token::PyComa(..) => {
+                            let symbol1 = (**s).clone();
+                            separators_list.push( Box::new(symbol1) );
+                            let _ = self.advance();
+                            match &self.symbol {
+                                Ok(s2) => {
+                                    match &(**s2) {
+                                        Token::PyMul(..) => {
+                                            nodes_list.push(self.parse_expressions_star_expr()?)
+                                        },
+                                        _ => nodes_list.push(self.parse_expressions_named_expression()?)
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in list expression!", self.lexer.get_position()))
+                            };
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript list expression!", self.lexer.get_position()))
+            } {};
+        nodes_list.reverse();
+        separators_list.reverse();
+        Ok(Box::new(ASTNode::ExprList(start_pos, self.lexer.get_position(), nodes_list, separators_list)))
     }
 
     fn parse_expressions_testlist(&mut self) -> Result<Box<ASTNode>, String> {
