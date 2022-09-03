@@ -1068,7 +1068,21 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_comp_iter(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyFor(..) |
+                    Token::PyAsync(..) => {
+                        self.parse_expressions_comp_for()
+                    },
+                    Token::PyIf(..) => {
+                        self.parse_expressions_comp_if()
+                    },
+                    _ => Err(format!("Syntax Error at {} - Expecting 'if', 'for' or 'async' in compiter expression!", self.lexer.get_position()))
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in compiter expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_sync_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
