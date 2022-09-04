@@ -1084,7 +1084,102 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_dictorset_maker(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut is_dictionary = true;
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyMul(..) => {
+                        is_dictionary = false;
+                        let symbol1 = (**s).clone();
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_expr()?;
+                        nodes_list.push( Box::new( ASTNode::MulSet(start_pos, self.lexer.get_position(), Box::new(symbol1), right_node) ) )
+                    },
+                    Token::PyPower(..) => {
+                        let symbol1 = (**s).clone();
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_expr()?;
+                        nodes_list.push( Box::new( ASTNode::PowerDictionary(start_pos, self.lexer.get_position(), Box::new(symbol1), right_node) ) )
+                    },
+                    _ => {
+                        let left_node = self.parse_expressions_test()?;
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &**s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = (**s2).clone();
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_test()?;
+                                        nodes_list.push( Box::new( ASTNode::DictionaryEntry(start_pos, self.lexer.get_position(), left_node, Box::new(symbol2), right_node) ) );
+                                    },
+                                    _ => {
+                                        is_dictionary = false;
+                                        nodes_list.push( left_node )
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in dictionary/set expression!", self.lexer.get_position()))
+                        }
+                    }
+                }
+            },
+            _ => return Err(format!("Syntax Error at {} - Expecting symbol in dictionary/set expression!", self.lexer.get_position()))
+        }
+        match is_dictionary {
+            true => {
+
+            },
+            false => {
+                while
+                    match &self.symbol {
+                        Ok(s) => {
+                            match &**s {
+                                Token::PyComa(..) => {
+                                    let symbol1 = (**s).clone();
+                                    separators_list.push( Box::new(symbol1) );
+                                    let _ = self.advance();
+                                    match &self.symbol {
+                                        Ok(s2) => {
+                                            match &(**s2) {
+                                                Token::PyRightCurly(..) => false,
+                                                Token::PyComa(..) => return Err(format!("SyntaxError at {}: Missing elements between two ',' in set list expression!", self.lexer.get_position())),
+                                                Token::PyMul(..) => {
+                                                    let symbol2 = (**s2).clone();
+                                                    let _ = self.advance();
+                                                    let right_node = self.parse_expressions_expr()?;
+                                                    nodes_list.push( Box::new( ASTNode::MulSet(start_pos, self.lexer.get_position(), Box::new(symbol2), right_node) ) );
+                                                    true
+                                                },
+                                                _ => {
+                                                    nodes_list.push( self.parse_expressions_test()? );
+                                                    true
+                                                }
+                                            }
+                                        },
+                                        _ => return Err(format!("SyntaxError at {}: Expecting symbol in argument list expression!", self.lexer.get_position()))
+                                    };
+                                    true
+                                },
+                                _ => false
+                            }
+                        },
+                        _ => return Err(format!("Syntax Error at {} - Expecting symbol in argument list expression!", self.lexer.get_position()))
+                    } {};
+            }
+        }
+        separators_list.reverse();
+        nodes_list.reverse();
+        match is_dictionary {
+            true => {
+                Ok(Box::new( ASTNode::DictionaryContainer(start_pos, self.lexer.get_position(), nodes_list, separators_list) ))
+            },
+            _ => {
+                Ok(Box::new( ASTNode::SetContainer(start_pos, self.lexer.get_position(), nodes_list, separators_list) ))
+            }
+        }
     }
 
     fn parse_expressions_arglist(&mut self) -> Result<Box<ASTNode>, String> {
