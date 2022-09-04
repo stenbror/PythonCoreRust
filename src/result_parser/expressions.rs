@@ -184,7 +184,7 @@ impl Expressions for PythonCoreParser {
                                                     ASTNode::SetContainer(..) => {
                                                         Ok(Box::new(ASTNode::AtomSet(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
                                                     },
-                                                    _ => Err(format!("SyntaxError at {}: Expecting dictionary/set in atom expression!", start_pos))
+                                                    _ => Ok(Box::new(ASTNode::AtomDictionary(start_pos, self.lexer.get_position(), Box::new(symbol1), None, Box::new(symbol2))))
                                                 }
                                             },
                                             None => Err(format!("SyntaxError at {}: Expecting dictionary/set in atom expression!", start_pos))
