@@ -128,7 +128,32 @@ impl Expressions for PythonCoreParser {
                         }
                     },
                     Token::PyLeftBracket(..) => {
-                        todo!()
+                        let _ = self.advance();
+                        let mut right : Option<Box<ASTNode>> = None;
+                        match &self.symbol {
+                            Ok(s) => {
+                                match **s {
+                                    Token::PyRightBracket(..) => { },
+                                    _ => {
+                                        right = Some( self.parse_expressions_testlist_comp()? );
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match **s2 {
+                                    Token::PyRightBracket(..) => {
+                                        let symbol2 = (**s2).clone();
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::AtomList(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ']' in list atom expression!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
                     },
                     Token::PyLeftCurly(..) => {
                         todo!()
