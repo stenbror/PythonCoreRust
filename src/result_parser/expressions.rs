@@ -172,7 +172,7 @@ impl Expressions for PythonCoreParser {
                         match &self.symbol {
                             Ok(s2) => {
                                 match **s2 {
-                                    Token::PyRightBracket(..) => {
+                                    Token::PyRightCurly(..) => {
                                         let symbol2 = (**s2).clone();
                                         let _ = self.advance();
                                         match right {
