@@ -95,7 +95,44 @@ impl Expressions for PythonCoreParser {
                             _ => false
                             } {};
                         Ok(Box::new(ASTNode::AtomString(start_pos, self.lexer.get_position(), Box::new(lst))))
-                    }
+                    },
+                    Token::PyLeftParen(..) => {
+                        let _ = self.advance();
+                        let mut right : Option<Box<ASTNode>> = None;
+                        match &self.symbol {
+                            Ok(s) => {
+                                match **s {
+                                    Token::PyYield(..) => {
+                                        right = Some( self.parse_expressions_yield_expr()? );
+                                    },
+                                    Token::PyRightParen(..) => { },
+                                    _ => {
+                                        right = Some( self.parse_expressions_testlist_comp()? );
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match **s2 {
+                                    Token::PyRightParen(..) => {
+                                        let symbol2 = (**s2).clone();
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::AtomTuple(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ')' in tuple atom expression!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
+                    },
+                    Token::PyLeftBracket(..) => {
+                        todo!()
+                    },
+                    Token::PyLeftCurly(..) => {
+                        todo!()
+                    },
                     _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
                 }
             },
