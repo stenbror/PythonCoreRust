@@ -1133,14 +1133,32 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s1) => {
+                match &(**s1) {
+                    Token::PyAsync(..) => {
+                        let symbol1 = Box::new((**s1).clone());
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_sync_comp_for()?;
+                        Ok(Box::new(ASTNode::CompForComprehension(start_pos, self.lexer.get_position(), symbol1, right_node)))
+                    },
+                    _ => {
+                        self.parse_expressions_sync_comp_for()
+                    }
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'async' expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_comp_if(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
     fn parse_expressions_yield_expr(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
