@@ -1130,7 +1130,55 @@ impl Expressions for PythonCoreParser {
         }
         match is_dictionary {
             true => {
-
+                while
+                    match &self.symbol {
+                        Ok(s) => {
+                            match &**s {
+                                Token::PyComa(..) => {
+                                    let symbol1 = (**s).clone();
+                                    separators_list.push( Box::new(symbol1) );
+                                    let _ = self.advance();
+                                    match &self.symbol {
+                                        Ok(s2) => {
+                                            match &(**s2) {
+                                                Token::PyRightCurly(..) => false,
+                                                Token::PyComa(..) => return Err(format!("SyntaxError at {}: Missing elements between two ',' in set list expression!", self.lexer.get_position())),
+                                                Token::PyPower(..) => {
+                                                    let symbol2 = (**s2).clone();
+                                                    let _ = self.advance();
+                                                    let right_node = self.parse_expressions_expr()?;
+                                                    nodes_list.push( Box::new( ASTNode::PowerDictionary(start_pos, self.lexer.get_position(), Box::new(symbol2), right_node) ) );
+                                                    true
+                                                },
+                                                _ => {
+                                                    let left_node = self.parse_expressions_test()?;
+                                                    match &self.symbol {
+                                                        Ok(s3) => {
+                                                            match &(**s3) {
+                                                                Token::PyColon(..) => {
+                                                                    let symbol3 = (**s3).clone();
+                                                                    let _ = self.advance();
+                                                                    let right_node = self.parse_expressions_test()?;
+                                                                    nodes_list.push( Box::new( ASTNode::DictionaryEntry(start_pos, self.lexer.get_position(), left_node, Box::new(symbol3), right_node) ) );
+                                                                    true
+                                                                },
+                                                                _ => return Err(format!("SyntaxError at {}: Expecting ':' in dictionary entry expression!", self.lexer.get_position()))
+                                                            }
+                                                        },
+                                                        _ => return Err(format!("Syntax Error at {} - Expecting symbol in argument list expression!", self.lexer.get_position()))
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        _ => return Err(format!("SyntaxError at {}: Expecting symbol in argument list expression!", self.lexer.get_position()))
+                                    };
+                                    true
+                                },
+                                _ => false
+                            }
+                        },
+                        _ => return Err(format!("Syntax Error at {} - Expecting symbol in argument list expression!", self.lexer.get_position()))
+                    } {};
             },
             false => {
                 while
