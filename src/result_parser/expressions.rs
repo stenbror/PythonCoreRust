@@ -1154,7 +1154,35 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_comp_if(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        match &self.symbol {
+            Ok(s1) => {
+                match &(**s1) {
+                    Token::PyIf(..) => {
+                        let symbol1 = Box::new((**s1).clone());
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_no_cond_test()?;
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &(**s2) {
+                                    Token::PyAsync( .. ) |
+                                    Token::PyFor( .. ) |
+                                    Token::PyIf( .. ) => {
+                                        let next_node = Some( self.parse_expressions_comp_iter()? );
+                                        Ok(Box::new(ASTNode::CompIfComprehension(start_pos, self.lexer.get_position(), symbol1, right_node, next_node)))
+                                    },
+                                    _ => {
+                                        Ok(Box::new(ASTNode::CompIfComprehension(start_pos, self.lexer.get_position(), symbol1, right_node, None)))
+                                    }
+                                }
+                            },
+                            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'if' expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _=> Err(format!("Syntax Error at {} - Expecting 'if' in comprehension 'if' expression!", self.lexer.get_position()))
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'if' expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_yield_expr(&mut self) -> Result<Box<ASTNode>, String> {
