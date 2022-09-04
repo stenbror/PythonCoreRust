@@ -1187,7 +1187,35 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_yield_expr(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        match &self.symbol {
+            Ok(s1) => {
+                match &(**s1) {
+                    Token::PyYield(..) => {
+                        let symbol1 = Box::new((**s1).clone());
+                        let _ = self.advance();
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &(**s2) {
+                                    Token::PyFrom(..) => {
+                                        let symbol2 = Box::new((**s2).clone());
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_test()?;
+                                        Ok(Box::new(ASTNode::YieldFromExpr(start_pos, self.lexer.get_position(), symbol1, symbol2, right_node)))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist_star_expr()?;
+                                        Ok(Box::new(ASTNode::YieldExpr(start_pos, self.lexer.get_position(), symbol1, right_node)))
+                                    }
+                                }
+                            },
+                            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'yield' expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'yield' expression!", self.lexer.get_position()))
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'yield' expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_testlist_star_expr(&mut self) -> Result<Box<ASTNode>, String> {
