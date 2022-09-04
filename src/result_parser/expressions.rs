@@ -156,7 +156,45 @@ impl Expressions for PythonCoreParser {
                         }
                     },
                     Token::PyLeftCurly(..) => {
-                        todo!()
+                        let _ = self.advance();
+                        let mut right : Option<Box<ASTNode>> = None;
+                        match &self.symbol {
+                            Ok(s) => {
+                                match **s {
+                                    Token::PyRightCurly(..) => { },
+                                    _ => {
+                                        right = Some( self.parse_expressions_dictorset_maker()? );
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match **s2 {
+                                    Token::PyRightBracket(..) => {
+                                        let symbol2 = (**s2).clone();
+                                        let _ = self.advance();
+                                        match right {
+                                            Some( ref a ) => {
+                                                match &**a {
+                                                    ASTNode::DictionaryContainer(..) => {
+                                                        Ok(Box::new(ASTNode::AtomDictionary(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                                    },
+                                                    ASTNode::SetContainer(..) => {
+                                                        Ok(Box::new(ASTNode::AtomSet(start_pos, self.lexer.get_position(), Box::new(symbol1), right, Box::new(symbol2))))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting dictionary/set in atom expression!", start_pos))
+                                                }
+                                            },
+                                            None => Err(format!("SyntaxError at {}: Expecting dictionary/set in atom expression!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting end marker in dictionary/set atom expression!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+                        }
                     },
                     _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
                 }
