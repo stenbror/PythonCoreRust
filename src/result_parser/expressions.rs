@@ -1,3 +1,4 @@
+use std::sync::mpsc::sync_channel;
 use crate::{ASTNode, Token };
 use crate::result_parser::parser::{ Parser, PythonCoreParser };
 use crate::result_parser::tokenizer::Tokenizer;
@@ -1086,7 +1087,49 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_sync_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s1) => {
+                match &(**s1) {
+                    Token::PyFor(..) => {
+                        let symbol1 = Box::new((**s1).clone());
+                        let _ = self.advance();
+                        let left_node = self.parse_expressions_exprlist()?;
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &(**s2) {
+                                    Token::PyIn(..) => {
+                                        let symbol2 = Box::new((**s2).clone());
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_or_test()?;
+                                        match &self.symbol {
+                                            Ok(s3) => {
+                                                match &(**s3) {
+                                                    Token::PyAsync(..) |
+                                                    Token::PyFor(..) |
+                                                    Token::PyIf(..) => {
+                                                        let next_node = Some( self.parse_expressions_comp_iter()? );
+                                                        Ok(Box::new(ASTNode::SyncCompForComprehension(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, next_node)))
+                                                    },
+                                                    _ => {
+                                                        Ok(Box::new(ASTNode::SyncCompForComprehension(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, None)))
+                                                    }
+                                                }
+                                            },
+                                            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'for' expression!", self.lexer.get_position()))
+                                        }
+                                    },
+                                    _=> Err(format!("Syntax Error at {} - Expecting 'in' in comprehension 'for' expression!", self.lexer.get_position()))
+                                }
+                            },
+                            _=> Err(format!("Syntax Error at {} - Expecting 'for' in comprehension 'for' expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _=> Err(format!("Syntax Error at {} - Expecting 'for' in comprehension 'for' expression!", self.lexer.get_position()))
+                }
+            },
+            _=> Err(format!("Syntax Error at {} - Expecting symbol in comprehension 'for' expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_comp_for(&mut self) -> Result<Box<ASTNode>, String> {
