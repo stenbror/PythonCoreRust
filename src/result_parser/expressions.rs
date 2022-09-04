@@ -1172,7 +1172,7 @@ impl Expressions for PythonCoreParser {
                                         },
                                         _ => return Err(format!("SyntaxError at {}: Expecting symbol in argument list expression!", self.lexer.get_position()))
                                     };
-                                    true
+                                    false
                                 },
                                 _ => false
                             }
