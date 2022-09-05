@@ -1540,10 +1540,80 @@ impl Expressions for PythonCoreParser {
         let mut power_node : Option<Box<ASTNode>> = None;
         let mut div_symbol : Option<Box<Token>> = None;
         let mut coma_found : bool = false;
-
-
-
-
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::PyMul(..) => {
+                        mul_symbol = Some( s.clone() );
+                        let _ = self.advance();
+                        mul_node = Some( self.parse_expressions_var_args_assignments()?  );
+                        while
+                            match &self.symbol {
+                                Ok(s2) => {
+                                    match &**s2 {
+                                        Token::PyComa(..) => {
+                                            separators_list.push( s2.clone() );
+                                            let _ = self.advance();
+                                            match &self.symbol {
+                                                Ok(s3) => {
+                                                    match &**s3 {
+                                                        Token::PyPower(..) => {
+                                                            power_symbol = Some( s3.clone() );
+                                                            let _ = self.advance();
+                                                            power_node = Some( self.parse_expressions_var_args_assignments()? );
+                                                            match &self.symbol {
+                                                                Ok(s4) => {
+                                                                    match &**s4 {
+                                                                        Token::PyComa(..) => {
+                                                                            separators_list.push( s4.clone());
+                                                                            let _ = self.advance();
+                                                                        },
+                                                                        _ => { }
+                                                                    }
+                                                                },
+                                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                            }
+                                                            false
+                                                        },
+                                                        _ => {
+                                                            nodes_list.push( self.parse_expressions_var_args_assignments()? );
+                                                            true
+                                                        }
+                                                    }
+                                                },
+                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                            }
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                            } {};
+                    },
+                    Token::PyPower(..) => {
+                        power_symbol = Some( s.clone() );
+                        let _ = self.advance();
+                        power_node = Some( self.parse_expressions_var_args_assignments()? );
+                        match &self.symbol {
+                            Ok(s2) => {
+                                match &**s2 {
+                                    Token::PyComa(..) => {
+                                        separators_list.push( s2.clone());
+                                        let _ = self.advance();
+                                    },
+                                    _ => { }
+                                }
+                            },
+                            _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                        }
+                    },
+                    _ => {
+                        todo!()
+                    }
+                }
+            },
+            _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+        }
         nodes_list.reverse();
         separators_list.reverse();
         Ok(Box::new( ASTNode::VarArgsList(start_pos, self.lexer.get_position(), nodes_list, separators_list, mul_symbol, mul_node, power_symbol, power_node, div_symbol) ))
