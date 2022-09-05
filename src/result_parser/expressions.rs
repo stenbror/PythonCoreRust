@@ -1531,15 +1531,31 @@ impl Expressions for PythonCoreParser {
     }
 
     fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
     fn parse_expressions_var_args_assignments(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
     fn parse_expressions_vfp_def(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                    Token::AtomName(..) => {
+                        let symbol1 = (**s).clone();
+                        let _ = self.advance();
+
+                        Ok(Box::new( ASTNode::VFPDef(start_pos, self.lexer.get_position(), Box::new(symbol1) )))
+                    },
+                    _ => Err(format!("Syntax Error at {} - Expecting name literal in vfpdef expression!", self.lexer.get_position()))
+                }
+            },
+            _ => Err(format!("Syntax Error at {} - Expecting symbol in vfpdef expression!", self.lexer.get_position()))
+        }
     }
 }
 
