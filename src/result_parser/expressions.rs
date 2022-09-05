@@ -1532,12 +1532,42 @@ impl Expressions for PythonCoreParser {
 
     fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut mul_symbol : Option<Box<Token>> = None;
+        let mut mul_node : Option<Box<ASTNode>> = None;
+        let mut power_symbol : Option<Box<Token>> = None;
+        let mut power_node : Option<Box<ASTNode>> = None;
+        let mut div_symbol : Option<Box<Token>> = None;
+        let mut coma_found : bool = false;
+
+
+
+
+        nodes_list.reverse();
+        separators_list.reverse();
+        Ok(Box::new( ASTNode::VarArgsList(start_pos, self.lexer.get_position(), nodes_list, separators_list, mul_symbol, mul_node, power_symbol, power_node, div_symbol) ))
     }
 
     fn parse_expressions_var_args_assignments(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        let left_node = self.parse_expressions_vfp_def()?;
+        match &self.symbol {
+            Ok(s) => {
+                match &**s {
+                   Token::PyAssign(..) => {
+                       let symbol1 = (**s).clone();
+                       let _ = self.advance();
+                       let right_node = self.parse_expressions_test()?;
+                       Ok(Box::new(ASTNode::VFPAssign(start_pos, self.lexer.get_position(), left_node, Box::new(symbol1), right_node)))
+                   },
+                    _ => {
+                        Ok(left_node)
+                    }
+                }
+            },
+            _ => Err(format!("Syntax Error at {} - Expecting symbol in varargs assignment expression!", self.lexer.get_position()))
+        }
     }
 
     fn parse_expressions_vfp_def(&mut self) -> Result<Box<ASTNode>, String> {
@@ -1548,7 +1578,6 @@ impl Expressions for PythonCoreParser {
                     Token::AtomName(..) => {
                         let symbol1 = (**s).clone();
                         let _ = self.advance();
-
                         Ok(Box::new( ASTNode::VFPDef(start_pos, self.lexer.get_position(), Box::new(symbol1) )))
                     },
                     _ => Err(format!("Syntax Error at {} - Expecting name literal in vfpdef expression!", self.lexer.get_position()))
