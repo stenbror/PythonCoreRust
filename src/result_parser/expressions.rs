@@ -1622,9 +1622,73 @@ impl Expressions for PythonCoreParser {
                                                         Token::PyDiv( .. ) => {
                                                             div_symbol = Some(s6.clone());
                                                             let _ = self.advance();
+                                                            while
+                                                                match &self.symbol {
+                                                                    Ok(s11) => {
+                                                                        match &**s11 {
+                                                                            Token::PyComa(..) => {
+                                                                                separators_list.push(s11.clone());
+                                                                                let _ = self.advance();
+                                                                                match &self.symbol {
+                                                                                    Ok(s12) => {
+                                                                                        match &**s12 {
+                                                                                            Token::PyMul( .. ) |
+                                                                                            Token::PyPower( .. ) => {
+                                                                                                coma_found = true;
+                                                                                                false
+                                                                                            },
+                                                                                            _ => {
+                                                                                                nodes_list.push( self.parse_expressions_var_args_assignments()? );
+                                                                                                true
+                                                                                            }
+                                                                                        }
+                                                                                    },
+                                                                                    _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                                                }
+                                                                            },
+                                                                            _ => false
+                                                                        }
+                                                                    },
+                                                                    _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                                } {};
+
+                                                            match &self.symbol {
+                                                                Ok(s20) => {
+                                                                    match (coma_found, &**s20) {
+                                                                        (true, Token::PyMul(..)) => {
 
 
-                                                            true
+
+
+
+
+                                                                            false
+                                                                        },
+                                                                        (true, Token::PyPower(..)) => {
+                                                                            power_symbol = Some( s20.clone() );
+                                                                            let _ = self.advance();
+                                                                            power_node = Some( self.parse_expressions_var_args_assignments()? );
+                                                                            match &self.symbol {
+                                                                                Ok(s21) => {
+                                                                                    match &**s21 {
+                                                                                        Token::PyComa(..) => {
+                                                                                            separators_list.push( s21.clone());
+                                                                                            let _ = self.advance();
+                                                                                        },
+                                                                                        _ => { }
+                                                                                    }
+                                                                                },
+                                                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                                            }
+                                                                            false
+                                                                        },
+                                                                        _ => {
+                                                                            false
+                                                                        }
+                                                                    }
+                                                                },
+                                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                            }
                                                         },
                                                         Token::PyMul(..) => {
                                                             mul_symbol = Some( s6.clone() );
@@ -1672,8 +1736,6 @@ impl Expressions for PythonCoreParser {
                                                                     },
                                                                     _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
                                                                 } {};
-
-
                                                             false
                                                         },
                                                         Token::PyPower(..) => {
