@@ -1608,8 +1608,60 @@ impl Expressions for PythonCoreParser {
                         }
                     },
                     _ => {
-                        nodes_list.push( self.parse_expressions_var_args_assignments()? );
-                        todo!()
+                        nodes_list.push( (self.parse_expressions_var_args_assignments()?).clone() );
+                        while
+                            match &self.symbol {
+                                Ok(s5) => {
+                                    match &**s5 {
+                                        Token::PyComa(..) => {
+                                            separators_list.push(s5.clone());
+                                            let _ = self.advance();
+                                            match &self.symbol {
+                                                Ok(s6) => {
+                                                    match &**s6 {
+                                                        Token::PyDiv( .. ) => {
+                                                            div_symbol = Some(s6.clone());
+                                                            let _ = self.advance();
+
+
+                                                            true
+                                                        },
+                                                        Token::PyMul(..) => {
+
+                                                            false
+                                                        },
+                                                        Token::PyPower(..) => {
+                                                            power_symbol = Some( s6.clone() );
+                                                            let _ = self.advance();
+                                                            power_node = Some( self.parse_expressions_var_args_assignments()? );
+                                                            match &self.symbol {
+                                                                Ok(s7) => {
+                                                                    match &**s7 {
+                                                                        Token::PyComa(..) => {
+                                                                            separators_list.push( s7.clone());
+                                                                            let _ = self.advance();
+                                                                        },
+                                                                        _ => { }
+                                                                    }
+                                                                },
+                                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                                            }
+                                                            false
+                                                        },
+                                                        _ => {
+                                                            nodes_list.push( self.parse_expressions_var_args_assignments()? );
+                                                            true
+                                                        }
+                                                    }
+                                                },
+                                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                                            }
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("Syntax Error at {} - Expecting symbol in variable arguments list expression!", self.lexer.get_position()))
+                            } {};
                     }
                 }
             },
