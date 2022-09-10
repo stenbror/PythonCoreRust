@@ -1608,6 +1608,7 @@ impl Expressions for PythonCoreParser {
                         }
                     },
                     _ => {
+                        nodes_list.push( self.parse_expression_var_args_assignment()? );
                         todo!()
                     }
                 }
