@@ -2,6 +2,7 @@
 use crate::{ASTNode, Token };
 use crate::result_parser::parser::{ Parser, PythonCoreParser };
 use crate::result_parser::expressions::Expressions;
+use crate::result_parser::patterns::Patterns;
 use crate::result_parser::tokenizer::Tokenizer;
 
 
@@ -49,7 +50,38 @@ pub trait Statements {
 
 impl Statements for PythonCoreParser {
     fn parse_statements_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyIf(..) |
+                    Token::PyFor(..) |
+                    Token::PyWhile(..) |
+                    Token::PyWith(..) |
+                    Token::PyTry(..) |
+                    Token::PyAsync(..) |
+                    Token::PyMatrice(..) |
+                    Token::PyDef(..) |
+                    Token::PyClass(..) => {
+                        self.parse_statements_compound_stmt()
+                    },
+                    Token::AtomName(_, _, _, txt) => {
+                        match &*txt.as_str() {
+                            "match" => {
+                                self.parse_patterns_match()
+                            },
+                            _ => {
+                                self.parse_statements_simple_stmt()
+                            }
+                        }
+                    },
+                    _ => {
+                        self.parse_statements_simple_stmt()
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+        }
     }
 
     fn parse_statements_simple_stmt(&mut self) -> Result<Box<ASTNode>, String> {
