@@ -136,7 +136,43 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_small_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyDel(..) => {
+                        self.parse_statements_del_stmt()
+                    },
+                    Token::PyPass(..) => {
+                        self.parse_statements_pass_stmt()
+                    },
+                    Token::PyBreak(..) |
+                    Token::PyContinue(..) |
+                    Token::PyReturn(..) |
+                    Token::PyRaise(..) |
+                    Token::PyYield(..) => {
+                        self.parse_statements_flow_stmt()
+                    },
+                    Token::PyImport(..) |
+                    Token::PyFrom(..) => {
+                        self.parse_statements_import_stmt()
+                    },
+                    Token::PyGlobal(..) => {
+                        self.parse_statements_global_stmt()
+                    },
+                    Token::PyNonLocal(..) => {
+                        self.parse_statements_nonlocal_stmt()
+                    },
+                    Token::PyAssert(..) => {
+                        self.parse_statements_assert_stmt()
+                    },
+                    _ => {
+                        self.parse_statements_expr_stmt()
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in simple statement!", start_pos))
+        }
     }
 
     fn parse_statements_expr_stmt(&mut self) -> Result<Box<ASTNode>, String> {
