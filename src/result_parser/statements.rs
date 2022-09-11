@@ -80,12 +80,59 @@ impl Statements for PythonCoreParser {
                     }
                 }
             },
-            _ => Err(format!("SyntaxError at {}: Expecting symbol in atom expression!", start_pos))
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in statement", start_pos))
         }
     }
 
     fn parse_statements_simple_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list: Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list: Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push(self.parse_statements_small_stmt()?);
+        while
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::PySemiColon(..) => {
+                            separators_list.push(s);
+                            let _ = self.advance();
+                            match self.symbol.clone() {
+                                Ok(s2) => {
+                                    match &*s2 {
+                                        Token::Newline(..) |
+                                        Token::EOF(..) => {
+                                            false
+                                        },
+                                        _ => {
+                                            nodes_list.push(self.parse_statements_small_stmt()? );
+                                            true
+                                        }
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in statement list!", start_pos))
+                            }
+                        },
+                        _ => {
+                            false
+                        }
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in statement list!", start_pos))
+            } {};
+        match self.symbol.clone() {
+            Ok(s3) => {
+                match &*s3 {
+                    Token::Newline( .. ) => {
+                        let _ = self.advance();
+                        nodes_list.reverse();
+                        separators_list.reverse();
+                        Ok( Box::new( ASTNode::SimpleStmtList(start_pos, self.lexer.get_position(), nodes_list, separators_list, s3) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting Newline at end of statement list!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in statement list!", start_pos))
+        }
     }
 
     fn parse_statements_small_stmt(&mut self) -> Result<Box<ASTNode>, String> {
