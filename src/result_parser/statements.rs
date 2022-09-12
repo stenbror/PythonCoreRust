@@ -11,7 +11,7 @@ pub trait Statements {
     fn parse_statements_simple_stmt(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_statements_small_stmt(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_statements_expr_stmt(&mut self) -> Result<Box<ASTNode>, String>;
-    fn parse_statements_ann_assign(&mut self, start_pos: &u32, left_node: Box<ASTNode>) -> Result<Box<ASTNode>, String>;
+    fn parse_statements_ann_assign(&mut self, start_pos: u32, left_node: Box<ASTNode>) -> Result<Box<ASTNode>, String>;
     fn parse_statements_del_stmt(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_statements_pass_stmt(&mut self) -> Result<Box<ASTNode>, String>;
     fn parse_statements_flow_stmt(&mut self) -> Result<Box<ASTNode>, String>;
@@ -176,10 +176,319 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_expr_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let left_node = self.parse_expressions_testlist_star_expr()?;
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyColon(..) => {
+                        self.parse_statements_ann_assign(start_pos, left_node)
+                    },
+                    Token::PyAssign(..) => {
+                        let mut nodes_list : Box<Vec<Box< ( Box<Token>, Box<ASTNode> ) >>> = Box::new(Vec::new());
+                        while
+                            match self.symbol.clone() {
+                                Ok(s2) => {
+                                    match &*s2 {
+                                        Token::PyAssign( .. ) => {
+                                            let ass_symbol = s2;
+                                            let _ = self.advance();
+                                            match self.symbol.clone() {
+                                                Ok(s3) => {
+                                                    match &*s3 {
+                                                        Token::PyYield( .. ) => {
+                                                            let right_node = self.parse_expressions_yield_expr()?;
+                                                            nodes_list.push( Box::new( ( ass_symbol, right_node ) ) )
+                                                        },
+                                                        _ => {
+                                                            let right_node = self.parse_expressions_testlist()?;
+                                                            nodes_list.push( Box::new( ( ass_symbol, right_node ) ) )
+                                                        }
+                                                    }
+                                                    true
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                                            }
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                            } {};
+                        nodes_list.reverse();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::TypeComment(..) => {
+                                        let tc_symbol = s2;
+                                        let _ = self.advance();
+                                        Ok(Box::new( ASTNode::AssignmentStmt(start_pos, self.lexer.get_position(), left_node, nodes_list, Some(tc_symbol)) ))
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::AssignmentStmt(start_pos, self.lexer.get_position(), left_node, nodes_list, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyPlusAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::PlusAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::PlusAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyMinusAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::MinusAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::MinusAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyMulAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::MulAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::MulAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyPowerAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::PowerAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::PowerAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyDivAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::DivAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::DivAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyFloorDivAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::FloorDivAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::FloorDivAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyModuloAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::ModuloAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::ModuloAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyMatriceAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::MatriceAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::MatriceAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyBitAndAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::BitAndAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::BitAndAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyBitOrAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::BitOrAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::BitOrAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyBitXorAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::BitXorAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::BitXorAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyShiftLeftAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::ShiftLeftAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::ShiftLeftAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    Token::PyShiftRightAssign( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyYield( .. ) => {
+                                        let right_node = self.parse_expressions_yield_expr()?;
+                                        Ok(Box::new( ASTNode::ShiftRightAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    },
+                                    _ => {
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        Ok(Box::new( ASTNode::ShiftRightAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                        }
+                    },
+                    _ => {
+                        Ok(left_node)
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+        }
     }
 
-    fn parse_statements_ann_assign(&mut self, start_pos: &u32, left_node: Box<ASTNode>) -> Result<Box<ASTNode>, String> {
+    fn parse_statements_ann_assign(&mut self, start_pos: u32, left_node: Box<ASTNode>) -> Result<Box<ASTNode>, String> {
         todo!()
     }
 
