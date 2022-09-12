@@ -489,7 +489,48 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_ann_assign(&mut self, start_pos: u32, left_node: Box<ASTNode>) -> Result<Box<ASTNode>, String> {
-        todo!()
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyColon( .. ) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_test()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyAssign( .. ) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyYield( .. ) => {
+                                                        let next_node = self.parse_expressions_yield_expr()?;
+                                                        Ok(Box::new( ASTNode::AnnAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node, Some( (symbol2, next_node) )) ))
+                                                    },
+                                                    _ => {
+                                                        let next_node = self.parse_expressions_testlist()?;
+                                                        Ok(Box::new( ASTNode::AnnAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node, Some( (symbol2, next_node) )) ))
+                                                    }
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
+                                        }
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::AnnAssignStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in annotation assignment statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting ':' in annotation assignment statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in annotation assignment statement!", start_pos))
+        }
     }
 
     fn parse_statements_del_stmt(&mut self) -> Result<Box<ASTNode>, String> {
