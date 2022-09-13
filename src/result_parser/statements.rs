@@ -547,12 +547,25 @@ impl Statements for PythonCoreParser {
                     _ => Err(format!("SyntaxError at {}: Expecting 'del' in del statement!", start_pos))
                 }
             },
-            _ => Err(format!("SyntaxError at {}: Expecting ':' in 'del' statement!", start_pos))
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'del' statement!", start_pos))
         }
     }
 
     fn parse_statements_pass_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyPass(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        Ok(Box::new( ASTNode::PassStmt(start_pos, self.lexer.get_position(), symbol) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'pass' in pass statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'pass' statement!", start_pos))
+        }
     }
 
     fn parse_statements_flow_stmt(&mut self) -> Result<Box<ASTNode>, String> {
