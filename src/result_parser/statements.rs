@@ -569,7 +569,30 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_flow_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyBreak( .. ) => {
+                        self.parse_statements_break_stmt()
+                    },
+                    Token::PyContinue( .. ) => {
+                        self.parse_statements_continue_stmt()
+                    },
+                    Token::PyReturn( .. ) => {
+                        self.parse_statements_return_stmt()
+                    },
+                    Token::PyRaise( .. ) => {
+                        self.parse_statements_raise_stmt()
+                    },
+                    Token::PyYield( .. ) => {
+                        self.parse_statements_yield_stmt()
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'pass' in pass statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'pass' statement!", start_pos))
+        }
     }
 
     fn parse_statements_break_stmt(&mut self) -> Result<Box<ASTNode>, String> {
