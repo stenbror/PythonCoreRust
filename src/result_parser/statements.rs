@@ -605,15 +605,28 @@ impl Statements for PythonCoreParser {
                         let _ = self.advance();
                         Ok(Box::new( ASTNode::BreakStmt(start_pos, self.lexer.get_position(), symbol) ))
                     },
-                    _ => Err(format!("SyntaxError at {}: Expecting 'pass' in pass statement!", start_pos))
+                    _ => Err(format!("SyntaxError at {}: Expecting 'break' in break statement!", start_pos))
                 }
             },
-            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'pass' statement!", start_pos))
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'break' statement!", start_pos))
         }
     }
 
     fn parse_statements_continue_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyContinue(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        Ok(Box::new( ASTNode::ContinueStmt(start_pos, self.lexer.get_position(), symbol) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'continue' in pass statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'continue' statement!", start_pos))
+        }
     }
 
     fn parse_statements_return_stmt(&mut self) -> Result<Box<ASTNode>, String> {
