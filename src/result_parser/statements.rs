@@ -630,7 +630,35 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_return_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyReturn(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PySemiColon( .. ) |
+                                    Token::Newline( .. ) |
+                                    Token::EOF( .. ) => {
+                                        Ok(Box::new( ASTNode::ReturnStmt(start_pos, self.lexer.get_position(), symbol, None) ))
+                                    },
+                                    _ => {
+                                        let right_node = Some( self.parse_expressions_testlist_star_expr()? );
+                                        Ok(Box::new( ASTNode::ReturnStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'return' statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'return' in 'return' statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'return' statement!", start_pos))
+        }
     }
 
     fn parse_statements_yield_stmt(&mut self) -> Result<Box<ASTNode>, String> {
