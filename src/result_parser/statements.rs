@@ -634,7 +634,7 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_yield_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        self.parse_expressions_yield_expr()
     }
 
     fn parse_statements_raise_stmt(&mut self) -> Result<Box<ASTNode>, String> {
