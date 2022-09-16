@@ -666,7 +666,50 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_raise_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyRaise(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PySemiColon( .. ) |
+                                    Token::Newline( .. ) |
+                                    Token::EOF( .. ) => {
+                                        Ok(Box::new( ASTNode::RaiseStmt(start_pos, self.lexer.get_position(), symbol1, None) ))
+                                    },
+                                    _ => {
+                                        let left_node = self.parse_expressions_test()?;
+                                        match self.symbol.clone() {
+                                            Ok(s2) => {
+                                                match &*s2 {
+                                                    Token::PyFrom(..) => {
+                                                        let symbol2 = s2;
+                                                        let _ = self.advance();
+                                                        let right_node = self.parse_expressions_test()?;
+                                                        Ok(Box::new( ASTNode::RaiseStmt(start_pos, self.lexer.get_position(), symbol1, Some( ( left_node, Some( ( symbol2, right_node) )) )) ))
+                                                    },
+                                                    _ => {
+                                                        Ok(Box::new( ASTNode::RaiseStmt(start_pos, self.lexer.get_position(), symbol1, Some( ( left_node, None) )) ))
+                                                    }
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting Symbol in 'raise' statement!", start_pos))
+                                        }
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting Symbol in 'raise' statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'raise' in 'raise' statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting Symbol in 'raise' statement!", start_pos))
+        }
     }
 
     fn parse_statements_import_stmt(&mut self) -> Result<Box<ASTNode>, String> {
