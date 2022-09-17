@@ -864,7 +864,51 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_dotted_name(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::AtomName(..) => {
+                        nodes_list.push( s );
+                        let _ = self.advance();
+                        while
+                            match self.symbol.clone() {
+                                Ok(s2) => {
+                                    match &*s2 {
+                                        Token::PyDot(..) => {
+                                            separators_list.push( s2 );
+                                            let _ = self.advance();
+
+                                            match self.symbol.clone() {
+                                                Ok(s3) => {
+                                                    match &*s3 {
+                                                        Token::AtomName(..) => {
+                                                            nodes_list.push(s3);
+                                                            let _ = self.advance();
+                                                        },
+                                                        _ => return Err(format!("SyntaxError at {}: Expecting literal name in import statement!", start_pos))
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in dotted name statement!", start_pos))
+                                            }
+                                            true
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in dotted name statement!", start_pos))
+                            } { };
+                        nodes_list.reverse();
+                        separators_list.reverse();
+                        Ok(Box::new( ASTNode::DottedNameStmt(start_pos, self.lexer.get_position(), nodes_list, separators_list) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting literal name in import statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in dotted name statement!", start_pos))
+        }
     }
 
     fn parse_statements_global_stmt(&mut self) -> Result<Box<ASTNode>, String> {
