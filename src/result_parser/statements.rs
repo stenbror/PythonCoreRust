@@ -926,7 +926,62 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_nonlocal_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyNonLocal(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::AtomName(..) => {
+                                        nodes_list.push( s2 );
+                                        let _ = self.advance();
+                                    },
+                                    _ => return Err(format!("SyntaxError at {}: Expecting name literal in nonlocal statement!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in 'nonlocal' statement!", start_pos))
+                        }
+                        while
+                            match self.symbol.clone() {
+                                Ok(s3) => {
+                                    match &*s3 {
+                                        Token::PyComa(..) => {
+                                            separators_list.push( s3 );
+                                            let _ = self.advance();
+                                            match self.symbol.clone() {
+                                                Ok(s4) => {
+                                                    match &*s4 {
+                                                        Token::AtomName(..) => {
+                                                            nodes_list.push( s4 );
+                                                            let _ = self.advance();
+                                                        },
+                                                        _ => return Err(format!("SyntaxError at {}: Expecting name literal in nonlocal statement!", start_pos))
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting 'nonlocal' in global statement!", start_pos))
+                                            }
+                                            true
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in 'nonlocal' statement!", start_pos))
+                            } { };
+                        nodes_list.reverse();
+                        separators_list.reverse();
+                        Ok(Box::new( ASTNode::NonLocalStmt(start_pos, self.lexer.get_position(), symbol, nodes_list, separators_list) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'nonlocaL' in nonlocal statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'nonlocal' statement!", start_pos))
+        }
     }
 
     fn parse_statements_assert_stmt(&mut self) -> Result<Box<ASTNode>, String> {
