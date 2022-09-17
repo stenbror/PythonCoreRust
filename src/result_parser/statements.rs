@@ -1,5 +1,6 @@
 
 use crate::{ASTNode, Token };
+use crate::result_parser::blocks::Blocks;
 use crate::result_parser::parser::{ Parser, PythonCoreParser };
 use crate::result_parser::expressions::Expressions;
 use crate::result_parser::patterns::Patterns;
@@ -1018,7 +1019,42 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_compound_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyIf( .. ) => {
+                        self.parse_statements_if_stmt()
+                    },
+                    Token::PyWhile( .. ) => {
+                        self.parse_statements_while_stmt()
+                    },
+                    Token::PyFor( .. ) => {
+                        self.parse_statements_for_stmt()
+                    },
+                    Token::PyTry( .. ) => {
+                        self.parse_statements_try_stmt()
+                    },
+                    Token::PyWith( .. ) => {
+                        self.parse_statements_with_stmt()
+                    },
+                    Token::PyDef( .. ) => {
+                        self.parse_blocks_func_def()
+                    },
+                    Token::PyClass( .. ) => {
+                        self.parse_blocks_class_def()
+                    },
+                    Token::PyMatrice( .. ) => {
+                        self.parse_blocks_decorated()
+                    },
+                    Token::PyAsync( .. ) => {
+                        self.parse_statements_async_stmt()
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting compound statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in compound statement!", start_pos))
+        }
     }
 
     fn parse_statements_async_stmt(&mut self) -> Result<Box<ASTNode>, String> {
