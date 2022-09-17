@@ -856,7 +856,28 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_as_names(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_statements_import_as_name()? );
+        while
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyComa(..) => {
+                        separators_list.push( s );
+                        let _ = self.advance();
+                        nodes_list.push( self.parse_statements_import_as_name()? );
+                        true
+                    },
+                    _ => false
+                }
+            },
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in import as name statement!", start_pos))
+        } { };
+        nodes_list.reverse();
+        separators_list.reverse();
+        Ok(Box::new( ASTNode::ImportAsNamesStmt(start_pos, self.lexer.get_position(), nodes_list, separators_list) ))
     }
 
     fn parse_statements_dotted_as_names(&mut self) -> Result<Box<ASTNode>, String> {
