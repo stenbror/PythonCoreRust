@@ -985,7 +985,36 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_assert_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyAssert(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let left_node = self.parse_expressions_test()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyFrom(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_test()?;
+                                        Ok(Box::new( ASTNode::AssertStmt(start_pos, self.lexer.get_position(), symbol1, left_node, Some( (symbol2, right_node) )) ))
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::AssertStmt(start_pos, self.lexer.get_position(), symbol1, left_node, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'assert' statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'assert' in assert statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'assert' statement!", start_pos))
+        }
     }
 
     fn parse_statements_compound_stmt(&mut self) -> Result<Box<ASTNode>, String> {
