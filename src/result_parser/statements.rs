@@ -891,7 +891,45 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_dotted_as_name(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::AtomName(..) => {
+                        let left_node = self.parse_statements_dotted_name()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyAs(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::AtomName(..) => {
+                                                        let symbol3 = s3;
+                                                        let _ = self.advance();
+                                                        Ok(Box::new( ASTNode::DottedAsNameStmt(start_pos, self.lexer.get_position(), left_node, Some((symbol2, symbol3))) ))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting name literal in dotted as name statement!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in dotted as name statement!", start_pos))
+                                        }
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::DottedAsNameStmt(start_pos, self.lexer.get_position(), left_node, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in dotted as name statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting name literal in dotted as name statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in dotted as name statement!", start_pos))
+        }
     }
 
     fn parse_statements_import_as_names(&mut self) -> Result<Box<ASTNode>, String> {
