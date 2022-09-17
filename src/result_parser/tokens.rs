@@ -1,5 +1,5 @@
 
-use crate::parser::trivias::{ Trivia };
+use crate::result_parser::trivias::{ Trivia };
 
 #[derive(Clone)]
 pub enum Token {

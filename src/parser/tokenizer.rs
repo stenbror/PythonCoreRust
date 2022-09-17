@@ -1,6 +1,6 @@
 
-use crate::parser::trivias::{ Trivia };
-use crate::parser::tokens::{ Token };
+use crate::result_parser::trivias::{ Trivia };
+use crate::result_parser::tokens::{ Token };
 use crate::parser::source_buffer::{ SourceBuffer };
 
 

@@ -1,4 +1,4 @@
-use crate::parser::trivias::Trivia;
+use crate::result_parser::trivias::Trivia;
 use crate::result_parser::source_buffer::SourceBuffer;
 use crate::result_parser::source_buffer::SourceBufferFunctionality;
 use crate::Token;

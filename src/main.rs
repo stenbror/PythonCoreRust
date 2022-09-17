@@ -3,12 +3,12 @@ extern crate core;
 mod parser;
 mod result_parser;
 
-use crate::parser::nodes::{ASTNode};
+use result_parser::nodes::{ASTNode};
 use crate::result_parser::expressions::Expressions;
 use crate::result_parser::statements::Statements;
 use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
-use crate::parser::trivias::Trivia;
-use crate::parser::tokens::Token;
+use result_parser::trivias::Trivia;
+use result_parser::tokens::Token;
 use crate::result_parser::parser::{Parser, PythonCoreParser};
 
 fn main() {

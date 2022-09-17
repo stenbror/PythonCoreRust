@@ -1,6 +1,6 @@
 
-use crate::parser::nodes::{ ASTNode };
-use crate::parser::tokens::{ Token };
+use crate::result_parser::nodes::{ ASTNode };
+use crate::result_parser::tokens::{ Token };
 use crate::parser::parser::{ PythonCoreParser };
 use std::vec;
 

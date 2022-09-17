@@ -1,6 +1,6 @@
 
-use crate::parser::nodes::{ ASTNode };
-use crate::parser::tokens::{ Token };
+use crate::result_parser::nodes::{ ASTNode };
+use crate::result_parser::tokens::{ Token };
 use crate::result_parser::parser::{ Parser, PythonCoreParser };
 
 
@@ -23,7 +23,7 @@ mod tests {
     use crate::{ASTNode, Token};
     use crate::result_parser::expressions::Expressions;
     use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
-    use crate::parser::trivias::Trivia;
+    use crate::result_parser::trivias::Trivia;
     use crate::result_parser::parser::{Parser, PythonCoreParser};
 
 
