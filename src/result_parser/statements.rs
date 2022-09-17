@@ -731,7 +731,21 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_name(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyImport(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_statements_dotted_as_names()?;
+                        Ok( Box::new( ASTNode::ImportNameStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'import' in import statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'import' statement!", start_pos))
+        }
     }
 
     fn parse_statements_import_from(&mut self) -> Result<Box<ASTNode>, String> {
