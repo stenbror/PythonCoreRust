@@ -848,7 +848,46 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_as_name(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::AtomName(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyAs(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::AtomName(..) => {
+                                                        let symbol3 = s3;
+                                                        let _ = self.advance();
+                                                        Ok(Box::new( ASTNode::ImportAsName(start_pos, self.lexer.get_position(), symbol1, Some((symbol2, symbol3))) ))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting name literal in import as name statement!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in import as name statement!", start_pos))
+                                        }
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::ImportAsName(start_pos, self.lexer.get_position(), symbol1, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in import as name statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting name literal in import as name statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in import as name statement!", start_pos))
+        }
     }
 
     fn parse_statements_dotted_as_name(&mut self) -> Result<Box<ASTNode>, String> {
@@ -861,20 +900,20 @@ impl Statements for PythonCoreParser {
         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
         nodes_list.push( self.parse_statements_import_as_name()? );
         while
-        match self.symbol.clone() {
-            Ok(s) => {
-                match &*s {
-                    Token::PyComa(..) => {
-                        separators_list.push( s );
-                        let _ = self.advance();
-                        nodes_list.push( self.parse_statements_import_as_name()? );
-                        true
-                    },
-                    _ => false
-                }
-            },
-            _ => return Err(format!("SyntaxError at {}: Expecting symbol in import as name statement!", start_pos))
-        } { };
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::PyComa(..) => {
+                            separators_list.push( s );
+                            let _ = self.advance();
+                            nodes_list.push( self.parse_statements_import_as_name()? );
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in import as names statement!", start_pos))
+            } { };
         nodes_list.reverse();
         separators_list.reverse();
         Ok(Box::new( ASTNode::ImportAsNamesStmt(start_pos, self.lexer.get_position(), nodes_list, separators_list) ))
