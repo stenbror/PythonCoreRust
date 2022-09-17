@@ -749,7 +749,101 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_import_from(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyFrom(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let mut nodes_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                        while
+                            match self.symbol.clone() {
+                                Ok(s2) => {
+                                    match &*s2 {
+                                        Token::PyDot(..) |
+                                        Token::PyElipsis(..) => {
+                                            nodes_list.push( s2 );
+                                            let _ = self.advance();
+                                            true
+                                        },
+                                        _ => {
+                                            false
+                                        }
+                                    }
+                                },
+                                _ => false
+                            } { };
+                        nodes_list.reverse();
+                        let mut left_node : Option<Box<ASTNode>> = None;
+                        match self.symbol.clone() {
+                            Ok(s3) => {
+                                match &*s3 {
+                                    Token::PyImport(..) => {
+                                        match nodes_list.len() {
+                                            0 => return Err(format!("SyntaxError at {}: Expecting '.' in from part of import statement!", start_pos)),
+                                            _ => { }
+                                        }
+                                    },
+                                    _ => {
+                                        left_node =  Some( self.parse_statements_dotted_name()?);
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in 'from' statement!", start_pos))
+                        }
+                        match self.symbol.clone() {
+                            Ok(s4) => {
+                                match &*s4 {
+                                    Token::PyImport(..) => {
+                                        let symbol2 = s4;
+                                        let _ = self.advance();
+                                        match self.symbol.clone() {
+                                            Ok(s5) => {
+                                                match &*s5 {
+                                                    Token::PyMul(..) => {
+                                                        let symbol3 = s5;
+                                                        let _ = self.advance();
+                                                        Ok(Box::new( ASTNode::ImportFromStmt(start_pos, self.lexer.get_position(), symbol1, nodes_list, left_node, symbol2, Some(symbol3), None, None) ))
+                                                    },
+                                                    Token::PyLeftParen(..) => {
+                                                        let symbol3 = s5;
+                                                        let _ = self.advance();
+                                                        let right_node = Some( self.parse_statements_import_as_names()? );
+                                                        match self.symbol.clone() {
+                                                            Ok(s6) => {
+                                                                match &*s6 {
+                                                                    Token::PyRightParen(..) => {
+                                                                        let symbol4 = s6;
+                                                                        let _ = self.advance();
+                                                                        Ok(Box::new( ASTNode::ImportFromStmt(start_pos, self.lexer.get_position(), symbol1, nodes_list, left_node, symbol2, Some(symbol3), right_node, Some(symbol4)) ))
+                                                                    },
+                                                                    _ => Err(format!("SyntaxError at {}: Expecting ')' in from import statement!", start_pos))
+                                                                }
+                                                            },
+                                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'from' statement!", start_pos))
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        let right_node = Some( self.parse_statements_import_as_names()? );
+                                                        Ok(Box::new( ASTNode::ImportFromStmt(start_pos, self.lexer.get_position(), symbol1, nodes_list, left_node, symbol2, None, right_node, None) ))
+                                                    }
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'from' statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting symbol in 'from' statement!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting 'import' in from import statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'from' in import statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in 'from' statement!", start_pos))
+        }
     }
 
     fn parse_statements_import_as_name(&mut self) -> Result<Box<ASTNode>, String> {
