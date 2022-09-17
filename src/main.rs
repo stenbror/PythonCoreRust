@@ -3,22 +3,39 @@ extern crate core;
 mod parser;
 mod result_parser;
 
-use std::ops::Deref;
-use parser::nodes::{ ASTNode };
-use parser::tokens::{ Token };
-use crate::parser::parser::{Parser, PythonCoreParser};
-use crate::parser::tokenizer::PythonCoreTokenizer;
+use crate::parser::nodes::{ASTNode};
+use crate::result_parser::expressions::Expressions;
+use crate::result_parser::statements::Statements;
+use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
+use crate::parser::trivias::Trivia;
+use crate::parser::tokens::Token;
+use crate::result_parser::parser::{Parser, PythonCoreParser};
 
 fn main() {
-    println!("Test the Rust!");
-    let _res = ASTNode::AtomName(0, 5, Box::new( Token::AtomName( 0, 5, None, Box::new("Test".to_string() ))));
-    let tokenizer = PythonCoreTokenizer::new( "test".to_string());
-    let symbol = tokenizer.get_symbol();
-    match &*symbol {
-        Token::AtomName( s, e, _ , txt ) => {
-            print!("Token: AtomName, at start: {} and end: {} with text: {}", s, e, txt)
-        },
-        _ => {}
+    println!("PythonCore written in Rust!");
+
+    let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
+    let mut parser = PythonCoreParser::new(lexer);
+    parser.advance();
+    let res = parser.parse_expressions_atom_expr();
+
+    match &res {
+        Ok(s) => {
+            match &**s {
+                ASTNode::AtomName( 0, 8, tok) => {
+                    match &**tok {
+                        Token::AtomName(0, 8, None, txt) => {
+                            match &*txt.as_str() {
+                                "__init__" => { println!("Oh yeah!") },
+                                _ => { println!("Failed!"); }
+                            }
+                        },
+                        _ => { println!("Failed!"); }
+                    }
+                },
+                _ => { println!("Failed!"); }
+            }
+        }
+        Err( .. ) => { println!("Failed!"); }
     }
-    let _parser = PythonCoreParser::new( Box::new( tokenizer ) );
 }
