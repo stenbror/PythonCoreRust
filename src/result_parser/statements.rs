@@ -1604,7 +1604,107 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_with_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyWith(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+                        let mut left_symbol : Option<Box<Token>> = None;
+                        let mut right_symbol : Option<Box<Token>> = None;
+                        let mut symbol2 : Box<Token> = Box::new( Token::Empty );
+                        match self.symbol.clone() {
+                            Ok(s3) => {
+                                match &*s3 {
+                                    Token::PyLeftParen(..) => {
+                                        left_symbol = Some( s3 );
+                                        let _ = self.advance();
+                                        nodes_list.push( self.parse_statements_with_item()? );
+                                        while
+                                            match self.symbol.clone() {
+                                                Ok(s5) => {
+                                                    match &*s5 {
+                                                        Token::PyComa(..) => {
+                                                            separators_list.push( s5 );
+                                                            let _ = self.advance();
+                                                            match self.symbol.clone() {
+                                                                Ok(s6) => {
+                                                                    match &*s6 {
+                                                                        Token::PyRightParen(..) => false,
+                                                                        _ => {
+                                                                            nodes_list.push( self.parse_statements_with_item()? );
+                                                                            true
+                                                                        }
+                                                                    }
+                                                                },
+                                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                                                            }
+                                                        },
+                                                        _ => false
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                                            } { };
+                                        match self.symbol.clone() {
+                                            Ok(s7) => {
+                                                match &*s7 {
+                                                    Token::PyRightParen(..) => {
+                                                        right_symbol = Some( s7 );
+                                                        let _ = self.advance();
+                                                    },
+                                                    _ => return Err(format!("SyntaxError at {}: Expecting ')' in with statement!", start_pos))
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                                        }
+                                    },
+                                    _ => {
+                                        nodes_list.push( self.parse_statements_with_item()? );
+                                        while
+                                            match self.symbol.clone() {
+                                                Ok(s4) => {
+                                                    match &*s4 {
+                                                        Token::PyComa(..) => {
+                                                            separators_list.push( s4 );
+                                                            let _ = self.advance();
+                                                            nodes_list.push( self.parse_statements_with_item()? );
+                                                            true
+                                                        },
+                                                        _ => false
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                                            } { };
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                        }
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        symbol2 = s2;
+                                        let _ = self.advance();
+                                    },
+                                    _ => return Err(format!("SyntaxError at {}: Expecting ':' in with statement!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+                        }
+                        let right_node = self.parse_statements_suite()?;
+                        nodes_list.reverse();
+                        separators_list.reverse();
+                        Ok(Box::new( ASTNode::WithStmt(start_pos, self.lexer.get_position(), symbol1, left_symbol, nodes_list, separators_list, right_symbol, symbol2, right_node) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'with' in finally statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in with statement!", start_pos))
+        }
     }
 
     fn parse_statements_with_item(&mut self) -> Result<Box<ASTNode>, String> {
