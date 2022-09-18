@@ -1315,7 +1315,35 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_elif_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyElif(..) => {
+
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let left_node = self.parse_expressions_test()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_statements_suite()?;
+                                        Ok(Box::new( ASTNode::ElifStmt(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in elif statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in elif statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'elif' in elif statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in elif statement!", start_pos))
+        }
     }
 
     fn parse_statements_else_stmt(&mut self) -> Result<Box<ASTNode>, String> {
