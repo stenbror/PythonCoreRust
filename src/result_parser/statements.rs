@@ -1574,7 +1574,33 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_finally_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyFinally(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_statements_suite()?;
+                                        Ok(Box::new( ASTNode::FinallyStmt(start_pos, self.lexer.get_position(), symbol1, symbol2, right_node) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in finally statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in finally statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'finally' in finally statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in finally statement!", start_pos))
+        }
     }
 
     fn parse_statements_with_stmt(&mut self) -> Result<Box<ASTNode>, String> {
