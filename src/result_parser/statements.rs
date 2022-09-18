@@ -1608,7 +1608,24 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_with_item(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let left_node = self.parse_expressions_test()?;
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyAs(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_expr()?;
+                        Ok(Box::new( ASTNode::ExceptStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                    },
+                    _ => {
+                        Ok(Box::new( ASTNode::WithItem(start_pos, self.lexer.get_position(), left_node, None) ))
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in with item statement!", start_pos))
+        }
     }
 
     fn parse_statements_except_stmt(&mut self) -> Result<Box<ASTNode>, String> {
