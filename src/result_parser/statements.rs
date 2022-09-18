@@ -1404,7 +1404,7 @@ impl Statements for PythonCoreParser {
                                                     }
                                                 }
                                             },
-                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in if statement!", start_pos))
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in while statement!", start_pos))
                                         }
                                     },
                                     _ => Err(format!("SyntaxError at {}: Expecting ':' in while statement!", start_pos))
@@ -1421,7 +1421,73 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_for_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyFor(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let left_node = self.parse_expressions_exprlist()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyIn(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_testlist()?;
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyColon(..) => {
+                                                        let symbol3 = s3;
+                                                        let _ = self.advance();
+                                                        let mut tc_symbol: Option<Box<Token>> = None;
+                                                        match self.symbol.clone() {
+                                                            Ok(s4) => {
+                                                                match &*s4 {
+                                                                    Token::TypeComment(..) => {
+                                                                        tc_symbol = Some(s4);
+                                                                        let _ = self.advance();
+                                                                    },
+                                                                    _ => { }
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in for statement!", start_pos))
+                                                        }
+                                                        let next_node = self.parse_statements_suite()?;
+                                                        match self.symbol.clone() {
+                                                            Ok(s5) => {
+                                                                match &*s5 {
+                                                                    Token::PyElse(..) => {
+                                                                        let else_node = Some( self.parse_statements_else_stmt()? );
+                                                                        Ok(Box::new( ASTNode::ForStmt(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, symbol3, tc_symbol, next_node, else_node) ))
+                                                                    },
+                                                                    _ => {
+                                                                        Ok(Box::new( ASTNode::ForStmt(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, symbol3, tc_symbol, next_node, None) ))
+                                                                    }
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in for statement!", start_pos))
+                                                        }
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in for statement!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in for statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting 'in' in for statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in for statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'for' in for statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in for statement!", start_pos))
+        }
     }
 
     fn parse_statements_try_stmt(&mut self) -> Result<Box<ASTNode>, String> {
