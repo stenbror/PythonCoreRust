@@ -1491,7 +1491,86 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_try_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyTry(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let left_node = self.parse_statements_suite()?;
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyFinally(..) => {
+                                                        let right_node = Some( self.parse_statements_finally_stmt()? );
+                                                        Ok(Box::new( ASTNode::TryStmt(start_pos, self.lexer.get_position(), symbol1, symbol2, left_node, None, None, right_node) ))
+                                                    },
+                                                    _ => {
+                                                        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                                                        let mut else_node : Option<Box<ASTNode>> = None;
+                                                        let mut right_node : Option<Box<ASTNode>> = None;
+                                                        nodes_list.push( self.parse_statements_except_stmt()? );
+                                                        while
+                                                            match self.symbol.clone() {
+                                                                Ok(s4) => {
+                                                                    match &*s4 {
+                                                                        Token::PyExcept(..) => {
+                                                                            nodes_list.push( self.parse_statements_except_stmt()? );
+                                                                            true
+                                                                        },
+                                                                        _ => false
+                                                                    }
+                                                                },
+                                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+                                                            } { };
+                                                        match self.symbol.clone() {
+                                                            Ok(s5) => {
+                                                                match &*s5 {
+                                                                    Token::PyElse(..) => {
+                                                                        else_node = Some( self.parse_statements_else_stmt()? )
+                                                                    },
+                                                                    _ => { }
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+                                                        }
+                                                        match self.symbol.clone() {
+                                                            Ok(s6) => {
+                                                                match &*s6 {
+                                                                    Token::PyFinally(..) => {
+                                                                        right_node = Some( self.parse_statements_finally_stmt()? )
+                                                                    },
+                                                                    _ => { }
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+                                                        }
+                                                        nodes_list.reverse();
+                                                        Ok(Box::new( ASTNode::TryStmt(start_pos, self.lexer.get_position(), symbol1, symbol2, left_node, Some( nodes_list ), else_node, right_node) ))
+                                                    }
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in try statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'try' in try statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in try statement!", start_pos))
+        }
     }
 
     fn parse_statements_finally_stmt(&mut self) -> Result<Box<ASTNode>, String> {
