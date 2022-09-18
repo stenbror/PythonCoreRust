@@ -1140,7 +1140,7 @@ impl Statements for PythonCoreParser {
                         separators_list.reverse();
                         Ok(Box::new( ASTNode::NonLocalStmt(start_pos, self.lexer.get_position(), symbol, nodes_list, separators_list) ))
                     },
-                    _ => Err(format!("SyntaxError at {}: Expecting 'nonlocaL' in nonlocal statement!", start_pos))
+                    _ => Err(format!("SyntaxError at {}: Expecting 'nonlocal' in nonlocal statement!", start_pos))
                 }
             },
             _ => Err(format!("SyntaxError at {}: Expecting symbol in 'nonlocal' statement!", start_pos))
@@ -1612,7 +1612,22 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_except_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let left_node = self.parse_statements_except_clause()?;
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyColon(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_statements_suite()?;
+                        Ok(Box::new( ASTNode::ExceptStmt(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting ':' in except statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in except statement!", start_pos))
+        }
     }
 
     fn parse_statements_except_clause(&mut self) -> Result<Box<ASTNode>, String> {
