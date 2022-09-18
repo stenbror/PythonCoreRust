@@ -1220,7 +1220,39 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_async_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyAsync(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s) => {
+                                match &*s {
+                                    Token::PyDef(..) => {
+                                        let right_node = self.parse_blocks_class_def()?;
+                                        Ok(Box::new( ASTNode::AsyncStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                                    },
+                                    Token::PyWith(..) => {
+                                        let right_node = self.parse_statements_with_stmt()?;
+                                        Ok(Box::new( ASTNode::AsyncStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                                    },
+                                    Token::PyFor(..) => {
+                                        let right_node = self.parse_statements_for_stmt()?;
+                                        Ok(Box::new( ASTNode::AsyncStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting 'def', 'with' or 'for' in 'async' statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in async statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'async' in async statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in async statement!", start_pos))
+        }
     }
 
     fn parse_statements_if_stmt(&mut self) -> Result<Box<ASTNode>, String> {
