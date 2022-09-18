@@ -1689,7 +1689,64 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_suite(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::Newline(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+                        let mut symbol2 : Box<Token> = Box::new( Token::Empty );
+                        let mut symbol3 : Box<Token> = Box::new( Token::Empty );
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::Indent(..) => {
+                                        symbol2 = s2;
+                                        let _ = self.advance();
+                                        nodes_list.push(self.parse_statements_stmt()?);
+                                        while
+                                        match self.symbol.clone() {
+                                                Ok(s3) => {
+                                                    match &*s3 {
+                                                        Token::Dedent(..) => false,
+                                                        _ => {
+                                                            nodes_list.push(self.parse_statements_stmt()?);
+                                                            true
+                                                        }
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in suite statement!", start_pos))
+                                            } { };
+                                        match self.symbol.clone() {
+                                            Ok(s4) => {
+                                                match &*s4 {
+                                                    Token::Dedent(..) => {
+                                                        symbol3 = s4;
+                                                        let _ = self.advance();
+                                                    },
+                                                    _ => return Err(format!("SyntaxError at {}: Expecting dedent in suite statement!", start_pos))
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in suite statement!", start_pos))
+                                        }
+                                    },
+                                    _ => return Err(format!("SyntaxError at {}: Expecting indentation in suite statement!", start_pos))
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in suite statement!", start_pos))
+                        }
+                        nodes_list.reverse();
+                        Ok(Box::new( ASTNode::SuiteStmt(start_pos, self.lexer.get_position(), symbol1, symbol2, nodes_list, symbol3) ))
+                    },
+                    _ => {
+                        self.parse_statements_simple_stmt()
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in suite statement!", start_pos))
+        }
     }
 }
 
