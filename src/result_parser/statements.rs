@@ -1377,7 +1377,47 @@ impl Statements for PythonCoreParser {
     }
 
     fn parse_statements_while_stmt(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyWhile(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let left_node = self.parse_expressions_test()?;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_statements_suite()?;
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyElse(..) => {
+                                                        let next_node = Some( self.parse_statements_else_stmt()? );
+                                                        Ok(Box::new( ASTNode::WhileStmt(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, next_node) ))
+                                                    },
+                                                    _ => {
+                                                        Ok(Box::new( ASTNode::WhileStmt(start_pos, self.lexer.get_position(), symbol1, left_node, symbol2, right_node, None) ))
+                                                    }
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in if statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in while statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in while statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'while' in while statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in while statement!", start_pos))
+        }
     }
 
     fn parse_statements_for_stmt(&mut self) -> Result<Box<ASTNode>, String> {
