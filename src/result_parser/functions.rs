@@ -68,7 +68,134 @@ impl Functions for PythonCoreParser {
     }
 
     fn parse_functions_type_list(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let mut mul_node : Option<Box<ASTNode>> = None;
+        let mut mul_symbol : Option<Box<Token>> = None;
+        let mut power_symbol : Option<Box<Token>> = None;
+        let mut power_node : Option<Box<ASTNode>> = None;
+
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyMul(..) => {
+                        mul_symbol = Some( s );
+                        let _ = self.advance();
+                        mul_node = Some( self.parse_expressions_test()? );
+                        while
+                            match self.symbol.clone() {
+                                    Ok(s2) => {
+                                        match &*s2 {
+                                            Token::PyComa(..) => {
+                                                separators_list.push( s2 );
+                                                let _ = self.advance();
+                                                match self.symbol.clone() {
+                                                    Ok(s) => {
+                                                        match &*s {
+                                                            Token::PyPower(..) => {
+                                                                power_symbol = Some( s );
+                                                                let _ = self.advance();
+                                                                power_node = Some( self.parse_expressions_test()? );
+                                                                false
+                                                            },
+                                                            _ => {
+                                                                nodes_list.push( self.parse_expressions_test()? );
+                                                                true
+                                                            }
+                                                        }
+                                                    },
+                                                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                                                }
+                                            },
+                                            _ => false
+                                        }
+                                    },
+                                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                                } { };
+                    },
+                    Token::PyPower(..) => {
+                        power_symbol = Some( s );
+                        let _ = self.advance();
+                        power_node = Some( self.parse_expressions_test()? );
+                    },
+                    _ => {
+                        nodes_list.push( self.parse_expressions_test()? );
+                        while
+                            match self.symbol.clone() {
+                                Ok(s2) => {
+                                    match &*s2 {
+                                        Token::PyComa(..) => {
+                                            separators_list.push( s2 );
+                                            let _ = self.advance();
+                                            match self.symbol.clone() {
+                                                Ok(s) => {
+                                                    match &*s {
+                                                        Token::PyMul(..) => {
+                                                            mul_symbol = Some( s );
+                                                            let _ = self.advance();
+                                                            mul_node = Some( self.parse_expressions_test()? );
+                                                            while
+                                                                match self.symbol.clone() {
+                                                                    Ok(s2) => {
+                                                                        match &*s2 {
+                                                                            Token::PyComa(..) => {
+                                                                                separators_list.push( s2 );
+                                                                                let _ = self.advance();
+                                                                                match self.symbol.clone() {
+                                                                                    Ok(s) => {
+                                                                                        match &*s {
+                                                                                            Token::PyPower(..) => {
+                                                                                                power_symbol = Some( s );
+                                                                                                let _ = self.advance();
+                                                                                                power_node = Some( self.parse_expressions_test()? );
+                                                                                                false
+                                                                                            },
+                                                                                            _ => {
+                                                                                                nodes_list.push( self.parse_expressions_test()? );
+                                                                                                true
+                                                                                            }
+                                                                                        }
+                                                                                    },
+                                                                                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                                                                                }
+                                                                            },
+                                                                            _ => false
+                                                                        }
+                                                                    },
+                                                                    _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                                                                } { };
+                                                                false
+                                                        },
+                                                        Token::PyPower(..) => {
+                                                            power_symbol = Some( s );
+                                                            let _ = self.advance();
+                                                            power_node = Some( self.parse_expressions_test()? );
+                                                            false
+                                                        },
+                                                        _ => {
+                                                            nodes_list.push( self.parse_expressions_test()? );
+                                                            true
+                                                        }
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                                            }
+                                        },
+                                        _ => false
+                                    }
+                                },
+                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+                            } { };
+                    }
+                }
+            },
+            _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional type list!", start_pos))
+        }
+
+        nodes_list.reverse();
+        separators_list.reverse();
+        Ok(Box::new( ASTNode::TypeList(start_pos, self.lexer.get_position(), nodes_list, separators_list, mul_symbol, mul_node, power_symbol, power_node) ) )
     }
 }
 
