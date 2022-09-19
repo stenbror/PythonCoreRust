@@ -1,15 +1,14 @@
 extern crate core;
 
 mod parser;
-mod result_parser;
 
-use result_parser::nodes::{ASTNode};
-use crate::result_parser::expressions::Expressions;
-use crate::result_parser::statements::Statements;
-use crate::result_parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
-use result_parser::trivias::Trivia;
-use result_parser::tokens::Token;
-use crate::result_parser::parser::{Parser, PythonCoreParser};
+use parser::nodes::{ASTNode};
+use crate::parser::expressions::Expressions;
+use crate::parser::statements::Statements;
+use crate::parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
+use parser::trivias::Trivia;
+use parser::tokens::Token;
+use crate::parser::parser::{Parser, PythonCoreParser};
 
 fn main() {
     println!("PythonCore written in Rust!");

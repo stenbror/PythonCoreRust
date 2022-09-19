@@ -1,5 +1,5 @@
 
-use crate::result_parser::tokens::{ Token };
+use crate::parser::tokens::{ Token };
 
 #[derive(Clone)]
 pub enum ASTNode {
