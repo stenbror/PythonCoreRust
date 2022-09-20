@@ -26,7 +26,37 @@ pub trait Blocks {
 
 impl Blocks for PythonCoreParser {
     fn parse_blocks_eval_input(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let _ = self.advance();
+        let start_pos = self.lexer.get_position();
+        let right_node = self.parse_expressions_testlist()?;
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        while
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::Newline(..) => {
+                            separators_list.push( s );
+                            let _ = self.advance();
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in eval expression!", start_pos))
+            } { };
+        separators_list.reverse();
+        match self.symbol.clone() {
+            Ok(s2) => {
+                match &*s2 {
+                    Token::EOF(..) => {
+                        let symbol = s2;
+                        Ok(Box::new( ASTNode::EvalInput(start_pos, self.lexer.get_position(), right_node, separators_list, symbol) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting send of file in eval expression!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in eval expression!", start_pos))
+        }
     }
 
     fn parse_blocks_file_input(&mut self) -> Result<Box<ASTNode>, String> {
