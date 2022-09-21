@@ -2,6 +2,7 @@
 use crate::{ASTNode, Statements, Token};
 use crate::parser::parser::{Parser, PythonCoreParser };
 use crate::parser::expressions::Expressions;
+use crate::parser::functions::Functions;
 use crate::parser::patterns::Patterns;
 use crate::parser::tokenizer::Tokenizer;
 
@@ -166,7 +167,37 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_func_type_input(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let _ = self.advance();
+        let start_pos = self.lexer.get_position();
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let right_node = self.parse_functions_func_type()?;
+        while
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::Newline(..) => {
+                            separators_list.push( s );
+                            let _ = self.advance();
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in functional input!", start_pos))
+            } { };
+        separators_list.reverse();
+        match self.symbol.clone() {
+            Ok(s2) => {
+                match &*s2 {
+                    Token::EOF(..) => {
+                        let symbol = s2;
+                        Ok( Box::new( ASTNode::FuncTypeInput(start_pos, self.lexer.get_position(), right_node, separators_list, symbol) ) )
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting end of file in function input!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in functional input!", start_pos))
+        }
     }
 
     fn parse_blocks_decorator(&mut self) -> Result<Box<ASTNode>, String> {
