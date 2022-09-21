@@ -1,7 +1,7 @@
 
 use crate::{ASTNode, Token };
 use crate::parser::blocks::Blocks;
-use crate::parser::parser::{Parser, PythonCoreParser };
+use crate::parser::parser::{ET, Parser, PythonCoreParser};
 use crate::parser::expressions::Expressions;
 use crate::parser::patterns::Patterns;
 use crate::parser::tokenizer::Tokenizer;
@@ -1498,6 +1498,7 @@ impl Statements for PythonCoreParser {
                     Token::PyTry(..) => {
                         let symbol1 = s;
                         let _ = self.advance();
+                        self.except_status = ET::EXCEPT_NONE;
                         match self.symbol.clone() {
                             Ok(s2) => {
                                 match &*s2 {
@@ -1749,17 +1750,46 @@ impl Statements for PythonCoreParser {
 
     fn parse_statements_except_clause(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
+        let mut symbol_mul : Option<Box<Token>> = None;
         match self.symbol.clone() {
             Ok(s) => {
                 match &*s {
                     Token::PyExcept(..) => {
                         let symbol1 = s;
                         let _ = self.advance();
+
+                        /* Handle 'except*' or 'except' e.g. Python 3.11 */
+                        match self.symbol.clone() {
+                            Ok(s10) => {
+                                match &*s10 {
+                                    Token::PyMul(..)=> {
+                                        symbol_mul = Some(s10);
+                                        let _ = self.advance();
+                                        match &self.except_status {
+                                            ET::EXCEPT_NONE => { self.except_status = ET::EXCEPT_MUL },
+                                            ET::EXCEPT => return Err(format!("SyntaxError at {}: Expecting 'except*' except statement!", start_pos)),
+                                            _ => { }
+                                        }
+
+                                    },
+                                    _ => {
+                                        match &self.except_status {
+                                            ET::EXCEPT_NONE => { self.except_status = ET::EXCEPT },
+                                            ET::EXCEPT_MUL => return Err(format!("SyntaxError at {}: Expecting 'except' except statement!", start_pos)),
+                                            _ => { }
+                                        }
+                                    }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in except statement!", start_pos))
+                        }
+
+
                         match self.symbol.clone() {
                             Ok(s2) => {
                                 match &*s2 {
                                     Token::PyColon(..) => {
-                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, None) ))
+                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, symbol_mul, None) ))
                                     },
                                     _ => {
                                         let symbol = s2;
@@ -1777,7 +1807,7 @@ impl Statements for PythonCoreParser {
                                                                     Token::AtomName(..) => {
                                                                         let symbol3 = s4;
                                                                         let _ = self.advance();
-                                                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, Some( ( left_node, Some( ( symbol2, symbol3 ) ) ) )) ))
+                                                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, symbol_mul,Some( ( left_node, Some( ( symbol2, symbol3 ) ) ) )) ))
                                                                     },
                                                                     _ => Err(format!("SyntaxError at {}: Expecting name literal after 'as' in except statement!", start_pos))
                                                                 }
@@ -1786,7 +1816,7 @@ impl Statements for PythonCoreParser {
                                                         }
                                                     },
                                                     _ => {
-                                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, Some( ( left_node, None ) )) ))
+                                                        Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(),symbol1, symbol_mul, Some( ( left_node, None ) )) ))
                                                     }
                                                 }
                                             },
