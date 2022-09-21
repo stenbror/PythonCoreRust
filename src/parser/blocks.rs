@@ -91,7 +91,7 @@ impl Blocks for PythonCoreParser {
                         let symbol = s2;
                         Ok(Box::new( ASTNode::FileInput(start_pos, self.lexer.get_position(), nodes_list, separators_list, symbol) ))
                     },
-                    _ => Err(format!("SyntaxError at {}: Expecting send of file in file input!", start_pos))
+                    _ => Err(format!("SyntaxError at {}: Expecting end of file in file input!", start_pos))
                 }
             },
             _ => Err(format!("SyntaxError at {}: Expecting symbol in file input!", start_pos))
@@ -99,7 +99,70 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_single_input(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let _ = self.advance();
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::Newline( .. ) => {
+                        let symbol = Some( s );
+                        let _ = self.advance();
+                        Ok(Box::new( ASTNode::SingleInput(start_pos, self.lexer.get_position(), None, symbol) ))
+                    },
+                    Token::PyIf( .. ) |
+                    Token::PyWhile( .. ) |
+                    Token::PyFor( .. ) |
+                    Token::PyTry( .. ) |
+                    Token::PyWith( .. ) |
+                    Token::PyDef( .. ) |
+                    Token::PyClass( .. ) |
+                    Token::PyAsync( .. ) |
+                    Token::PyMatrice( .. ) => {
+                        let right_node = Some(self.parse_statements_compound_stmt()?);
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::Newline(..) => {
+                                        let symbol = Some( s2 );
+                                        Ok(Box::new( ASTNode::SingleInput(start_pos, self.lexer.get_position(), right_node, symbol) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting Newline after compound statement in single input!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in single input!", start_pos))
+                        }
+                    },
+                    Token::AtomName( _ , _ , _ , txt) => {
+                        match &*txt.as_str() {
+                            "match" => {
+                                let right_node = Some( self.parse_patterns_match()? );
+                                match self.symbol.clone() {
+                                    Ok(s3) => {
+                                        match &*s3 {
+                                            Token::Newline(..) => {
+                                                let symbol = Some( s3 );
+                                                Ok(Box::new( ASTNode::SingleInput(start_pos, self.lexer.get_position(), right_node, symbol) ))
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting Newline after compound statement in single input!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting symbol in single input!", start_pos))
+                                }
+                            },
+                            _ => {
+                                let right_node = Some( self.parse_statements_simple_stmt()? );
+                                Ok( Box::new( ASTNode::SingleInput(start_pos, self.lexer.get_position(), right_node, None) ) )
+                            }
+                        }
+                    },
+                    _ => {
+                        let right_node = Some( self.parse_statements_simple_stmt()? );
+                        Ok(Box::new( ASTNode::SingleInput(start_pos, self.lexer.get_position(), right_node, None) ))
+                    }
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in single input!", start_pos))
+        }
     }
 
     fn parse_blocks_func_type_input(&mut self) -> Result<Box<ASTNode>, String> {
