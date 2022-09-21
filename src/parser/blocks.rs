@@ -1,5 +1,5 @@
 
-use crate::{ASTNode, Token };
+use crate::{ASTNode, Statements, Token};
 use crate::parser::parser::{Parser, PythonCoreParser };
 use crate::parser::expressions::Expressions;
 use crate::parser::patterns::Patterns;
@@ -60,7 +60,42 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_file_input(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let _ = self.advance();
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        while
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::EOF(..) => false,
+                        Token::Newline(..) => {
+                            separators_list.push( s );
+                            let _ = self.advance();
+                            true
+                        },
+                        _ => {
+                            nodes_list.push( self.parse_statements_stmt()? );
+                            true
+                        }
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in eval expression!", start_pos))
+            } { };
+        separators_list.reverse();
+        nodes_list.reverse();
+        match self.symbol.clone() {
+            Ok(s2) => {
+                match &*s2 {
+                    Token::EOF(..) => {
+                        let symbol = s2;
+                        Ok(Box::new( ASTNode::FileInput(start_pos, self.lexer.get_position(), nodes_list, separators_list, symbol) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting send of file in file input!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in file input!", start_pos))
+        }
     }
 
     fn parse_blocks_single_input(&mut self) -> Result<Box<ASTNode>, String> {
