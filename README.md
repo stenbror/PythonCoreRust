@@ -1,6 +1,6 @@
 # PythonCoreRust
 
-Python 3.10 parser in a Roslyn style thinking.
+Python 3.12 parser in a Roslyn style thinking.
 
 Build with:  cargo build --release\
 Test with:   cargo test\
