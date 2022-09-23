@@ -325,7 +325,21 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_async_func_def(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyAsync(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_blocks_func_def()?;
+                        Ok(Box::new( ASTNode::AsyncStmt(start_pos, self.lexer.get_position(), symbol, right_node) ))
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'async' in async statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in async statement!", start_pos))
+        }
     }
 
     fn parse_blocks_func_def(&mut self) -> Result<Box<ASTNode>, String> {
