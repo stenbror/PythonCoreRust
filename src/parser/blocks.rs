@@ -423,7 +423,41 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_parameters(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyLeftParen(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let right_node : Option<Box<ASTNode>> = match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyRightParen(..) => None,
+                                    _ => Some(self.parse_blocks_typed_args_list()?)
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in parameters of function statement!", start_pos))
+                        };
+                        match self.symbol.clone() {
+                            Ok(s3) => {
+                                match &*s3 {
+                                    Token::PyRightParen(..) => {
+                                        let symbol2 = s3;
+                                        let _ = self.advance();
+                                        Ok(Box::new(ASTNode::Parameter(start_pos, self.lexer.get_position(), symbol1, right_node, symbol2) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting ')' in parameters of function statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in parameters of function statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting '(' in parameters of function statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in parameters of function statement!", start_pos))
+        }
     }
 
     fn parse_blocks_typed_args_list(&mut self) -> Result<Box<ASTNode>, String> {
