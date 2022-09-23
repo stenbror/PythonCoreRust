@@ -523,7 +523,80 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_class_def(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyClass(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::AtomName(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let mut symbol3 : Option<Box<Token>> = None;
+                                        let mut symbol4 : Option<Box<Token>> = None;
+                                        let mut left_node : Option<Box<ASTNode>> = None;
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyLeftParen(..) => {
+                                                        symbol3 = Some( s3 );
+                                                        let _ = self.advance();
+                                                        left_node = match self.symbol.clone() {
+                                                            Ok(s5) => {
+                                                                match &*s5 {
+                                                                    Token::PyRightParen(..) => None,
+                                                                    _ => Some(self.parse_expressions_var_args_list()?)
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+                                                        };
+                                                        match self.symbol.clone() {
+                                                            Ok(s6) => {
+                                                                match &*s6 {
+                                                                    Token::PyRightParen(..) => {
+                                                                        symbol3 = Some( s6 );
+                                                                        let _ = self.advance();
+                                                                    },
+                                                                    _ => return Err(format!("SyntaxError at {}: Expecting ')' in class statement!", start_pos))
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+                                                        }
+                                                    },
+                                                    _ => { }
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+                                        }
+                                        match self.symbol.clone() {
+                                            Ok(s4) => {
+                                                match &*s4 {
+                                                    Token::PyColon(..) => {
+                                                        let symbol5 = s4;
+                                                        let _ = self.advance();
+                                                        let right_node = self.parse_statements_suite()?;
+                                                        Ok(Box::new( ASTNode::ClassDef(start_pos, self.lexer.get_position(), symbol1, symbol2, symbol3, left_node, symbol4, symbol5, right_node) ) )
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in class statement!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting literal name in class statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'class' in class statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in class statement!", start_pos))
+        }
     }
 }
 
