@@ -343,7 +343,83 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_func_def(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyDef(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::AtomName(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let left_node : Option<Box<ASTNode>> = match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::PyLeftParen(..) => {
+                                                        Some(self.parse_blocks_parameters()?)
+                                                    },
+                                                    _ => None
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting 'def' in function statement!", start_pos))
+                                        };
+                                        let ret_node : Option<Box<( Box<Token>, Box<ASTNode> )>> = match self.symbol.clone() {
+                                            Ok(s4) => {
+                                                match &*s4 {
+                                                    Token::PyArrow(..) => {
+                                                        let symbol3 = s4;
+                                                        let _ = self.advance();
+                                                        let res_node = self.parse_expressions_test()?;
+                                                        Some( Box::new( ( symbol3 , res_node )))
+                                                    },
+                                                    _ => None
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting 'def' in function statement!", start_pos))
+                                        };
+                                        match self.symbol.clone() {
+                                            Ok(s5) => {
+                                                match &*s5 {
+                                                    Token::PyColon(..) => {
+                                                        let symbol4 = s5;
+                                                        let _ = self.advance();
+                                                        let tc_symbol : Option<Box<Token>> = match self.symbol.clone() {
+                                                            Ok(s6) => {
+                                                                match &*s6 {
+                                                                    Token::TypeComment(..) => {
+                                                                        let symbol5 = s6;
+                                                                        let _ = self.advance();
+                                                                        Some(symbol5)
+                                                                    },
+                                                                    _ => None
+                                                                }
+                                                            },
+                                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in function statement!", start_pos))
+                                                        };
+                                                        let body_node = self.parse_blocks_func_body_suite()?;
+                                                        Ok(Box::new( ASTNode::FuncDef(start_pos, self.lexer.get_position(), symbol1, symbol2, left_node, ret_node, symbol4, tc_symbol, body_node ) ))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting ':' in function statement!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in function statement!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting literal name in function statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting 'def' in function statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting 'def' in function statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in function statement!", start_pos))
+        }
     }
 
     fn parse_blocks_parameters(&mut self) -> Result<Box<ASTNode>, String> {
