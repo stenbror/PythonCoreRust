@@ -269,7 +269,24 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_decorators(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        nodes_list.push( self.parse_blocks_decorator()? );
+        while
+            match self.symbol.clone() {
+                Ok(s) => {
+                    match &*s {
+                        Token::PyMatrice(..) => {
+                            nodes_list.push( self.parse_blocks_decorator()? );
+                            true
+                        },
+                        _ => false
+                    }
+                },
+                _ => return Err(format!("SyntaxError at {}: Expecting symbol in decorator statement!", start_pos))
+            } { };
+        nodes_list.reverse();
+        Ok( Box::new( ASTNode::Decorators(start_pos, self.lexer.get_position(), nodes_list) ))
     }
 
     fn parse_blocks_decorated(&mut self) -> Result<Box<ASTNode>, String> {
