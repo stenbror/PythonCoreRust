@@ -461,11 +461,27 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_typed_args_list(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
     fn parse_blocks_tfp_def_assign(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        let left_node = self.parse_blocks_tfp_def()?;
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyAssign(..) => {
+                        let symbol = s;
+                        let _ = self.advance();
+                        let right_node = self.parse_expressions_test()?;
+                        Ok(Box::new( ASTNode::TFPAssign(start_pos, self.lexer.get_position(), left_node, symbol, right_node) ))
+                    },
+                    _ => Ok( left_node )
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in parameter of function statement!", start_pos))
+        }
     }
 
     fn parse_blocks_tfp_def(&mut self) -> Result<Box<ASTNode>, String> {
