@@ -485,14 +485,44 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_tfp_def(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::AtomName(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::PyColon(..) => {
+                                        let symbol2 = s2;
+                                        let _ = self.advance();
+                                        let right_node = self.parse_expressions_test()?;
+                                        Ok(Box::new( ASTNode::TFPDef(start_pos, self.lexer.get_position(), symbol1, Some( Box::new( ( symbol2, right_node ) ) )) ))
+                                    },
+                                    _ => {
+                                        Ok(Box::new( ASTNode::TFPDef(start_pos, self.lexer.get_position(), symbol1, None) ))
+                                    }
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in parameter of function statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting name literal in parameter of function statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in parameter of function statement!", start_pos))
+        }
     }
 
     fn parse_blocks_func_body_suite(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 
     fn parse_blocks_class_def(&mut self) -> Result<Box<ASTNode>, String> {
+        let start_pos = self.lexer.get_position();
         todo!()
     }
 }
