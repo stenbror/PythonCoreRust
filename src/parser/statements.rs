@@ -1498,7 +1498,7 @@ impl Statements for PythonCoreParser {
                     Token::PyTry(..) => {
                         let symbol1 = s;
                         let _ = self.advance();
-                        self.except_status = ET::EXCEPT_NONE;
+                        self.except_status = ET::ExceptNone;
                         match self.symbol.clone() {
                             Ok(s2) => {
                                 match &*s2 {
@@ -1766,16 +1766,16 @@ impl Statements for PythonCoreParser {
                                         symbol_mul = Some(s10);
                                         let _ = self.advance();
                                         match &self.except_status {
-                                            ET::EXCEPT_NONE => { self.except_status = ET::EXCEPT_MUL },
-                                            ET::EXCEPT => return Err(format!("SyntaxError at {}: Expecting 'except*' except statement!", start_pos)),
+                                            ET::ExceptNone => { self.except_status = ET::ExceptMul },
+                                            ET::Except => return Err(format!("SyntaxError at {}: Expecting 'except*' except statement!", start_pos)),
                                             _ => { }
                                         }
 
                                     },
                                     _ => {
                                         match &self.except_status {
-                                            ET::EXCEPT_NONE => { self.except_status = ET::EXCEPT },
-                                            ET::EXCEPT_MUL => return Err(format!("SyntaxError at {}: Expecting 'except' except statement!", start_pos)),
+                                            ET::ExceptNone => { self.except_status = ET::Except },
+                                            ET::ExceptMul => return Err(format!("SyntaxError at {}: Expecting 'except' except statement!", start_pos)),
                                             _ => { }
                                         }
                                     }
@@ -1792,7 +1792,7 @@ impl Statements for PythonCoreParser {
                                         Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, symbol_mul, None) ))
                                     },
                                     _ => {
-                                        let symbol = s2;
+                                        let symbol2 = s2;  // BUG!
                                         let _ = self.advance();
                                         let left_node = self.parse_expressions_test()?;
                                         match self.symbol.clone() {

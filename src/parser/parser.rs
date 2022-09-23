@@ -1,8 +1,8 @@
-use crate::parser::parser::ET::EXCEPT_NONE;
+use crate::parser::parser::ET::ExceptNone;
 use crate::parser::tokens::{ Token };
 use crate::parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
 
-pub enum ET { EXCEPT_NONE, EXCEPT_MUL, EXCEPT }
+pub enum ET { ExceptNone, ExceptMul, Except }
 
 pub struct PythonCoreParser {
     pub lexer: Box<PythonCoreTokenizer>,
@@ -21,7 +21,7 @@ impl Parser for PythonCoreParser {
         PythonCoreParser {
             lexer,
             symbol: Err("Token not advanced yet! ".to_string()),
-            except_status: EXCEPT_NONE
+            except_status: ExceptNone
         }
     }
 

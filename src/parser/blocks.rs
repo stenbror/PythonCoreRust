@@ -557,7 +557,7 @@ impl Blocks for PythonCoreParser {
                                                             Ok(s6) => {
                                                                 match &*s6 {
                                                                     Token::PyRightParen(..) => {
-                                                                        symbol3 = Some( s6 );
+                                                                        symbol4 = Some( s6 );
                                                                         let _ = self.advance();
                                                                     },
                                                                     _ => return Err(format!("SyntaxError at {}: Expecting ')' in class statement!", start_pos))
