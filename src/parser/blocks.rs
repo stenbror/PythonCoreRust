@@ -290,7 +290,38 @@ impl Blocks for PythonCoreParser {
     }
 
     fn parse_blocks_decorated(&mut self) -> Result<Box<ASTNode>, String> {
-        todo!()
+        let start_pos = self.lexer.get_position();
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::PyMatrice(..) => {
+                        let left_node = self.parse_blocks_decorators()?;
+                        match self.symbol.clone() {
+                            Ok(s) => {
+                                match &*s {
+                                    Token::PyClass(..) => {
+                                        let right_node = self.parse_blocks_class_def()?;
+                                        Ok(Box::new( ASTNode::Decorated(start_pos, self.lexer.get_position(), left_node, right_node) ))
+                                    },
+                                    Token::PyDef(..) => {
+                                        let right_node = self.parse_blocks_func_def()?;
+                                        Ok(Box::new( ASTNode::Decorated(start_pos, self.lexer.get_position(), left_node, right_node) ))
+                                    },
+                                    Token::PyAsync(..) => {
+                                        let right_node = self.parse_blocks_async_func_def()?;
+                                        Ok(Box::new( ASTNode::Decorated(start_pos, self.lexer.get_position(), left_node, right_node) ))
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting 'class', 'def' or 'async' after '@' in decorator statement!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in decorator statement!", start_pos))
+                        }
+                    },
+                    _ => Err(format!("SyntaxError at {}: Expecting '@' in decorator statement!", start_pos))
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in decorator statement!", start_pos))
+        }
     }
 
     fn parse_blocks_async_func_def(&mut self) -> Result<Box<ASTNode>, String> {
