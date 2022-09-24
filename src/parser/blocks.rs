@@ -518,7 +518,85 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_func_body_suite(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        match self.symbol.clone() {
+            Ok(s) => {
+                match &*s {
+                    Token::Newline(..) => {
+                        let symbol1 = s;
+                        let _ = self.advance();
+                        let mut tc_symbol : Option<Box<Token>> = None;
+                        let mut tc_newline : Option<Box<Token>> = None;
+                        match self.symbol.clone() {
+                            Ok(s2) => {
+                                match &*s2 {
+                                    Token::TypeComment(..) => {
+                                        tc_symbol = Some( s2 );
+                                        let _ = self.advance();
+                                        match self.symbol.clone() {
+                                            Ok(s3) => {
+                                                match &*s3 {
+                                                    Token::Newline(..) => {
+                                                        tc_newline = Some( s3 );
+                                                        let _ = self.advance();
+                                                    },
+                                                    _ => return Err(format!("SyntaxError at {}: Expecting Newline after TypeComment in function body!", start_pos))
+                                                }
+                                            },
+                                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+                                        }
+                                    },
+                                    _ => { }
+                                }
+                            },
+                            _ => return Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+                        }
+                        match self.symbol.clone() {
+                            Ok(s4) => {
+                                match &*s4{
+                                    Token::Indent(..) => {
+                                        let symbol2 = s4;
+                                        let _ = self.advance();
+                                        nodes_list.push(self.parse_statements_stmt()?);
+                                        while
+                                            match self.symbol.clone() {
+                                                Ok(s5) => {
+                                                    match &*s5 {
+                                                        Token::Dedent(..) => false,
+                                                        _ => {
+                                                            nodes_list.push(self.parse_statements_stmt()?);
+                                                            true
+                                                        }
+                                                    }
+                                                },
+                                                _ => return Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+                                            } { };
+                                        nodes_list.reverse();
+                                        match self.symbol.clone() {
+                                            Ok(s6) => {
+                                                match &*s6 {
+                                                    Token::Dedent(..) => {
+                                                        let symbol3 = s6;
+                                                        let _ = self.advance();
+                                                        Ok(Box::new(ASTNode::FuncBodySuite(start_pos, self.lexer.get_position(), symbol1, tc_symbol, tc_newline, symbol2, nodes_list, symbol3)))
+                                                    },
+                                                    _ => Err(format!("SyntaxError at {}: Expecting end of block in function body!", start_pos))
+                                                }
+                                            },
+                                            _ => Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+                                        }
+                                    },
+                                    _ => Err(format!("SyntaxError at {}: Expecting indentation in function body!", start_pos))
+                                }
+                            },
+                            _ => Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+                        }
+                    },
+                    _ => self.parse_statements_simple_stmt()
+                }
+            },
+            _ => Err(format!("SyntaxError at {}: Expecting symbol in function body!", start_pos))
+        }
     }
 
     fn parse_blocks_class_def(&mut self) -> Result<Box<ASTNode>, String> {
