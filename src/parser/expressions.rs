@@ -1872,7 +1872,7 @@ mod tests {
 
     #[test]
     fn expression_atom_ellipsis() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -1894,7 +1894,7 @@ mod tests {
 
     #[test]
     fn expression_atom_false() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("False".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("False".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -1916,7 +1916,7 @@ mod tests {
 
     #[test]
     fn expression_atom_none() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("None".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("None".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -1938,7 +1938,7 @@ mod tests {
 
     #[test]
     fn expression_atom_true() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("True".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("True".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -1960,7 +1960,7 @@ mod tests {
 
     #[test]
     fn expression_atom_name() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -1987,7 +1987,7 @@ mod tests {
 
     #[test]
     fn expression_atom_number() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("0.32e-4J".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("0.32e-4J".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -2014,7 +2014,7 @@ mod tests {
 
     #[test]
     fn expression_atom_single_string() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!'".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!'".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -2047,7 +2047,7 @@ mod tests {
 
     #[test]
     fn expression_atom_multiple_string() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!''123'".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("'Hello, World!''123'".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom();
@@ -2077,7 +2077,7 @@ mod tests {
 
     #[test]
     fn expression_atom_non_await_name() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("__init__".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom_expr();
@@ -2104,7 +2104,7 @@ mod tests {
 
     #[test]
     fn expression_atom_await_name() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("await __init__".to_string()) ); // 14
+        let lexer = Box::new( PythonCoreTokenizer::new("await __init__".to_string()) ); // 14
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_atom_expr();
@@ -2124,10 +2124,10 @@ mod tests {
                         }
                         match &**right {
                             ASTNode::AtomName(6, 14, tok2) => {
-                                let symbol_text = &**tok2;
-                                let pattern = Box::new( ("__init__".to_string()));
+                                let _symbol_text = &**tok2;
+                                let _pattern = Box::new( "__init__".to_string() );
                                 match &**tok2 {
-                                    Token::AtomName(6, 14, trivia , pattern) => {
+                                    Token::AtomName(6, 14, trivia , _pattern) => {
                                         match &trivia {
                                             Some(s) => {
                                                 let x = &**s;
@@ -2156,7 +2156,7 @@ mod tests {
 
     #[test]
     fn expression_power_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a ** b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a ** b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_power();
@@ -2186,7 +2186,7 @@ mod tests {
 
     #[test]
     fn expression_no_power_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_power();
@@ -2208,7 +2208,7 @@ mod tests {
 
     #[test]
     fn expression_factor_operator_plus() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("+b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("+b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_factor();
@@ -2234,7 +2234,7 @@ mod tests {
 
     #[test]
     fn expression_factor_operator_minus() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("-b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("-b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_factor();
@@ -2260,7 +2260,7 @@ mod tests {
 
     #[test]
     fn expression_factor_operator_bit_invert() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("~b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("~b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_factor();
@@ -2286,7 +2286,7 @@ mod tests {
 
     #[test]
     fn expression_no_factor_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_factor();
@@ -2308,7 +2308,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_mul() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a * b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a * b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2338,7 +2338,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_div() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a / b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a / b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2368,7 +2368,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_modulo() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a % b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a % b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2398,7 +2398,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_matrices() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a @ b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a @ b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2428,7 +2428,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_floor_div() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a // b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a // b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2458,7 +2458,7 @@ mod tests {
 
     #[test]
     fn expression_no_term_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2480,7 +2480,7 @@ mod tests {
 
     #[test]
     fn expression_term_operator_matrices_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a @ b @ c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a @ b @ c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_term();
@@ -2523,7 +2523,7 @@ mod tests {
 
     #[test]
     fn expression_arith_operator_plus() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a + b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a + b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_arith();
@@ -2553,7 +2553,7 @@ mod tests {
 
     #[test]
     fn expression_arith_operator_minus() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a - b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a - b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_arith();
@@ -2583,7 +2583,7 @@ mod tests {
 
     #[test]
     fn expression_no_arith_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_arith();
@@ -2605,7 +2605,7 @@ mod tests {
 
     #[test]
     fn expression_arith_operator_plus_minus_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a + b - c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a + b - c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_arith();
@@ -2648,7 +2648,7 @@ mod tests {
 
     #[test]
     fn expression_shift_operator_left() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a << b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a << b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_shift();
@@ -2678,7 +2678,7 @@ mod tests {
 
     #[test]
     fn expression_shift_operator_right() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a >> b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a >> b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_shift();
@@ -2708,7 +2708,7 @@ mod tests {
 
     #[test]
     fn expression_no_shift_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_shift();
@@ -2730,7 +2730,7 @@ mod tests {
 
     #[test]
     fn expression_shift_operator_left_right_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a << b >> c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a << b >> c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_shift();
@@ -2773,7 +2773,7 @@ mod tests {
 
     #[test]
     fn expression_bit_and_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a & b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a & b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_expr();
@@ -2803,7 +2803,7 @@ mod tests {
 
     #[test]
     fn expression_no_bit_and_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_expr();
@@ -2825,7 +2825,7 @@ mod tests {
 
     #[test]
     fn expression_bit_and_operator_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a & b & c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a & b & c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_expr();
@@ -2868,7 +2868,7 @@ mod tests {
 
     #[test]
     fn expression_bit_xor_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a ^ b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a ^ b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_xor_expr();
@@ -2898,7 +2898,7 @@ mod tests {
 
     #[test]
     fn expression_no_bit_xor_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_xor_expr();
@@ -2920,7 +2920,7 @@ mod tests {
 
     #[test]
     fn expression_bit_xor_operator_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a ^ b ^ c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a ^ b ^ c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_xor_expr();
@@ -2963,7 +2963,7 @@ mod tests {
 
     #[test]
     fn expression_bit_or_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a | b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a | b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_expr();
@@ -2993,7 +2993,7 @@ mod tests {
 
     #[test]
     fn expression_no_bit_or_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_expr();
@@ -3015,7 +3015,7 @@ mod tests {
 
     #[test]
     fn expression_bit_or_operator_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a | b | c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a | b | c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_expr();
@@ -3058,7 +3058,7 @@ mod tests {
 
     #[test]
     fn expression_star_expression_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("*b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("*b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_star_expr();
@@ -3084,7 +3084,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_less() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a < b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a < b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3114,7 +3114,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_less_equal() {
-        let mut lexer = Box::new(PythonCoreTokenizer::new("a <= b".to_string()));
+        let lexer = Box::new(PythonCoreTokenizer::new("a <= b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3144,7 +3144,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_equal() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a == b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a == b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3174,7 +3174,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_greater_equal() {
-        let mut lexer = Box::new(PythonCoreTokenizer::new("a >= b".to_string()));
+        let lexer = Box::new(PythonCoreTokenizer::new("a >= b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3204,7 +3204,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_not_equal() {
-        let mut lexer = Box::new(PythonCoreTokenizer::new("a != b".to_string()));
+        let lexer = Box::new(PythonCoreTokenizer::new("a != b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3234,7 +3234,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_not_equal_legacy() {
-        let mut lexer = Box::new(PythonCoreTokenizer::new("a <> b".to_string()));
+        let lexer = Box::new(PythonCoreTokenizer::new("a <> b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3264,7 +3264,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_greater() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a > b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a > b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3294,105 +3294,106 @@ mod tests {
 
     #[test]
     fn expression_comparison_operator_is() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a is b".to_string()) );
+        let lexer = Box::new(PythonCoreTokenizer::new("a is b".to_string()));
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
         match &res {
             Ok(s) => {
                 match &**s {
-                    ASTNode::IsComparison( 0, 6, left, symbol, right) => {
+                    ASTNode::IsComparison(0, 6, left, symbol, right) => {
                         match &**left {
-                            ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**symbol {
-                            Token::PyIs(2, 4, _ ) => assert!(true),
+                            Token::PyIs(2, 4, _) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
-                            ASTNode::AtomName( 5, 6 , _ ) => assert!(true),
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
                             _ => assert!(false)
                         }
                     },
                     _ => assert!(false)
                 }
             }
-            Err( .. ) => assert!(false)
-        }
-
-        #[test]
-        fn expression_comparison_operator_is_not() {
-            let mut lexer = Box::new(PythonCoreTokenizer::new("a is not b".to_string()));
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::IsNotComparison(0, 10, left, symbol1, symbol2, right) => {
-                            match &**left {
-                                ASTNode::AtomName(0, 2, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol1 {
-                                Token::PyIs(2, 4, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol2 {
-                                Token::PyNot(5, 9, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName(5, 6, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
-                }
-                Err(..) => assert!(false)
-            }
-        }
-
-        #[test]
-        fn expression_comparison_operator_not_in() {
-            let mut lexer = Box::new(PythonCoreTokenizer::new("a not in b".to_string()));
-            let mut parser = PythonCoreParser::new(lexer);
-            parser.advance();
-            let res = parser.parse_expressions_comparison();
-            match &res {
-                Ok(s) => {
-                    match &**s {
-                        ASTNode::NotInComparison(0, 10, left, symbol1, symbol2, right) => {
-                            match &**left {
-                                ASTNode::AtomName(0, 2, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol1 {
-                                Token::PyNot(2, 6, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**symbol2 {
-                                Token::PyIn(6, 9, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                            match &**right {
-                                ASTNode::AtomName(9, 10, _) => assert!(true),
-                                _ => assert!(false)
-                            }
-                        },
-                        _ => assert!(false)
-                    }
-                }
-                Err(..) => assert!(false)
-            }
+            Err(..) => assert!(false)
         }
     }
 
     #[test]
+    fn expression_comparison_operator_is_not() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a is not b".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::IsNotComparison(0, 10, left, symbol1, symbol2, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol1 {
+                            Token::PyIs(2, 4, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol2 { // Bug!
+                            Token::PyNot(5, 9, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn expression_comparison_operator_not_in() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a not in b".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_expressions_comparison();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::NotInComparison(0, 10, left, symbol1, symbol2, right) => {
+                        match &**left {
+                            ASTNode::AtomName(0, 2, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol1 { // Bug!
+                            Token::PyNot(2, 6, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**symbol2 {
+                            Token::PyIn(6, 9, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                        match &**right {
+                            ASTNode::AtomName(9, 10, _) => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
+
+    #[test]
     fn expression_comparison_operator_double() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a < b > c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a < b > c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_comparison();
@@ -3435,7 +3436,7 @@ mod tests {
 
     #[test]
     fn expression_not_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("not b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("not b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_not_test();
@@ -3461,7 +3462,7 @@ mod tests {
 
     #[test]
     fn expression_no_not_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_not_test();
@@ -3484,7 +3485,7 @@ mod tests {
 
     #[test]
     fn expression_and_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a and b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a and b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_test();
@@ -3514,7 +3515,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_and_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a and b and c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a and b and c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_test();
@@ -3557,7 +3558,7 @@ mod tests {
 
     #[test]
     fn expression_no_and_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_and_test();
@@ -3579,7 +3580,7 @@ mod tests {
 
     #[test]
     fn expression_or_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a or b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a or b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_or_test();
@@ -3609,7 +3610,7 @@ mod tests {
 
     #[test]
     fn expression_comparison_or_test_operator_multiple() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a or b or c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a or b or c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_or_test();
@@ -3652,7 +3653,7 @@ mod tests {
 
     #[test]
     fn expression_no_or_test_operator() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_or_test();
@@ -3674,7 +3675,7 @@ mod tests {
 
     #[test]
     fn expression_named_expression() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a := b".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a := b".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_named_expression();
@@ -3704,7 +3705,7 @@ mod tests {
 
     #[test]
     fn expression_empty_named_expression() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_named_expression();
@@ -3726,7 +3727,7 @@ mod tests {
 
     #[test]
     fn expression_empty_test_expression() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("...".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_test();
@@ -3748,7 +3749,7 @@ mod tests {
 
     #[test]
     fn expression_if_else_test_expression() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("a if b else c".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("a if b else c".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_test();
@@ -3786,7 +3787,7 @@ mod tests {
 
     #[test]
     fn expression_lambda_test_expression_no_arguments() {
-        let mut lexer = Box::new( PythonCoreTokenizer::new("lambda: a * a".to_string()) );
+        let lexer = Box::new( PythonCoreTokenizer::new("lambda: a * a".to_string()) );
         let mut parser = PythonCoreParser::new(lexer);
         parser.advance();
         let res = parser.parse_expressions_test();

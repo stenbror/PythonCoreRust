@@ -1616,7 +1616,7 @@ impl Statements for PythonCoreParser {
                         let mut separators_list : Box<Vec<Box<Token>>> = Box::new(Vec::new());
                         let mut left_symbol : Option<Box<Token>> = None;
                         let mut right_symbol : Option<Box<Token>> = None;
-                        let mut symbol2 : Box<Token> = Box::new( Token::Empty );
+                        let symbol2;
                         match self.symbol.clone() {
                             Ok(s3) => {
                                 match &*s3 {
@@ -1792,8 +1792,8 @@ impl Statements for PythonCoreParser {
                                         Ok(Box::new( ASTNode::ExceptClauseStmt(start_pos, self.lexer.get_position(), symbol1, symbol_mul, None) ))
                                     },
                                     _ => {
-                                        let symbol2 = s2;  // BUG!
-                                        let _ = self.advance();
+                                        //let symbol2 = s2;  // BUG!
+                                        //let _ = self.advance();
                                         let left_node = self.parse_expressions_test()?;
                                         match self.symbol.clone() {
                                             Ok(s3) => {
@@ -1844,8 +1844,8 @@ impl Statements for PythonCoreParser {
                         let symbol1 = s;
                         let _ = self.advance();
                         let mut nodes_list : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
-                        let mut symbol2 : Box<Token> = Box::new( Token::Empty );
-                        let mut symbol3 : Box<Token> = Box::new( Token::Empty );
+                        let symbol2;
+                        let symbol3;
                         match self.symbol.clone() {
                             Ok(s2) => {
                                 match &*s2 {
@@ -1902,12 +1902,6 @@ impl Statements for PythonCoreParser {
 
 #[cfg(test)]
 mod tests {
-    use crate::{ASTNode, Token};
-    use crate::parser::expressions::Expressions;
-    use crate::parser::tokenizer::{PythonCoreTokenizer, Tokenizer};
-    use crate::parser::trivias::Trivia;
-    use crate::parser::parser::{Parser, PythonCoreParser};
-
 
     #[test]
     fn statements_empty_template() {

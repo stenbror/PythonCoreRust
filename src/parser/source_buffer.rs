@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn read_characters_from_empty_source_buffer() {
-        let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("".to_string()) );
         assert_eq!(buffer.get_position(), 0u32);
         assert_eq!(buffer.get_char(), '\0');
     }
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn peek_next_three_characters_and_check_position() {
-        let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
         let ( a, b, c ) = buffer.peek_three_chars();
         assert_eq!(a, 'd');
         assert_eq!(b, 'e');
@@ -110,13 +110,13 @@ mod tests {
 
     #[test]
     fn length_of_source_buffer_content() {
-        let mut buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("def a(): pass".to_string()) );
         assert_eq!(buffer.count(), 13u32);
     }
 
     #[test]
     fn peek_next_three_characters_on_buffer_with_zero_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("".to_string()) );
         let ( a, b, c ) = buffer.peek_three_chars();
         assert_eq!(a, '\0');
         assert_eq!(b, '\0');
@@ -126,7 +126,7 @@ mod tests {
 
     #[test]
     fn peek_next_three_characters_on_buffer_with_one_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("d".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("d".to_string()) );
         let ( a, b, c ) = buffer.peek_three_chars();
         assert_eq!(a, 'd');
         assert_eq!(b, '\0');
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn peek_next_three_characters_on_buffer_with_two_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("de".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("de".to_string()) );
         let ( a, b, c ) = buffer.peek_three_chars();
         assert_eq!(a, 'd');
         assert_eq!(b, 'e');
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn peek_next_three_characters_on_buffer_with_three_character_only() {
-        let mut buffer = Box::new( SourceBuffer::new("def".to_string()) );
+        let buffer = Box::new( SourceBuffer::new("def".to_string()) );
         let ( a, b, c ) = buffer.peek_three_chars();
         assert_eq!(a, 'd');
         assert_eq!(b, 'e');

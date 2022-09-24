@@ -2864,7 +2864,7 @@ mod tests {
                 match *s {
                     Token::AtomString( 0u32, 2u32, None, txt, prefix) => {
                         assert_eq!("\"\"", *txt);
-                        match prefix { Some(x) => assert!(false), _ => assert!(true) }
+                        match prefix { Some(_x) => assert!(false), _ => assert!(true) }
                     },
                     _ => assert!(false)
                 }
@@ -2881,7 +2881,7 @@ mod tests {
                 match *s {
                     Token::AtomString( 0u32, 2u32, None, txt, prefix) => {
                         assert_eq!("''", *txt);
-                        match prefix { Some(x) => assert!(false), _ => assert!(true) }
+                        match prefix { Some(_x) => assert!(false), _ => assert!(true) }
                     },
                     _ => assert!(false)
                 }

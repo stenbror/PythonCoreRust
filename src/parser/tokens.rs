@@ -92,6 +92,5 @@ pub enum Token {
     Indent(Option<Box<Vec<Box<Trivia>>>>),
     Dedent(Option<Box<Vec<Box<Trivia>>>>),
     TypeComment(u32, u32, Option<Box<Vec<Box<Trivia>>>>, Box<String>),
-    EOF(u32, Option<Box<Vec<Box<Trivia>>>>),
-    Empty
+    EOF(u32, Option<Box<Vec<Box<Trivia>>>>)
 } 
