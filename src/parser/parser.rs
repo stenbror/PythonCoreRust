@@ -17,7 +17,7 @@ pub trait Parser {
 
 
 impl Parser for PythonCoreParser {
-    fn new(mut lexer: Box<PythonCoreTokenizer>) -> PythonCoreParser {
+    fn new(lexer: Box<PythonCoreTokenizer>) -> PythonCoreParser {
         PythonCoreParser {
             lexer,
             symbol: Err("Token not advanced yet! ".to_string()),

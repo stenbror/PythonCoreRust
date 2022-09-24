@@ -462,7 +462,13 @@ impl Blocks for PythonCoreParser {
 
     fn parse_blocks_typed_args_list(&mut self) -> Result<Box<ASTNode>, String> {
         let start_pos = self.lexer.get_position();
-        todo!()
+        let a : Box<Vec<Box<ASTNode>>> = Box::new(Vec::new());
+        let b : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+        let c : Box<Vec<Box<Token>>> = Box::new(Vec::new());
+
+        // Missing rule here!
+
+        Ok(Box::new(ASTNode::TypedArgsList(start_pos, self.lexer.get_position(), a, b, c, None, None )))
     }
 
     fn parse_blocks_tfp_def_assign(&mut self) -> Result<Box<ASTNode>, String> {

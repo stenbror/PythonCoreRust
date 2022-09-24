@@ -124,7 +124,7 @@ pub enum ASTNode {
     Decorated(u32, u32, Box<ASTNode>, Box<ASTNode>),
     FuncDef(u32, u32, Box<Token>, Box<Token>, Option<Box<ASTNode>>, Option<Box<(Box<Token>, Box<ASTNode>)>>, Box<Token>, Option<Box<Token>>, Box<ASTNode>),
     Parameter(u32, u32, Box<Token>, Option<Box<ASTNode>>, Box<Token>),
-    TypedArgsList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Box<[Box<Token>]>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
+    TypedArgsList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Box<Vec<Box<Token>>>, Option<(Box<Token>, Box<ASTNode>)>, Option<(Box<Token>, Box<ASTNode>)>),
     TFPAssign(u32, u32, Box<ASTNode>, Box<Token>, Box<ASTNode>),
     TFPDef(u32, u32, Box<Token>, Option<Box<(Box<Token>, Box<ASTNode>)>>),
     VarArgsList(u32, u32, Box<Vec<Box<ASTNode>>>, Box<Vec<Box<Token>>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>, Option<Box<ASTNode>>, Option<Box<Token>>),
