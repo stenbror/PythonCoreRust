@@ -3341,11 +3341,11 @@ mod tests {
                             _ => assert!(false)
                         }
                         match &**symbol2 { // Bug!
-                            Token::PyNot(5, 9, _) => assert!(true),
+                            Token::PyNot(5, 8, _) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
-                            ASTNode::AtomName(5, 6, _) => assert!(true),
+                            ASTNode::AtomName(9, 10, _) => assert!(true),
                             _ => assert!(false)
                         }
                     },
@@ -3371,11 +3371,11 @@ mod tests {
                             _ => assert!(false)
                         }
                         match &**symbol1 { // Bug!
-                            Token::PyNot(2, 6, _) => assert!(true),
+                            Token::PyNot(2, 5, _) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**symbol2 {
-                            Token::PyIn(6, 9, _) => assert!(true),
+                            Token::PyIn(6, 8, _) => assert!(true),
                             _ => assert!(false)
                         }
                         match &**right {
@@ -3389,7 +3389,6 @@ mod tests {
             Err(..) => assert!(false)
         }
     }
-
 
     #[test]
     fn expression_comparison_operator_double() {
