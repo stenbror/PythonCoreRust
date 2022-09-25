@@ -1527,7 +1527,12 @@ impl Expressions for PythonCoreParser {
             } {};
         nodes_list.reverse();
         separators_list.reverse();
-        Ok(Box::new(ASTNode::TestListStarExpr(start_pos, self.lexer.get_position(), nodes_list, separators_list)))
+        match ( nodes_list.len(), separators_list.len() ) {
+            (1, 0) => {
+                Ok(nodes_list[0].clone())
+            },
+            _=> Ok(Box::new(ASTNode::TestListStarExpr(start_pos, self.lexer.get_position(), nodes_list, separators_list)))
+        }
     }
 
     fn parse_expressions_var_args_list(&mut self) -> Result<Box<ASTNode>, String> {
