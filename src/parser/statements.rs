@@ -2248,5 +2248,48 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_expression_modulo_assign() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a %= b\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 9, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::ModuloAssignStmt( 0 , 6 , left, symbol, right) =>  {
+                                match &*left {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*symbol {
+                                    Token::PyModuloAssign(2, 4, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*right {
+                                    ASTNode::AtomName( 5, 6, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                assert!(true)
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline(6, 9, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 }
 
