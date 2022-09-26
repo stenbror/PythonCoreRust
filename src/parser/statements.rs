@@ -2675,5 +2675,50 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_expression_bitwise_floor_div_assign_testlist() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a //= a, b, c\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 16, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::FloorDivAssignStmt( 0 , 13 , left, symbol, right) =>  {
+                                match &*left {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*symbol {
+                                    Token::PyFloorDivAssign(2, 5, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*right {
+                                    ASTNode::TestList( 6, 13, a, b) => {
+                                        assert_eq!(a.len(), 3);
+                                        assert_eq!(b.len(), 2);
+                                    },
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline(13, 16, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 }
 
