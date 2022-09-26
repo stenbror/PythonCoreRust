@@ -1,7 +1,5 @@
 
-use crate::{ASTNode, Token };
-use crate::parser::parser::{Parser, PythonCoreParser };
-use crate::parser::tokenizer::Tokenizer;
+use crate::{ ASTNode, Token, Parser, PythonCoreParser, Tokenizer };
 
 
 pub trait Expressions {

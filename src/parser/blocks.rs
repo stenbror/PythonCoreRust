@@ -1,10 +1,7 @@
 
-use crate::{ASTNode, Statements, Token};
-use crate::parser::parser::{Parser, PythonCoreParser };
-use crate::parser::expressions::Expressions;
+use crate::{ ASTNode, Statements, Token, Parser, PythonCoreParser, Expressions, Tokenizer };
 use crate::parser::functions::Functions;
 use crate::parser::patterns::Patterns;
-use crate::parser::tokenizer::Tokenizer;
 
 pub trait Blocks {
     fn parse_blocks_eval_input(&mut self) -> Result<Box<ASTNode>, String>;

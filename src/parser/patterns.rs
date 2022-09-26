@@ -1,6 +1,5 @@
 
-use crate::parser::nodes::{ ASTNode };
-use crate::parser::parser::{ PythonCoreParser };
+use crate::{ ASTNode, PythonCoreParser };
 
 
 pub trait Patterns {

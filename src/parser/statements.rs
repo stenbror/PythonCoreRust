@@ -1,10 +1,8 @@
 
-use crate::{ASTNode, Token };
-use crate::parser::blocks::Blocks;
-use crate::parser::parser::{ET, Parser, PythonCoreParser};
-use crate::parser::expressions::Expressions;
+use crate::{ Parser, ASTNode, PythonCoreParser, Tokenizer, Token, Expressions };
 use crate::parser::patterns::Patterns;
-use crate::parser::tokenizer::Tokenizer;
+use crate::parser::blocks::Blocks;
+use crate::parser::parser::ET;
 
 
 pub trait Statements {
