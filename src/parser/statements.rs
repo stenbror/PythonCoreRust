@@ -2773,5 +2773,62 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_expression_single_assign_testlist_with_type_comment() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a = a, b, c# type: int \r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 26, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::AssignmentStmt( 0 , 23 , left, right_nodes, tc) =>  {
+                                assert_eq!(right_nodes.len(), 1);
+                                match tc {
+                                    Some(x) => {
+                                        match &*x {
+                                            Token::TypeComment( 11, 23 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    },
+                                    _ => assert!(false)
+                                }
+                                match &*left {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                let right = right_nodes[0].clone();
+                                match &*right {
+                                    ( a, b) => {
+                                        match &**a {
+                                            Token::PyAssign( 2 , 3 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &**b {
+                                            ASTNode::TestList( 4 , 11 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    }
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline(23, 26, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 }
 
