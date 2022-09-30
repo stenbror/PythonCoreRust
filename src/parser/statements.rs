@@ -2830,5 +2830,51 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_expression_single_assign_with_annotation() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a: int\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 9, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::AnnAssignStmt(0, 6, left, symbol, right, next) =>  {
+                                match &*left {
+                                    ASTNode::AtomName( 0, 1 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*symbol {
+                                    Token::PyColon( 1, 2, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*right {
+                                    ASTNode::AtomName( 3, 6 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &next {
+                                    None => assert!(true),
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline( 6, 9, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 }
 
