@@ -214,7 +214,6 @@ impl Statements for PythonCoreParser {
                                 },
                                 _ => return Err(format!("SyntaxError at {}: Expecting symbol in expression statement!", start_pos))
                             } {};
-                        nodes_list.reverse();
                         match self.symbol.clone() {
                             Ok(s2) => {
                                 match &*s2 {
@@ -2925,6 +2924,73 @@ mod tests {
                         assert_eq!(separators.len(), 0);
                         match &**nwl {
                             Token::Newline( 10, 13, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn statements_expression_multiple_assign_testlist() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a = a, b, c = 1, 2, 3\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 24, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::AssignmentStmt( 0 , 21 , left, right_nodes, tc) =>  {
+                                assert_eq!(right_nodes.len(), 2);
+                                match tc {
+                                    None => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*left {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+
+                                let right = right_nodes[1].clone();
+                                match &*right {
+                                    ( a, b) => {
+                                        match &**a {
+                                            Token::PyAssign( 12 , 13 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &**b {
+                                            ASTNode::TestList( 14 , 21 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    }
+                                }
+
+                                let right2 = right_nodes[0].clone();
+                                match &*right2 {
+                                    ( a, b) => {
+                                        match &**a {
+                                            Token::PyAssign( 2 , 3 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &**b {
+                                            ASTNode::TestList( 4 , 12 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    }
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline(21, 24, None, '\r', '\n') =>  assert!(true),
                             _ => assert!(false)
                         }
                     },
