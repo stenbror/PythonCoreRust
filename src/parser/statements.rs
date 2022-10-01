@@ -2957,7 +2957,6 @@ mod tests {
                                     ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
                                     _ => assert!(false)
                                 }
-
                                 let right = right_nodes[1].clone();
                                 match &*right {
                                     ( a, b) => {
@@ -2971,7 +2970,6 @@ mod tests {
                                         }
                                     }
                                 }
-
                                 let right2 = right_nodes[0].clone();
                                 match &*right2 {
                                     ( a, b) => {
@@ -3000,6 +2998,72 @@ mod tests {
             Err(..) => assert!(false)
         }
     }
+
+    #[test]
+    fn statements_expression_multiple_assign_testlist_with_type_comment() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a = a, b, c = 1, 2, 3 # type: int\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 36, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::AssignmentStmt( 0 , 33 , left, right_nodes, tc) =>  {
+                                assert_eq!(right_nodes.len(), 2);
+                                match tc {
+                                    None => assert!(false),
+                                    _ => assert!(true)
+                                }
+                                match &*left {
+                                    ASTNode::AtomName( 0, 2 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                let right = right_nodes[1].clone();
+                                match &*right {
+                                    ( a, b) => {
+                                        match &**a {
+                                            Token::PyAssign( 12 , 13 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &**b {
+                                            ASTNode::TestList( 14 , 22 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    }
+                                }
+                                let right2 = right_nodes[0].clone();
+                                match &*right2 {
+                                    ( a, b) => {
+                                        match &**a {
+                                            Token::PyAssign( 2 , 3 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &**b {
+                                            ASTNode::TestList( 4 , 12 , _ , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                    }
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline(33, 36, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 
 }
 
