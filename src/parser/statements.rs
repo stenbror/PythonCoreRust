@@ -3123,6 +3123,94 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_del_statement_with_exprlist() {
+        let lexer = Box::new(PythonCoreTokenizer::new("del a, b, c\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 14, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::DelStmt(0, 11, symbol, right) =>  {
+                                match &*symbol {
+                                    Token::PyDel( 0, 3, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*right {
+                                    ASTNode::ExprList( 4, 11 , elements , separators ) => {
+                                        assert_eq!(elements.len(), 3);
+                                        assert_eq!(separators.len(), 2);
+                                        let element1 = elements[0].clone();
+                                        let element2 = elements[1].clone();
+                                        let element3 = elements[2].clone();
+                                        let symbol1 = separators[0].clone();
+                                        let symbol2 = separators[1].clone();
+                                        match &*symbol1 {
+                                            Token::PyComa( 5 , 6 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &*symbol2 {
+                                            Token::PyComa( 8 , 9 , _ ) => assert!(true),
+                                            _ => assert!(false)
+                                        }
+                                        match &*element1 {
+                                            ASTNode::AtomName( 4 , 5 , txt1) => {
+                                                match &**txt1 {
+                                                    Token::AtomName( _ , _ , _ , txt1_txt) => {
+                                                        assert_eq!(&*txt1_txt.as_str(), "a");
+                                                    },
+                                                    _ => assert!(false)
+                                                }
+                                            },
+                                            _ => assert!(false)
+                                        }
+                                        match &*element2 {
+                                            ASTNode::AtomName( 7 , 8 , txt2) => {
+                                                match &**txt2 {
+                                                    Token::AtomName( _ , _ , _ , txt2_txt) => {
+                                                        assert_eq!(&*txt2_txt.as_str(), "b");
+                                                    },
+                                                    _ => assert!(false)
+                                                }
+                                            },
+                                            _ => assert!(false)
+                                        }
+                                        match &*element3 {
+                                            ASTNode::AtomName( 10 , 11 , txt3) => {
+                                                match &**txt3 {
+                                                    Token::AtomName( _ , _ , _ , txt3_txt) => {
+                                                        assert_eq!(&*txt3_txt.as_str(), "c");
+                                                    },
+                                                    _ => assert!(false)
+                                                }
+                                            },
+                                            _ => assert!(false)
+                                        }
+
+                                    },
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline( 11, 14, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 
 }
 

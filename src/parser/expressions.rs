@@ -1036,8 +1036,6 @@ impl Expressions for PythonCoreParser {
                 },
                 _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript list expression!", self.lexer.get_position()))
             } {};
-        nodes_list.reverse();
-        separators_list.reverse();
         match ( nodes_list.len(), separators_list.len() ) {
             ( 1, 0 ) => {
                 Ok((nodes_list[0]).clone())
@@ -1081,8 +1079,6 @@ impl Expressions for PythonCoreParser {
                 },
                 _ => return Err(format!("Syntax Error at {} - Expecting symbol in subscript list expression!", self.lexer.get_position()))
             } {};
-        nodes_list.reverse();
-        separators_list.reverse();
         match ( nodes_list.len(), separators_list.len() ) {
             ( 1, 0 ) => {
                 Ok((nodes_list[0]).clone())
