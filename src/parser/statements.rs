@@ -3064,6 +3064,65 @@ mod tests {
         }
     }
 
+    #[test]
+    fn statements_expression_single_assign_with_annotation_and_assignmentwith_yield() {
+        let lexer = Box::new(PythonCoreTokenizer::new("a: int = yield a\r\n".to_string()));
+        let mut parser = PythonCoreParser::new(lexer);
+        parser.advance();
+        let res = parser.parse_statements_stmt();
+        match &res {
+            Ok(s) => {
+                match &**s {
+                    ASTNode::SimpleStmtList(0, 19, nodes, separators, nwl) => {
+                        assert_eq!(nodes.len(), 1);
+                        let node = (*nodes[0]).clone();
+                        match node {
+                            ASTNode::AnnAssignStmt(0, 16, left, symbol, right, next) =>  {
+                                match &*left {
+                                    ASTNode::AtomName( 0, 1 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*symbol {
+                                    Token::PyColon( 1, 2, _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &*right {
+                                    ASTNode::AtomName( 3, 7 , _ ) => assert!(true),
+                                    _ => assert!(false)
+                                }
+                                match &next {
+                                    Some(x) => {
+                                        match &*x {
+                                            ( tok, node ) => {
+                                                match &**tok {
+                                                    Token::PyAssign(7, 8, _ ) => assert!(true),
+                                                    _ => assert!(false)
+                                                }
+                                                match &**node {
+                                                    ASTNode::YieldExpr( 9, 16 , _ , _ ) => assert!(true),
+                                                    _ => assert!(false)
+                                                }
+                                            },
+                                        }
+                                    },
+                                    _ => assert!(false)
+                                }
+                            },
+                            _ => assert!(false)
+                        }
+                        assert_eq!(separators.len(), 0);
+                        match &**nwl {
+                            Token::Newline( 16, 19, None, '\r', '\n') =>  assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
+                    _ => assert!(false)
+                }
+            }
+            Err(..) => assert!(false)
+        }
+    }
+
 
 }
 
